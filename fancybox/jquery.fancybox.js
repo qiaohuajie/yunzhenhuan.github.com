@@ -139,11 +139,13 @@
 			tpl: {
 				wrap     : '<div class="fancybox-wrap" tabIndex="-1"><div class="fancybox-skin"><div class="fancybox-outer"><div class="fancybox-inner"></div></div></div></div>',
 				image    : '<img class="fancybox-image" src="{href}" alt="" />',
+				video	 : '<video class="fancybox-video" autoplay="" loop="" name="media"><source src="{target}" type="video/mp4"></video>',
 				iframe   : '<iframe id="fancybox-frame{rnd}" name="fancybox-frame{rnd}" class="fancybox-iframe" frameborder="0" vspace="0" hspace="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen' + (IE ? ' allowtransparency="true"' : '') + '></iframe>',
 				error    : '<p class="fancybox-error">The requested content cannot be loaded.<br/>Please try again later.</p>',
 				closeBtn : '<a title="Close" class="fancybox-item fancybox-close" href="javascript:;"></a>',
 				next     : '<a title="Next" class="fancybox-nav fancybox-next" href="javascript:;"><span></span></a>',
-				prev     : '<a title="Previous" class="fancybox-nav fancybox-prev" href="javascript:;"><span></span></a>'
+				prev     : '<a title="Previous" class="fancybox-nav fancybox-prev" href="javascript:;"><span></span></a>',
+				loading  : '<div id="fancybox-loading"><div></div></div>'
 			},
 
 			// Properties for each animation type
@@ -261,7 +263,7 @@
 					if (isQuery(element)) {
 						obj = {
 							href    : element.data('fancybox-href') || element.attr('href'),
-							title   : $('<div/>').text( element.data('fancybox-title') || element.attr('title') ).html(),
+							title   : $('<div/>').text( element.data('fancybox-title') || element.attr('title') || '' ).html(),
 							isDom   : true,
 							element : element
 						};
@@ -614,7 +616,7 @@
 
 			F.hideLoading();
 
-			el = $('<div id="fancybox-loading"><div></div></div>').click(F.cancel).appendTo('body');
+			el = $(F.opts.tpl.loading).click(F.cancel).appendTo('body');
 
 			// If user will press the escape-button, the request will be canceled
 			D.bind('keydown.loading', function(e) {
@@ -1082,10 +1084,17 @@
 
 			F.unbindEvents();
 
+			// hack
+			if ($(coming.element).data('type') == 'video') {
+				coming.type = 'video';
+				coming.target = $(coming.element).data('target');
+			}
+
 			current   = coming;
 			content   = coming.content;
 			type      = coming.type;
 			scrolling = coming.scrolling;
+			
 
 			$.extend(F, {
 				wrap  : current.wrap,
@@ -1097,6 +1106,8 @@
 			});
 
 			href = current.href;
+
+			console.log(coming);
 
 			switch (type) {
 				case 'inline':
@@ -1122,6 +1133,10 @@
 
 				case 'image':
 					content = current.tpl.image.replace(/\{href\}/g, href);
+				break;
+
+				case 'video':
+					content = current.tpl.video.replace(/\{target\}/g, coming.target);
 				break;
 
 				case 'swf':
@@ -1718,7 +1733,7 @@
 
 			parent = F.coming ? F.coming.parent : opts.parent;
 
-			this.overlay = $('<div class="fancybox-overlay"></div>').appendTo( parent && parent.lenth ? parent : 'body' );
+			this.overlay = $('<div class="fancybox-overlay"></div>').appendTo( parent && parent.length ? parent : 'body' );
 			this.fixed   = false;
 
 			if (opts.fixed && F.defaults.fixed) {
