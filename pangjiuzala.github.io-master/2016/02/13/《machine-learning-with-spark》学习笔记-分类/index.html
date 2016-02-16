@@ -1,0 +1,584 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>《machine learning with spark》学习笔记--分类 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="In this article, you will learn the basics of classification models and how they can be used in a variety of contexts.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《machine learning with spark》学习笔记--分类">
+<meta property="og:url" content="http://pangjiuzala.github.io/2016/02/13/《machine-learning-with-spark》学习笔记-分类/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="In this article, you will learn the basics of classification models and how they can be used in a variety of contexts.">
+<meta property="og:updated_time" content="2016-02-13T14:13:24.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《machine learning with spark》学习笔记--分类">
+<meta name="twitter:description" content="In this article, you will learn the basics of classification models and how they can be used in a variety of contexts.">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/02/13/《machine-learning-with-spark》学习笔记-分类/" title="《machine learning with spark》学习笔记--分类" itemprop="url">《machine learning with spark》学习笔记--分类</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2016-02-13T14:11:40.000Z" itemprop="datePublished"> 发表于 2016-02-13</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>In this article, you will learn the basics of classification models and how they can be used in a variety of contexts. </p>
+<a id="more"></a>
+<p>Classification generically refers to classifying things into distinct categories or classes. In the case of a classification model, we typically wish to assign classes based on a set of features. The features might represent variables related to an item or object, an event or context, or some combination of these.</p>
+<p>The simplest form of classification is when we have two classes; this is referred to as binary classification. One of the classes is usually labeled as the positive class (assigned a label of 1), while the other is labeled as the negative class (assigned a label of -1 or, sometimes, 0).</p>
+<p>A simple example with two classes is shown in the following figure. The input features in this case have two dimensions, and the feature values are represented on the x and y axes in the figure.</p>
+<p><strong>DataSource Download</strong></p>
+<p><a href="https://www.kaggle.com/c/stumbleupon/data" target="_blank" rel="external">train.tsv</a></p>
+<p><strong>SourceCode：</strong></p>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="dart"><span class="literal">import</span> org.apache.spark.SparkConf</span><br><span class="line"><span class="literal">import</span> org.apache.spark.SparkContext</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.regression.LabeledPoint</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.linalg.Vectors</span><br><span class="line"><span class="literal">import</span> org.apache.spark.ml.classification.LogisticRegression</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.classification.LogisticRegressionWithSGD</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.classification.SVMWithSGD</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.classification.NaiveBayes</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.tree.DecisionTree</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.tree.impurity.Entropy</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.tree.configuration.Algo</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.evaluation.BinaryClassificationMetrics</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.linalg.distributed.RowMatrix</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.feature.StandardScaler</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.regression.LabeledPointBeanInfo</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.optimization.LogisticGradient</span><br><span class="line"><span class="literal">import</span> org.apache.spark.rdd.RDD</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.optimization.Updater</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.classification.ClassificationModel</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.optimization.SimpleUpdater</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.optimization.SquaredL2Updater</span><br><span class="line"><span class="literal">import</span> org.apache.spark.mllib.tree.impurity.Impurity</span><br><span class="line"></span><br><span class="line">object ExtractFeatures &#123;</span><br><span class="line">  def trainWithParams(input: RDD[LabeledPoint], regParam: Double,</span><br><span class="line">                      numIterations: Int, updater: Updater, stepSize: Double) = &#123;</span><br><span class="line">    val lr = <span class="keyword">new</span> LogisticRegressionWithSGD</span><br><span class="line">    lr.optimizer.setNumIterations(numIterations).</span><br><span class="line">      setUpdater(updater).setRegParam(regParam).setStepSize(stepSize)</span><br><span class="line">    lr.run(input)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  def createMetrics(label: <span class="built_in">String</span>, data: RDD[LabeledPoint], model: ClassificationModel) = &#123;</span><br><span class="line">    val scoreAndLabels = data.map &#123; point =&gt;</span><br><span class="line">      (model.predict(point.features), point.label)</span><br><span class="line">    &#125;</span><br><span class="line">    val metrics = <span class="keyword">new</span> BinaryClassificationMetrics(scoreAndLabels)</span><br><span class="line">    (label, metrics.areaUnderROC)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/*Tuning tree depth and impurity,去除噪声数据*/</span></span><br><span class="line">  def trainDTWithParams(input: RDD[LabeledPoint], maxDepth: Int,</span><br><span class="line">                        impurity: Impurity) = &#123;</span><br><span class="line">    DecisionTree.train(input, Algo.Classification, impurity,</span><br><span class="line">      maxDepth)</span><br><span class="line">  &#125;</span><br><span class="line">  def trainNBWithParams(input: RDD[LabeledPoint], lambda: Double) = &#123;</span><br><span class="line">    val nb = <span class="keyword">new</span> NaiveBayes</span><br><span class="line">    nb.setLambda(lambda)</span><br><span class="line">    nb.run(input)</span><br><span class="line">  &#125;</span><br><span class="line">  def main(args: Array[<span class="built_in">String</span>]): Unit = &#123;</span><br><span class="line">    val numIterations = <span class="number">10</span></span><br><span class="line">    val maxTreeDepth = <span class="number">5</span></span><br><span class="line">    val conf = <span class="keyword">new</span> SparkConf().setAppName(<span class="string">"extractfeatures"</span>)</span><br><span class="line">    val sc = <span class="keyword">new</span> SparkContext(conf)</span><br><span class="line">    val rawData = sc.textFile(<span class="string">"hdfs://master:9000/user/root/mllib/train_noheader.tsv"</span>)</span><br><span class="line">    val records = rawData.map(line =&gt; line.split(<span class="string">"\t"</span>))</span><br><span class="line">    <span class="comment">//  println(records)</span></span><br><span class="line">    val data = records.map &#123; r =&gt;</span><br><span class="line">      val trimmed = r.map(_.replaceAll(<span class="string">"\""</span>, <span class="string">""</span>))</span><br><span class="line">      val label = trimmed(r.size - <span class="number">1</span>).toInt</span><br><span class="line">      val features = trimmed.slice(<span class="number">4</span>, r.size - <span class="number">1</span>).map(d =&gt; <span class="keyword">if</span> (d == <span class="string">"?"</span>) <span class="number">0.0</span></span><br><span class="line">      <span class="keyword">else</span> d.toDouble)</span><br><span class="line">      LabeledPoint(label, Vectors.dense(features))</span><br><span class="line">    &#125;</span><br><span class="line">    val nbData = records.map &#123; r =&gt;</span><br><span class="line">      val trimmed = r.map(_.replaceAll(<span class="string">"\""</span>, <span class="string">""</span>))</span><br><span class="line">      val label = trimmed(r.size - <span class="number">1</span>).toInt</span><br><span class="line">      val features = trimmed.slice(<span class="number">4</span>, r.size - <span class="number">1</span>).map(d =&gt; <span class="keyword">if</span> (d ==</span><br><span class="line">        <span class="string">"?"</span>) <span class="number">0.0</span> <span class="keyword">else</span> d.toDouble).map(d =&gt; <span class="keyword">if</span> (d &lt; <span class="number">0</span>) <span class="number">0.0</span> <span class="keyword">else</span> d)</span><br><span class="line">      LabeledPoint(label, Vectors.dense(features))</span><br><span class="line">    &#125;</span><br><span class="line">    val numData = data.count</span><br><span class="line">    println(numData)</span><br><span class="line">    val lrModel = LogisticRegressionWithSGD.train(data, numIterations)</span><br><span class="line">    val svmModel = SVMWithSGD.train(data, numIterations)</span><br><span class="line">    val nbModel = NaiveBayes.train(nbData)</span><br><span class="line">    val dtModel = DecisionTree.train(data, Algo.Classification, Entropy,</span><br><span class="line">      maxTreeDepth)</span><br><span class="line">    <span class="comment">/*logistic regression*/</span></span><br><span class="line">    val dataPoint = data.first</span><br><span class="line">    val prediction = lrModel.predict(dataPoint.features)</span><br><span class="line">    val trueLabel = dataPoint.label</span><br><span class="line">    val predictions = lrModel.predict(data.map(lp =&gt; lp.features))</span><br><span class="line">    predictions.take(<span class="number">5</span>)</span><br><span class="line">    val lrTotalCorrect = data.map &#123;</span><br><span class="line">      point =&gt; <span class="keyword">if</span> (lrModel.predict(point.features) == point.label) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val lrAccuracy = lrTotalCorrect / data.count</span><br><span class="line">    val svmTotalCorrect = data.map &#123; point =&gt;</span><br><span class="line">      <span class="keyword">if</span> (svmModel.predict(point.features) == point.label) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val nbTotalCorrect = nbData.map &#123; point =&gt;</span><br><span class="line">      <span class="keyword">if</span> (nbModel.predict(point.features) == point.label) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val dtTotalCorrect = data.map &#123; point =&gt;</span><br><span class="line">      val score = dtModel.predict(point.features)</span><br><span class="line">      val predicted = <span class="keyword">if</span> (score &gt; <span class="number">0.5</span>) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">      <span class="keyword">if</span> (predicted == point.label) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val svmAccuracy = svmTotalCorrect / numData</span><br><span class="line">    val nbaAccuracy = nbTotalCorrect / numData</span><br><span class="line">    val dtAccuracy = dtTotalCorrect / numData</span><br><span class="line">    val metrics = Seq(lrModel, svmModel).map &#123; model =&gt;</span><br><span class="line">      val scoreAndLabels = data.map &#123; point =&gt;</span><br><span class="line">        (model.predict(point.features), point.label)</span><br><span class="line">      &#125;</span><br><span class="line">      val metrics = <span class="keyword">new</span> BinaryClassificationMetrics(scoreAndLabels)</span><br><span class="line">      (model.getClass.getSimpleName, metrics.areaUnderPR(), metrics.areaUnderROC())</span><br><span class="line">    &#125;</span><br><span class="line">    val nbMetrics = Seq(nbModel).map &#123; model =&gt;</span><br><span class="line">      val scoreAndLabels = nbData.map &#123; point =&gt;</span><br><span class="line">        val score = model.predict(point.features)</span><br><span class="line">        (<span class="keyword">if</span> (score &gt; <span class="number">0.5</span>) <span class="number">1.0</span> <span class="keyword">else</span> <span class="number">0.0</span>, point.label)</span><br><span class="line">      &#125;</span><br><span class="line">      val metrics = <span class="keyword">new</span> BinaryClassificationMetrics(scoreAndLabels)</span><br><span class="line">      (model.getClass.getSimpleName, metrics.areaUnderPR,</span><br><span class="line">        metrics.areaUnderROC)</span><br><span class="line">    &#125;</span><br><span class="line">    val dtMetrics = Seq(dtModel).map &#123; model =&gt;</span><br><span class="line">      val scoreAndLabels = data.map &#123; point =&gt;</span><br><span class="line">        val score = model.predict(point.features)</span><br><span class="line">        (<span class="keyword">if</span> (score &gt; <span class="number">0.5</span>) <span class="number">1.0</span> <span class="keyword">else</span> <span class="number">0.0</span>, point.label)</span><br><span class="line">      &#125;</span><br><span class="line">      val metrics = <span class="keyword">new</span> BinaryClassificationMetrics(scoreAndLabels)</span><br><span class="line">      (model.getClass.getSimpleName, metrics.areaUnderPR,</span><br><span class="line">        metrics.areaUnderROC)</span><br><span class="line">    &#125;</span><br><span class="line">    val allMetrics = metrics ++ nbMetrics ++ dtMetrics</span><br><span class="line">    allMetrics.foreach &#123;</span><br><span class="line">      <span class="keyword">case</span> (m, pr, roc) =&gt;</span><br><span class="line">        println(f<span class="string">"$m, Area under PR: <span class="subst">$&#123;pr * <span class="number">100.0</span>&#125;</span>%2.4f%%, Area under ROC: <span class="subst">$&#123;roc * <span class="number">100.0</span>&#125;</span>%2.4f%%"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    val vectors = data.map(lp =&gt; lp.features)</span><br><span class="line">    val matrix = <span class="keyword">new</span> RowMatrix(vectors)</span><br><span class="line">    val matrixSummary = matrix.computeColumnSummaryStatistics()</span><br><span class="line">    println(matrixSummary.mean)</span><br><span class="line">    println(matrixSummary.min)</span><br><span class="line">    println(matrixSummary.max)</span><br><span class="line">    println(matrixSummary.numNonzeros)</span><br><span class="line">    val scaler = <span class="keyword">new</span> StandardScaler(withMean = <span class="keyword">true</span>, withStd = <span class="keyword">true</span>).fit(vectors)</span><br><span class="line">    val scaledData = data.map(lp =&gt; LabeledPoint(lp.label, scaler.transform(lp.features)))</span><br><span class="line">    println(scaledData.first.features)</span><br><span class="line">    println((<span class="number">0.789131</span> - <span class="number">0.41225805299526636</span>) / math.sqrt(<span class="number">0.1097424416755897</span>))</span><br><span class="line">    <span class="comment">/*  illustrate the impact of feature standardization*/</span></span><br><span class="line">    val lrModelScaled = LogisticRegressionWithSGD.train(scaledData, numIterations)</span><br><span class="line">    val lrTotalCorrectScaled = scaledData.map &#123; point =&gt;</span><br><span class="line">      <span class="keyword">if</span> (lrModelScaled.predict(point.features) == point.label) <span class="number">1</span></span><br><span class="line">      <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val lrAccuracyScaled = lrTotalCorrectScaled / numData</span><br><span class="line">    val lrPredictionsVsTrue = scaledData.map &#123; point =&gt;</span><br><span class="line">      (lrModelScaled.predict(point.features), point.label)</span><br><span class="line">    &#125;</span><br><span class="line">    val lrMetricsScaled = <span class="keyword">new</span> BinaryClassificationMetrics(lrPredictionsVsTrue)</span><br><span class="line">    val lrPr = lrMetricsScaled.areaUnderPR</span><br><span class="line">    val lrRoc = lrMetricsScaled.areaUnderROC</span><br><span class="line">    println(f<span class="string">"<span class="subst">$&#123;lrModelScaled.getClass.getSimpleName&#125;</span>\nAccuracy:<span class="subst">$&#123;lrAccuracyScaled * <span class="number">100</span>&#125;</span>%2.4f%%\nArea under PR: <span class="subst">$&#123;lrPr * <span class="number">100.0</span>&#125;</span>%2.4f%%\nArea under ROC: <span class="subst">$&#123;lrRoc * <span class="number">100.0</span>&#125;</span>%2.4f%%"</span>)</span><br><span class="line">    val categories = records.map(r =&gt; r(<span class="number">3</span>)).distinct.collect.zipWithIndex.toMap</span><br><span class="line">    val numCategories = categories.size</span><br><span class="line">    println(categories)</span><br><span class="line">    println(numCategories)</span><br><span class="line">    <span class="comment">/*   prepend this new feature vector to the vector of other numerical features:*/</span></span><br><span class="line">    val dataCategories = records.map &#123; r =&gt;</span><br><span class="line">      val trimmed = r.map(_.replaceAll(<span class="string">"\""</span>, <span class="string">""</span>))</span><br><span class="line">      val label = trimmed(r.size - <span class="number">1</span>).toInt</span><br><span class="line">      val categoryIdx = categories(r(<span class="number">3</span>))</span><br><span class="line">      val categoryFeatures = Array.ofDim[Double](numCategories)</span><br><span class="line">      categoryFeatures(categoryIdx) = <span class="number">1.0</span></span><br><span class="line">      val otherFeatures = trimmed.slice(<span class="number">4</span>, r.size - <span class="number">1</span>).map(d =&gt; <span class="keyword">if</span> (d == <span class="string">"?"</span>) <span class="number">0.0</span> <span class="keyword">else</span> d.toDouble)</span><br><span class="line">      val features = categoryFeatures ++ otherFeatures</span><br><span class="line">      LabeledPoint(label, Vectors.dense(features))</span><br><span class="line">    &#125;</span><br><span class="line">    println(dataCategories.first)</span><br><span class="line">    val scalerCats = <span class="keyword">new</span> StandardScaler(withMean = <span class="keyword">true</span>, withStd = <span class="keyword">true</span>).</span><br><span class="line">      fit(dataCategories.map(lp =&gt; lp.features))</span><br><span class="line">    val scaledDataCats = dataCategories.map(lp =&gt;</span><br><span class="line">      LabeledPoint(lp.label, scalerCats.transform(lp.features)))</span><br><span class="line">    println(dataCategories.first.features)</span><br><span class="line">    <span class="comment">/*    We're now ready to train a new logistic regression model with our expanded feature set, and then we will evaluate the performance:*/</span></span><br><span class="line">    val lrModelScaledCats = LogisticRegressionWithSGD.train(scaledDataCats, numIterations)</span><br><span class="line">    val lrTotalCorrectScaledCats = scaledDataCats.map &#123; point =&gt;</span><br><span class="line">      <span class="keyword">if</span> (lrModelScaledCats.predict(point.features) == point.label) <span class="number">1</span> <span class="keyword">else</span></span><br><span class="line">        <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val lrAccuracyScaledCats = lrTotalCorrectScaledCats / numData</span><br><span class="line">    val lrPredictionsVsTrueCats = scaledDataCats.map &#123; point =&gt;</span><br><span class="line">      (lrModelScaledCats.predict(point.features), point.label)</span><br><span class="line">    &#125;</span><br><span class="line">    val lrMetricsScaledCats = <span class="keyword">new</span> BinaryClassificationMetrics(lrPredictionsVsTrueCats)</span><br><span class="line">    val lrPrCats = lrMetricsScaledCats.areaUnderPR</span><br><span class="line">    val lrRocCats = lrMetricsScaledCats.areaUnderROC</span><br><span class="line">    println(f<span class="string">"<span class="subst">$&#123;lrModelScaledCats.getClass.getSimpleName&#125;</span>\nAccuracy:<span class="subst">$&#123;lrAccuracyScaledCats * <span class="number">100</span>&#125;</span>%2.4f%%\nArea under PR: <span class="subst">$&#123;</span><br><span class="line">      lrPrCats *</span><br><span class="line">        <span class="number">100.0</span></span><br><span class="line">    &#125;</span>%2.4f%%\nArea under ROC: <span class="subst">$&#123;lrRocCats * <span class="number">100.0</span>&#125;</span>%2.4f%%"</span>)</span><br><span class="line">    <span class="comment">/* To illustrate this, we'll use only the category feature, which, when 1-of-k encoded, is</span><br><span class="line">of the correct form for the model. We will create a new dataset as follows:*/</span></span><br><span class="line">    val dataNB = records.map &#123; r =&gt;</span><br><span class="line">      val trimmd = r.map(_.replaceAll(<span class="string">"\""</span>, <span class="string">""</span>))</span><br><span class="line">      val label = trimmd(r.size - <span class="number">1</span>).toInt</span><br><span class="line">      val categoryIdx = categories(r(<span class="number">3</span>))</span><br><span class="line">      val categoryFeatures = Array.ofDim[Double](numCategories)</span><br><span class="line">      categoryFeatures(categoryIdx) = <span class="number">1.0</span></span><br><span class="line">      LabeledPoint(label, Vectors.dense(categoryFeatures))</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*we will train a new naïve Bayes model and evaluate its performance*/</span></span><br><span class="line">    val nbModelCats = NaiveBayes.train(dataNB)</span><br><span class="line">    val nbTotalCorrectCats = dataNB.map &#123; point =&gt;</span><br><span class="line">      <span class="keyword">if</span> (nbModelCats.predict(point.features) == point.label) <span class="number">1</span> <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    &#125;.sum</span><br><span class="line">    val nbAccuracyCats = nbTotalCorrectCats / numData</span><br><span class="line">    val nbPredictionsVsTrueCats = dataNB.map &#123; point =&gt;</span><br><span class="line">      (nbModelCats.predict(point.features), point.label)</span><br><span class="line">    &#125;</span><br><span class="line">    val nbMetricsCats = <span class="keyword">new</span> BinaryClassificationMetrics(nbPredictionsVsTrueCats)</span><br><span class="line">    val nbPrCats = nbMetricsCats.areaUnderPR</span><br><span class="line">    val nbRocCats = nbMetricsCats.areaUnderROC</span><br><span class="line">    println(f<span class="string">"<span class="subst">$&#123;nbModelCats.getClass.getSimpleName&#125;</span>\nAccuracy:<span class="subst">$&#123;nbAccuracyCats * <span class="number">100</span>&#125;</span>%2.4f%%\nArea under PR: <span class="subst">$&#123;nbPrCats * <span class="number">100.0</span>&#125;</span>%2.4f%%\nArea under ROC: <span class="subst">$&#123;nbRocCats * <span class="number">100.0</span>&#125;</span>%2.4f%%"</span>)</span><br><span class="line">    <span class="comment">/*trying a few different settings for the numIterations parameter and</span><br><span class="line">comparing the AUC results*/</span></span><br><span class="line">    val iterResults = Seq(<span class="number">1</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">50</span>).map &#123; param =&gt;</span><br><span class="line">      val model = trainWithParams(scaledDataCats, <span class="number">0.0</span>, numIterations, <span class="keyword">new</span> SimpleUpdater, <span class="number">1.0</span>)</span><br><span class="line">      createMetrics(s<span class="string">"$param iterations"</span>, scaledDataCats, model)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*step size*/</span></span><br><span class="line">    iterResults.foreach &#123; <span class="keyword">case</span> (param, auc) =&gt; println(f<span class="string">"$param, AUC =<span class="subst">$&#123;auc * <span class="number">100</span>&#125;</span>%2.2f%%"</span>) &#125;</span><br><span class="line">    val stepResults = Seq(<span class="number">0.001</span>, <span class="number">0.01</span>, <span class="number">0.1</span>, <span class="number">1.0</span>, <span class="number">10.0</span>).map &#123; param =&gt;</span><br><span class="line">      val model = trainWithParams(scaledDataCats, <span class="number">0.0</span>, numIterations, <span class="keyword">new</span> SimpleUpdater, param)</span><br><span class="line">      createMetrics(s<span class="string">"$param step size"</span>, scaledDataCats, model)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    stepResults.foreach &#123;</span><br><span class="line">      <span class="keyword">case</span> (param, auc) =&gt;</span><br><span class="line">        println(f<span class="string">"$param, AUC =<span class="subst">$&#123;auc * <span class="number">100</span>&#125;</span>%2.2f%%"</span>)</span><br><span class="line">        val regResults = Seq(<span class="number">0.001</span>, <span class="number">0.01</span>, <span class="number">0.1</span>, <span class="number">1.0</span>, <span class="number">10.0</span>).map &#123; param =&gt;</span><br><span class="line">          val model = trainWithParams(scaledDataCats, param, numIterations,</span><br><span class="line">            <span class="keyword">new</span> SquaredL2Updater, <span class="number">1.0</span>)</span><br><span class="line">          createMetrics(s<span class="string">"$param L2 regularization parameter"</span>,</span><br><span class="line">            scaledDataCats, model)</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        regResults.foreach &#123;</span><br><span class="line">          <span class="keyword">case</span> (param, auc) =&gt; println(f<span class="string">"$param, AUC =<span class="subst">$&#123;auc * <span class="number">100</span>&#125;</span>%2.2f%%"</span>)</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    val dtResultsEntropy = Seq(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">10</span>, <span class="number">20</span>).map &#123; param =&gt;</span><br><span class="line">      val model = trainDTWithParams(data, param, Entropy)</span><br><span class="line">      val scoreAndLabels = data.map &#123; point =&gt;</span><br><span class="line">        val score = model.predict(point.features)</span><br><span class="line">        (<span class="keyword">if</span> (score &gt; <span class="number">0.5</span>) <span class="number">1.0</span> <span class="keyword">else</span> <span class="number">0.0</span>, point.label)</span><br><span class="line">      &#125;</span><br><span class="line">      val metrics = <span class="keyword">new</span> BinaryClassificationMetrics(scoreAndLabels)</span><br><span class="line">      (s<span class="string">"$param tree depth"</span>, metrics.areaUnderROC)</span><br><span class="line">    &#125;</span><br><span class="line">    dtResultsEntropy.foreach &#123; <span class="keyword">case</span> (param, auc) =&gt; println(f<span class="string">"$param,AUC = <span class="subst">$&#123;auc * <span class="number">100</span>&#125;</span>%2.2f%%"</span>) &#125;</span><br><span class="line">    val nbResults = Seq(<span class="number">0.001</span>, <span class="number">0.01</span>, <span class="number">0.1</span>, <span class="number">1.0</span>, <span class="number">10.0</span>).map &#123; param =&gt;</span><br><span class="line">      val model = trainNBWithParams(dataNB, param)</span><br><span class="line">      val scoreAndLabels = dataNB.map &#123; point =&gt;</span><br><span class="line">        (model.predict(point.features), point.label)</span><br><span class="line">      &#125;</span><br><span class="line">      val metrics = <span class="keyword">new</span> BinaryClassificationMetrics(scoreAndLabels)</span><br><span class="line">      (s<span class="string">"$param lambda"</span>, metrics.areaUnderROC)</span><br><span class="line">    &#125;</span><br><span class="line">    nbResults.foreach &#123;</span><br><span class="line">      <span class="keyword">case</span> (param, auc) =&gt; println(f<span class="string">"$param, AUC =<span class="subst">$&#123;auc * <span class="number">100</span>&#125;</span>%2.2f%%"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*Cross-validation*/</span></span><br><span class="line">    val trainTestSplit = scaledDataCats.randomSplit(Array(<span class="number">0.6</span>, <span class="number">0</span>, <span class="number">4</span>), <span class="number">123</span>)</span><br><span class="line">    val train = trainTestSplit(<span class="number">0</span>)</span><br><span class="line">    val test = trainTestSplit(<span class="number">1</span>)</span><br><span class="line">    val regResultsTest = Seq(<span class="number">0.0</span>, <span class="number">0.001</span>, <span class="number">0.0025</span>, <span class="number">0.005</span>, <span class="number">0.01</span>).map &#123; param =&gt;</span><br><span class="line">      val model = trainWithParams(train, param, numIterations, <span class="keyword">new</span> SquaredL2Updater, <span class="number">1.0</span>)</span><br><span class="line">      createMetrics(s<span class="string">"$param L2 regularization parameter"</span>, test,</span><br><span class="line">        model)</span><br><span class="line">    &#125;</span><br><span class="line">    regResultsTest.foreach &#123;</span><br><span class="line">      <span class="keyword">case</span> (param, auc) =&gt; println(f<span class="string">"$param,AUC = <span class="subst">$&#123;auc * <span class="number">100</span>&#125;</span>%2.6f%%"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span></span><br></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Spark/">Spark</a><a href="/tags/机器学习/">机器学习</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/02/14/《machine-learning-with-spark》学习笔记-聚类/" title="《machine learning with spark》学习笔记--聚类">
+  <strong>上一篇：</strong><br/>
+  <span>
+  《machine learning with spark》学习笔记--聚类</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/02/02/《machine-learning-with-spark》学习笔记-推荐模型/"  title="《machine learning with spark》学习笔记--推荐模型">
+ <strong>下一篇：</strong><br/> 
+ <span>《machine learning with spark》学习笔记--推荐模型
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/02/13/《machine-learning-with-spark》学习笔记-分类/" data-title="《machine learning with spark》学习笔记--分类" data-url="http://pangjiuzala.github.io/2016/02/13/《machine-learning-with-spark》学习笔记-分类/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

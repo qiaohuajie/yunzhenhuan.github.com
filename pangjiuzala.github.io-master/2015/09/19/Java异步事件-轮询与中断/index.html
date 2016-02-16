@@ -1,0 +1,602 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Java异步事件:轮询与中断 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="CPU几乎把所有的时间都花费在从内存获取指令并运行它们的过程中。然而，CPU和主存仅仅只是计算机硬件系统中众多组件的其中两个。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java异步事件:轮询与中断">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/09/19/Java异步事件-轮询与中断/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="CPU几乎把所有的时间都花费在从内存获取指令并运行它们的过程中。然而，CPU和主存仅仅只是计算机硬件系统中众多组件的其中两个。">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0255.png">
+<meta property="og:updated_time" content="2015-09-19T12:11:12.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java异步事件:轮询与中断">
+<meta name="twitter:description" content="CPU几乎把所有的时间都花费在从内存获取指令并运行它们的过程中。然而，CPU和主存仅仅只是计算机硬件系统中众多组件的其中两个。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/09/19/Java异步事件-轮询与中断/" title="Java异步事件:轮询与中断" itemprop="url">Java异步事件:轮询与中断</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-09-19T12:10:25.000Z" itemprop="datePublished"> 发表于 2015-09-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>CPU几乎把所有的时间都花费在从内存获取指令并运行它们的过程中。然而，CPU和主存仅仅只是计算机硬件系统中众多组件的其中两个。<br><a id="more"></a><br>一个完整的系统还包含其他的设备，比如：</p>
+<p>硬盘或者固态硬盘，用来存储程序和数据文件的。（注意，主存仅保存少量的信息，并且只有在计算机接通电源的时候才能保存信息。硬盘或者固态硬盘用来永久存储大量的信息。但是在程序真正运行前，程序必须把硬盘或者固态硬盘里的数据加载到主存中。硬盘把数据存储在旋转磁盘中（spinning magnetic disk），而固态硬盘把数据存储在纯粹的电子设备里，它不需要旋转或者任何的机械运动。</p>
+<ul>
+<li>键盘和鼠标，给用户进行输入。</li>
+<li>显示器和打印机，用来显示计算机的输出。</li>
+<li>音频输出设备，使计算能够播放声音。</li>
+<li>网络接口，使计算机能够与其他联网的计算机进行通信，这些联网的计算机通过有线或者无线的方式进行联网。</li>
+<li>扫描仪，把图片转化为能够在计算机上存储和操作的二进制代码。</li>
+</ul>
+<p>上面列出的设备全都是开放式的（open ended）,并且计算机被设计成能够通过添加新的设备来简易地扩展计算机。CPU必须以某种方式和这些设备通信并控制它们，并且它只能通过运行机器语言指令来实现这个过程（这是它所能做到的一切了）。这个过程的实现方式是在系统中的每个设备都对应一个设备驱动，这些驱动都是一些应用软件并在CPU与设备交互时运行。在系统中安装新的设备通常需要两个步骤：把物理设备查到计算机里，然后安装设备驱动软件。如果没有设备驱动，由于CPU不能与物理设备进行通信，物理设备将会变得毫无用处。</p>
+<p>由众多设备组成的计算机系统通常是把这些设备连接到一条或者多条总线上进行组织的。一条总线就是一组导线，这些导线携带着连接到这些导线上的设备的各种信息。导线携带的信息包括数据、地址和控制信号。地址信息指引数据到特定的设备或者特定的寄存器或者特定设备内的特定位置。控制信号可以用于一个设备通知另外一个设备可以在数据总线上获取该数据。一个非常简单的计算机系统可以这样组织：</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0255.png" alt=""><br></center><br>如今，键盘、鼠标和网络接口等设备都可以产生输入数据并需要CPU处理这些数据。那么CPU是怎样知道数据已经到来了呢？一个简单并不太理想的方法就是让CPU不停地检查数据是否已经到来，并在每次发现数据时就处理这些数据。因为CPU需要持续地轮询输入设备来检测是否有输入数据需要处理，所以这个方法叫做轮询。不幸的是，尽管轮询很简单，但它的效率同样也很低。因为CPU把大量的时间都只花费在等待输入上。</p>
+<p>为了提高效率，通常使用中断来代替轮询。中断是其他设备发送给CPU的信号。CPU为了响应中断信号，它会搁置正在处理的事务去响应中断信号。一旦CPU处理完中断，它就会返回并处理中断出现时搁置的事务。例如，当你按下键盘的一个键位时，键盘中断就会被发到CPU那。然后CPU就通过中断正在处理的事务来响应这个中断信号，并读取和处理你按下的键位信息。最后，CPU会返回到你按下键位前正在执行的任务。</p>
+<p>此外你需要知道的是，这个中断机制完全是使用硬件实现的：设备单纯地通过接通导线来表示中断信息。CPU被设计成当接通导线时，它就会把正在处理的事务信息保存下来（保存现场信息）用以之后能够返回同一状态（恢复现场）。这些信息包含程序计数器等重要内部寄存器内容。然后CPU会跳到一些预设的内存位置并执行存储在那的指令。这些指令构成了一个中断处理器用来进行一些必要的处理去响应中断（这个中断处理器是发送信号的设备的驱动软件的一部分）。中断处理器的最后一条指令利用之前保存的状态信息来指示CPU跳回现场。</p>
+<p>中断使CPU能够处理异步事件。在定期的读取-执行循环中，事件都是在预定的顺序发生的；所有的事件都是和其他事件“同步”发生的。中断让CPU使用“异步”高效地处理事件成为可能，这时事件发生的时间是不可预测的。</p>
+<p>作为使用中断的另一个例子，思考一下当CPU需要访问存储在硬盘上的数据时会发生什么事情？CPU只能直接访问内存里的数据。所以在访问硬盘上的数据前必须把数据复制到内存里。不幸的是，相比于CPU的运行速度，硬盘的速度显得很慢。当CPU需要硬盘上的数据时，它会给硬盘驱动发出信号要求它去定位并准备数据（这个信号是在常规的程序下异步发送的）。然后CPU继续去做一些其他的任务而不是进行不可预测的长时间等待，这个等待过程将由硬盘驱动去完成。当硬盘驱动准备好数据后，它会发送一个中断信号给CPU。之后中断处理器会读取请求数据。</p>
+<p>现在你可能已经注意到只有在CPU有多个任务要执行时才能体现出中断的作用。如果CPU只有一个任务要执行，中断同样会把时间花费在轮询输入上或者等待硬盘驱动操作的完成。所有的现代计算机都使用多任务处理（multitasking）来一次执行多个任务。有些计算机能够在同一时间给多个用户同时使用。因为CPU的速度是很快的，所有它能够快速地从一个用户切换到另一个用户上工作，并依次为每个用户工作很短的时间。这种多任务处理的运用叫做分时系统（timesharing）。尽管如此，只有一个用户的现代个人计算机同样使用了多任务处理。例如，在时钟程序持续地显示时间和在网上下载文件的同时，用户可能也在使用计算机写论文。</p>
+<p>CPU在执行的每一个单一的任务叫作一条线程（或者一个进程；线程和进程之间是有技术差异的，不过这个差异在这不重要，因为我们要讨论的线程是Java中的线程）。很多CPU可以同时运行多个线程——这些CPU包含多个“核”并且每个核都能运行一条线程，然而同时运行的线程数量是有限的。时常因为线程太多了而不能同时运行所有的线程，计算机必须能够从一条线程切换到另一条线程上工作，就像分时计算机从一个用户切换到两一个用户一样。通常，一条正在运行的线程会一直运行下去，除非出现这些情况的其中一个：</p>
+<ul>
+<li>线程自愿让出（yield）控制权，给其他线程运行的机会。</li>
+<li>线程可能必须要等待一些异步事件的发生。例如，线程可能需要硬盘上的一些数据，或者它可能在等待用户按下键位。当线程在等待时，我们称它被阻塞了（blocked）。此时，如果还有其他线程的话，它们就拥有了运行的机会。当等待的事件出现时，中断将会“唤醒”阻塞线程继续运行。</li>
+<li>线程可能因为耗尽分配给它的时间片而被挂起来使其他的线程能够运行。不是所有的计算机都能够以这种方式”强制”挂起线程的。那些能够“强制”挂起的叫作抢占式多任务系统（preemptive multitasking）。要使用抢占式多任务，计算机需要一个能够定期产生中断的特殊定时设备，比如每秒产生100次。当定时中断产生时，CPU就可以从一条线程切换到另一条线程，而不管线程是否正在执行。所有的现代台式机和笔记本，甚至是平常的智能手机和平板，都在使用抢占式多任务。</li>
+</ul>
+<p>普通用户，甚至普通程序员，不需要与中断和中断处理器打交道。他们可以集中精力在不同的任务处理或者他们要计算机执行的线程上。计算机是如何完成这些任务的细节对他们来说不重要。实际上，大多数用户和很多的程序员都可以忽视线程和多任务。然而，随着计算机变得越来越强大、多任务和多进程的使用越来越多，线程已经变得越来越重要了。实际上，使用线程的能力很快就会变成程序员的一项基本能力了。幸运的是，Java对线程提供了很好的支持，它把线程当做一个基本的程序概念内置到Java编程语言里。在第12章里将会讲到使用线程编程的内容。</p>
+<p>通常，在Java和现代编程里同样重要的是异步事件的基本概念。即使程序员实际上并不直接与中断打交道，他们常常也会发现他们在编写事件处理器。事件处理器与中断处理器类似，当特定的事件发生时它就会被调用。与很多传统的、直通式的、同步的编程相比，“事件驱动编程”拥有不一样的体验。我们将会从传统类型的编程开始讲起，它们现在依然被用来编写单一任务的程序。不过我们将会在第6章里再来讲解线程和事件。</p>
+<p>顺便提一下，执行所有的中断处理、操纵用户与硬件设备之间的交互和控制哪条线程可以运行的软件叫作操作系统。操作系统是最基本、最重要的软件，没有它计算机就不能够正常地运作。文字处理器和Web浏览器等其他的程序都要依赖于操作系统。常见的操作系统包括Linux、各个版本的Windows和Mac OS。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/09/23/防止sql注入/" title="防止sql注入">
+  <strong>上一篇：</strong><br/>
+  <span>
+  防止sql注入</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/09/16/浅谈Weka/"  title="浅谈Weka">
+ <strong>下一篇：</strong><br/> 
+ <span>浅谈Weka
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/09/19/Java异步事件-轮询与中断/" data-title="Java异步事件:轮询与中断" data-url="http://pangjiuzala.github.io/2015/09/19/Java异步事件-轮询与中断/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,722 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>从源码中分析Hadoop的RPC机制 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="RPC是Remote Procedure Call（远程过程调用）的简称，这一机制都要面对两个问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从源码中分析Hadoop的RPC机制">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/12/04/从源码中分析Hadoop的RPC机制/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="RPC是Remote Procedure Call（远程过程调用）的简称，这一机制都要面对两个问题">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0584.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0585.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0586.png">
+<meta property="og:updated_time" content="2015-12-04T06:52:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从源码中分析Hadoop的RPC机制">
+<meta name="twitter:description" content="RPC是Remote Procedure Call（远程过程调用）的简称，这一机制都要面对两个问题">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/12/04/从源码中分析Hadoop的RPC机制/" title="从源码中分析Hadoop的RPC机制" itemprop="url">从源码中分析Hadoop的RPC机制</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-12-04T05:59:44.000Z" itemprop="datePublished"> 发表于 2015-12-04</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#VersionedProtocol接口"><span class="toc-number">1.</span> <span class="toc-text">VersionedProtocol接口</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HDFS相关"><span class="toc-number">1.1.</span> <span class="toc-text">HDFS相关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mapreduce相关"><span class="toc-number">1.2.</span> <span class="toc-text">Mapreduce相关</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RPC实现流程"><span class="toc-number">2.</span> <span class="toc-text">RPC实现流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ipc-Client源码"><span class="toc-number">3.</span> <span class="toc-text">ipc.Client源码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ipc-Server源码分析"><span class="toc-number">4.</span> <span class="toc-text">ipc.Server源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化Server"><span class="toc-number">4.1.</span> <span class="toc-text">初始化Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行Server"><span class="toc-number">4.2.</span> <span class="toc-text">运行Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Server处理请求"><span class="toc-number">4.3.</span> <span class="toc-text">Server处理请求</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>  RPC是Remote Procedure Call（远程过程调用）的简称，这一机制都要面对两个问题<br><a id="more"></a></p>
+<ul>
+<li><p>对象调用方式；</p>
+</li>
+<li><p>序列/反序列化机制</p>
+</li>
+</ul>
+<p>在此之前，我们有必要了解什么是<strong>架构层次的协议</strong>。通俗一点说，就是我把某些接口和接口中的方法称为协议，客户端和服务端只要实现这些接口中的方法就可以进行通信了，从这个角度来说，架构层次协议的说法就可以成立了。Hadoop的RPC机制正是采用了这种“架构层次的协议”，有一整套作为协议的接口,如下图</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0584.png" alt=""><br></center><br>Hadoop的RPC组件，依赖于Hadoop Writable接口类型的支持，要求每个实现类都要确保将本类的对象正确序列化与反序列化。因此RPC使用Java动态代理与反射实现对象调用方式，客户端到服务器数据的序列化与反序列化由Hadoop框架或用户自己来实现，也就是数据组装时定制的。RPC架构图如下<br><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0585.png" alt=""><br></center>
+
+
+<h1 id="VersionedProtocol接口">VersionedProtocol接口</h1><p>VersionedProtocol是所有RPC协议接口的父接口，其中只有一个方法：getProtocolVersion（）</p>
+<h2 id="HDFS相关">HDFS相关</h2><ul>
+<li><p>ClientDatanodeProtocol:一个客户端和datanode之间的协议接口，用于数据块恢复。</p>
+</li>
+<li><p>ClientProtocol:client与Namenode交互的接口，所有控制流的请求均在这里，如：创建文件、删除文件等；</p>
+</li>
+</ul>
+<ul>
+<li>DatanodeProtocol : Datanode与Namenode交互的接口，如心跳、blockreport等；<br>NamenodeProtocol:SecondaryNode与Namenode交互的接口。</li>
+</ul>
+<h2 id="Mapreduce相关">Mapreduce相关</h2><ul>
+<li><p>InterDatanodeProtocol:Datanode内部交互的接口，用来更新block的元数据；</p>
+</li>
+<li><p>InnerTrackerProtocol:TaskTracker与JobTracker交互的接口，功能与DatanodeProtocol相似；</p>
+</li>
+<li><p>JobSubmissionProtocol:JobClient与JobTracker交互的接口，用来提交Job、获得Job等与Job相关的操作；</p>
+</li>
+<li><p>TaskUmbilicalProtocol:Task中子进程与母进程交互的接口，子进程即map、reduce等操作，母进程即TaskTracker，该接口可以回报子进程的运行状态（词汇扫盲: umbilical 脐带的, 关系亲密的） 。</p>
+</li>
+</ul>
+<h1 id="RPC实现流程">RPC实现流程</h1><p>简单来说，Hadoop RPC=动态代理+定制的二进制流。分布式对象一般都会要求根据接口生成存根和框架。如 CORBA，可以通过 IDL，生成存根和框架。在ipc.RPC类中有一些内部类，下边简单介绍下</p>
+<ul>
+<li><p>Invocation:用于封装方法名和参数，作为数据传输层，相当于VO吧。</p>
+</li>
+<li><p>ClientCache:用于存储client对象，用socket factory作为hash key,存储结构为<code>hashMap &lt;SocketFactory, Client&gt;</code>。</p>
+</li>
+<li><p>Invoker:是动态代理中的调用实现类，继承了InvocationHandler.</p>
+</li>
+<li><p>Server:是ipc.Server的实现类。我们就需要这样的步骤了。</p>
+</li>
+</ul>
+<p>上类图</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0586.png" alt=""><br></center><br>从以上的分析可以知道，Invocation类仅作为VO，ClientCache类只是作为缓存，而Server类用于服务端的处理，他们都和客户端的数据流和业务逻辑没有关系。为了分析 Invoker，我们需要介绍一些 Java 反射实现 Dynamic Proxy 的背景。</p>
+<p>Dynamic Proxy 是由两个 class 实现的：<code>java.lang.reflect.Proxy</code> 和 <code>java.lang.reflect.InvocationHandler</code>，后者是一个接口。</p>
+<p>所谓 Dynamic Proxy 是这样一种 class：它是在运行时生成的 class，在生成它时你必须提供一组 interface 给它，然后该 class就宣称它实现了这些 interface。</p>
+<p>这个 Dynamic Proxy 其实就是一个典型的 Proxy 模式，它丌会替你作实质性的工作，在生成它的实例时你必须提供一个handler，由它接管实际的工作。</p>
+<p>这个 handler，在 Hadoop 的 RPC 中，就是 Invoker 对象。<br>我们可以简单地理解：就是你可以通过一个接口来生成一个类，这个类上的所有方法调用，都会传递到你生成类时传递的<br>InvocationHandler 实现中。</p>
+<p>在 Hadoop 的 RPC 中，Invoker 实现了 InvocationHandler 的 invoke 方法（invoke 方法也是 InvocationHandler 的唯一方法）。 Invoker 会把所有跟这次调用相关的调用方法名，参数类型列表，参数列表打包，然后利用前面我们分析过的 Client，通过 socket 传递到服务器端。就是说，你在 proxy 类上的任何调用，都通过 Client 发送到远方的服务器上。</p>
+<p>Invoker 使用 Invocation。 Invocation 封装了一个过程调用的所有相关信息，它的主要属性有: methodName，调用方法名，parameterClasses，调用方法参数的类型列表和 parameters，调用方法参数。注意，它实现了 Writable 接口，可以串行化。</p>
+<p>RPC.Server 实现了 <code>org.apache.hadoop.ipc.Server</code>，你可以把一个对象，通过 RPC，升级成为一个服务器。服务器接收到的请求（通过 Invocation），解串行化以后，就发成了方法名，方法参数列表和参数列表。调用 Java 反射，我们就可以调用对应的对象的方法。调用的结果再通过 socket，迒回给客户端，客户端把结果解包后，就可以返回给Dynamic Proxy 的使用者了。</p>
+<p>我们接下来去研究的就是RPC.Invoker类中的invoke()方法了，代码如下</p>
+<figure class="highlight nimrod"><table><tr><td class="code"><pre><span class="line">public <span class="type">Object</span> invoke(<span class="type">Object</span> proxy, <span class="type">Method</span> <span class="keyword">method</span>, <span class="type">Object</span>[] args)</span><br><span class="line">throws <span class="type">Throwable</span></span><br><span class="line">&#123;</span><br><span class="line">    ……</span><br><span class="line">    <span class="type">ObjectWritable</span> value = (<span class="type">ObjectWritable</span>)</span><br><span class="line">                           client.call(new <span class="type">Invocation</span>(<span class="keyword">method</span>, args), remoteId);</span><br><span class="line">    ……</span><br><span class="line">    <span class="keyword">return</span> value.get();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一般我们看到的动态代理的invoke()方法中总会有 method.invoke(ac, arg);  这句代码。而上面代码中却没有。其实使用 method.invoke(ac, arg); 是在本地JVM中调用；而在hadoop中，是将数据发送给服务端，服务端将处理的结果再返回给客户端，所以这里的invoke()方法必然需要进行网络通信。而网络通信就是下面的这段代码实现的：</p>
+<figure class="highlight oxygene"><table><tr><td class="code"><pre><span class="line">ObjectWritable value = (ObjectWritable)</span><br><span class="line">client.call(<span class="keyword">new</span> Invocation(<span class="function"><span class="keyword">method</span>, <span class="title">args</span>), <span class="title">remoteId</span>);</span></span><br></pre></td></tr></table></figure>
+<p>Invocation类在这里封装了方法名和参数，充当VO。其实这里网络通信只是调用了Client类的call()方法。</p>
+<h1 id="ipc-Client源码">ipc.Client源码</h1><p>接下来分析一下ipc.Client源码，在此之前我们得明确下我们的目标，总结出了以下几个问题</p>
+<ul>
+<li><p>客户端和服务端的连接是怎样建立的？</p>
+</li>
+<li><p>客户端是怎样给服务端发送数据的？</p>
+</li>
+<li><p>客户端是怎样获取服务端的返回数据的？</p>
+</li>
+</ul>
+<p>基于这三个问题，我们开始分析ipc.Client源码，主要包含以下几个类</p>
+<ul>
+<li>Call:用于封装Invocation对象，作为VO，写到服务端，同时也用于存储从服务端返回的数据。</li>
+</ul>
+<ul>
+<li>Connection:用以处理远程连接对象。继承了Thread</li>
+</ul>
+<ul>
+<li>ConnectionId:唯一确定一个连接</li>
+</ul>
+<p><strong>Question1：客户端和服务端的连接是怎样建立的？</strong></p>
+<p>Client类中的cal()方法如下</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Writable <span class="keyword">call</span>(Writable param, ConnectionId remoteId)</span><br><span class="line"><span class="keyword">throws</span> InterruptedException, IOException</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">Call</span> <span class="keyword">call</span> = <span class="keyword">new</span> <span class="keyword">Call</span>(param);       <span class="comment">//将传入的数据封装成call对象</span></span><br><span class="line">    Connection connection = getConnection(remoteId, <span class="keyword">call</span>);   <span class="comment">//获得一个连接</span></span><br><span class="line">    connection.sendParam(<span class="keyword">call</span>);     <span class="comment">// 向服务端发送call对象</span></span><br><span class="line">    <span class="keyword">boolean</span> interrupted = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">call</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span> (!<span class="keyword">call</span>.done)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">try</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">call</span>.wait(); <span class="comment">// 等待结果的返回，在Call类的callComplete()方法里有notify()方法用于唤醒线程</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">catch</span> (InterruptedException ie)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">// 因中断异常而终止，设置标志interrupted为true</span></span><br><span class="line">                interrupted = <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (interrupted)</span><br><span class="line">        &#123;</span><br><span class="line">            Thread.currentThread().interrupt();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">call</span>.error != <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">call</span>.error <span class="keyword">instanceof</span> RemoteException)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">call</span>.error.fillInStackTrace();</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">call</span>.error;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span>     <span class="comment">// 本地异常</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">throw</span> wrapException(remoteId.getAddress(), <span class="keyword">call</span>.error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">call</span>.value; <span class="comment">//返回结果数据</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体代码的作用我已做了注释，所以这里不再赘述。分析代码后，我们会发现和网络通信有关的代码只会是下面的两句了：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">Connection connection = getConnection(remoteId, <span class="operator"><span class="keyword">call</span>);</span>   //获得一个连接</span><br><span class="line">connection.sendParam(<span class="operator"><span class="keyword">call</span>);</span>      // 向服务端发送<span class="operator"><span class="keyword">call</span>对象</span></span><br></pre></td></tr></table></figure>
+<p>先看看是怎么获得一个到服务端的连接吧，下面贴出ipc.Client类中的getConnection()方法。</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> Connection getConnection(ConnectionId remoteId,</span><br><span class="line">                                 <span class="keyword">Call</span> <span class="keyword">call</span>)</span><br><span class="line"><span class="keyword">throws</span> IOException, InterruptedException</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!running.get())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 如果client关闭了</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IOException(<span class="string">"The client is stopped"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Connection connection;</span><br><span class="line">    <span class="comment">//如果connections连接池中有对应的连接对象，就不需重新创建了；如果没有就需重新创建一个连接对象。</span></span><br><span class="line">    <span class="comment">//但请注意，该//连接对象只是存储了remoteId的信息，其实还并没有和服务端建立连接。</span></span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (connections)</span><br><span class="line">        &#123;</span><br><span class="line">            connection = connections.get(remoteId);</span><br><span class="line">            <span class="keyword">if</span> (connection == <span class="keyword">null</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                connection = <span class="keyword">new</span> Connection(remoteId);</span><br><span class="line">                connections.put(remoteId, connection);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (!connection.addCall(<span class="keyword">call</span>));   <span class="comment">//将call对象放入对应连接中的calls池，就不贴出源码了</span></span><br><span class="line">    <span class="comment">//这句代码才是真正的完成了和服务端建立连接哦~</span></span><br><span class="line">    connection.setupIOstreams();</span><br><span class="line">    <span class="keyword">return</span> connection;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Client.Connection类中的setupIOstreams()方法如下:</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="function"><span class="keyword">void</span> <span class="title">setupIOstreams</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span><br><span class="line"></span>&#123;</span><br><span class="line">    ……</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        ……</span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            setupConnection();  <span class="comment">//建立连接</span></span><br><span class="line">            InputStream inStream = NetUtils.getInputStream(socket);     <span class="comment">//获得输入流</span></span><br><span class="line">            OutputStream outStream = NetUtils.getOutputStream(socket);  <span class="comment">//获得输出流</span></span><br><span class="line">            writeRpcHeader(outStream);</span><br><span class="line">            ……</span><br><span class="line">            <span class="keyword">this</span>.in = <span class="keyword">new</span> DataInputStream(<span class="keyword">new</span> BufferedInputStream</span><br><span class="line">                                          (<span class="keyword">new</span> PingInputStream(inStream)));   <span class="comment">//将输入流装饰成DataInputStream</span></span><br><span class="line">            <span class="keyword">this</span>.out = <span class="keyword">new</span> DataOutputStream</span><br><span class="line">            (<span class="keyword">new</span> BufferedOutputStream(outStream));   <span class="comment">//将输出流装饰成DataOutputStream</span></span><br><span class="line">            writeHeader();</span><br><span class="line">            <span class="comment">// 跟新活动时间</span></span><br><span class="line">            touch();</span><br><span class="line">            <span class="comment">//当连接建立时，启动接受线程等待服务端传回数据，注意：Connection继承了Tread</span></span><br><span class="line">            start();</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (IOException e)</span><br><span class="line">    &#123;</span><br><span class="line">        markClosed(e);</span><br><span class="line">        close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再有一步我们就知道客户端的连接是怎么建立的啦，下面贴出Client.Connection类中的setupConnection()方法</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> synchronized <span class="keyword">void</span> <span class="title">setupConnection</span><span class="params">()</span> throws IOException </span>&#123;</span><br><span class="line">    <span class="keyword">short</span> ioFailures = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">short</span> timeoutFailures = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.socket = socketFactory.createSocket(); <span class="comment">//终于看到创建socket的方法了</span></span><br><span class="line">        <span class="keyword">this</span>.socket.setTcpNoDelay(tcpNoDelay);</span><br><span class="line">       ……</span><br><span class="line">        <span class="comment">// 设置连接超时为20s</span></span><br><span class="line">        NetUtils.connect(<span class="keyword">this</span>.socket, remoteId.getAddress(), <span class="number">20000</span>);</span><br><span class="line">        <span class="keyword">this</span>.socket.setSoTimeout(pingInterval);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125; <span class="keyword">catch</span> (SocketTimeoutException toe) &#123;</span><br><span class="line">        <span class="comment">/* 设置最多连接重试为45次。</span><br><span class="line">         * 总共有20s*45 = 15 分钟的重试时间。</span><br><span class="line">         */</span></span><br><span class="line">        handleConnectionFailure(timeoutFailures++, <span class="number">45</span>, toe);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (IOException ie) &#123;</span><br><span class="line">        handleConnectionFailure(ioFailures++, maxRetries, ie);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>不难看出客户端的连接是创建一个普通的socket进行通信的。</p>
+<p><strong>Question2：客户端是怎样给服务端发送数据的？</strong></p>
+<p>Client.Connection类的sendParam()方法如下</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> sendParam(<span class="keyword">Call</span> <span class="keyword">call</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (shouldCloseConnection.get()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      DataOutputBuffer d=<span class="keyword">null</span>;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>.out) &#123;</span><br><span class="line">          <span class="keyword">if</span> (LOG.isDebugEnabled())</span><br><span class="line">            LOG.debug(getName() + <span class="string">" sending #"</span> + <span class="keyword">call</span>.id);</span><br><span class="line">          <span class="comment">//创建一个缓冲区</span></span><br><span class="line">          d = <span class="keyword">new</span> DataOutputBuffer();</span><br><span class="line">          d.writeInt(<span class="keyword">call</span>.id);</span><br><span class="line">          <span class="keyword">call</span>.param.<span class="keyword">write</span>(d);</span><br><span class="line">          <span class="keyword">byte</span>[] data = d.getData();</span><br><span class="line">          <span class="keyword">int</span> dataLength = d.getLength();</span><br><span class="line">          out.writeInt(dataLength);        <span class="comment">//首先写出数据的长度</span></span><br><span class="line">          out.<span class="keyword">write</span>(data, <span class="number">0</span>, dataLength); <span class="comment">//向服务端写数据</span></span><br><span class="line">          out.flush();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">catch</span>(IOException e) &#123;</span><br><span class="line">        markClosed(e);</span><br><span class="line">      &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        IOUtils.closeStream(d);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Question3：客户端是怎样获取服务端的返回数据的？</strong></p>
+<p>Client.Connection类和Client.Call类中的相关方法如下</p>
+<p>Method1：<br><figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      ……</span><br><span class="line">      <span class="keyword">while</span> (waitForWork()) &#123;</span><br><span class="line">        receiveResponse();  <span class="comment">//具体的处理方法</span></span><br><span class="line">      &#125;</span><br><span class="line">      close();</span><br><span class="line">     ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Method2：</p>
+<figure class="highlight pf"><table><tr><td class="code"><pre><span class="line">private void receiveResponse() &#123;</span><br><span class="line">      if (shouldCloseConnection.get()) &#123;</span><br><span class="line">        return;</span><br><span class="line">      &#125;</span><br><span class="line">      touch();</span><br><span class="line">      try &#123;</span><br><span class="line">        int id = <span class="keyword">in</span>.readInt();                    // 阻塞读取id</span><br><span class="line">        if (LOG.isDebugEnabled())</span><br><span class="line">          LOG.<span class="keyword">debug</span>(getName() + <span class="string">" got value #"</span> + id);</span><br><span class="line">          C<span class="literal">all</span> call = calls.get(id);    //在calls池中找到发送时的那个对象</span><br><span class="line">        int <span class="keyword">state</span> = <span class="keyword">in</span>.readInt();     // 阻塞读取call对象的状态</span><br><span class="line">        if (<span class="keyword">state</span> == Status.SUCCESS.<span class="keyword">state</span>) &#123;</span><br><span class="line">          Writable value = ReflectionUtils.newInstance(valueClass, conf);</span><br><span class="line">          value.readFields(<span class="keyword">in</span>);           // 读取数据</span><br><span class="line">        //将读取到的值赋给call对象，同时唤醒Client等待线程，贴出<span class="built_in">set</span>Value()代码Method3</span><br><span class="line">          call.<span class="built_in">set</span>Value(value);              </span><br><span class="line">          calls.remove(id);               //删除已处理的call    </span><br><span class="line">        &#125; else if (<span class="keyword">state</span> == Status.ERROR.<span class="keyword">state</span>) &#123;</span><br><span class="line">        ……</span><br><span class="line">        &#125; else if (<span class="keyword">state</span> == Status.FATAL.<span class="keyword">state</span>) &#123;</span><br><span class="line">        ……</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; catch (IOException e) &#123;</span><br><span class="line">        markClosed(e);</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Method3：<br><figure class="highlight cs"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> synchronized <span class="keyword">void</span> <span class="title">setValue</span>(<span class="params">Writable <span class="keyword">value</span></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.<span class="keyword">value</span> = <span class="keyword">value</span>;</span><br><span class="line">      callComplete();   <span class="comment">//具体实现</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">protected</span> synchronized <span class="keyword">void</span> <span class="title">callComplete</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.done = <span class="keyword">true</span>;</span><br><span class="line">      notify();         <span class="comment">// 唤醒client等待线程</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>启动一个处理线程，读取从服务端传来的call对象，将call对象读取完毕后，唤醒client处理线程。就这么简单，客户端就获取了服务端返回的数据。客户端的源码分析暂时到这，下面我们来分析Server端的源码</p>
+<h1 id="ipc-Server源码分析">ipc.Server源码分析</h1><p>内部类如下</p>
+<ul>
+<li><p>Call ：用于存储客户端发来的请求</p>
+</li>
+<li><p>Listener ： 监听类，用于监听客户端发来的请求，同时Listener内部还有一个静态类，Listener.Reader，当监听器监听到用户请求，便让Reader读取用户请求。</p>
+</li>
+<li><p>Responder ：响应RPC请求类，请求处理完毕，由Responder发送给请求客户端。</p>
+</li>
+<li><p>Connection ：连接类，真正的客户端请求读取逻辑在这个类中。<br>Handler ：请求处理类，会循环阻塞读取callQueue中的call对象，并对其进行操作。</p>
+</li>
+</ul>
+<h2 id="初始化Server">初始化Server</h2><p><strong>hadoop是怎样初始化RPC的Server端的呢？</strong></p>
+<p>Namenode初始化时一定初始化了RPC的Sever端，那我们去看看Namenode的初始化源码</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">initialize</span><span class="params">(Configuration conf)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   ……</span><br><span class="line">    <span class="comment">// 创建 rpc server</span></span><br><span class="line">    InetSocketAddress dnSocketAddr = getServiceRpcServerAddress(conf);</span><br><span class="line">    <span class="keyword">if</span> (dnSocketAddr != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">int</span> serviceHandlerCount =</span><br><span class="line">        conf.getInt(DFSConfigKeys.DFS_NAMENODE_SERVICE_HANDLER_COUNT_KEY,</span><br><span class="line">                    DFSConfigKeys.DFS_NAMENODE_SERVICE_HANDLER_COUNT_DEFAULT);</span><br><span class="line">      <span class="comment">//获得serviceRpcServer</span></span><br><span class="line">      <span class="keyword">this</span>.serviceRpcServer = RPC.getServer(<span class="keyword">this</span>, dnSocketAddr.getHostName(), </span><br><span class="line">          dnSocketAddr.getPort(), serviceHandlerCount,</span><br><span class="line">          <span class="keyword">false</span>, conf, namesystem.getDelegationTokenSecretManager());</span><br><span class="line">      <span class="keyword">this</span>.serviceRPCAddress = <span class="keyword">this</span>.serviceRpcServer.getListenerAddress();</span><br><span class="line">      setRpcServiceServerAddress(conf);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//获得server</span></span><br><span class="line">    <span class="keyword">this</span>.server = RPC.getServer(<span class="keyword">this</span>, socAddr.getHostName(),</span><br><span class="line">        socAddr.getPort(), handlerCount, <span class="keyword">false</span>, conf, namesystem</span><br><span class="line">        .getDelegationTokenSecretManager());</span><br><span class="line"></span><br><span class="line">   ……</span><br><span class="line">    <span class="keyword">this</span>.server.start();  <span class="comment">//启动 RPC server   Clients只允许连接该server</span></span><br><span class="line">    <span class="keyword">if</span> (serviceRpcServer != <span class="keyword">null</span>) &#123;</span><br><span class="line">      serviceRpcServer.start();  <span class="comment">//启动 RPC serviceRpcServer 为HDFS服务的server</span></span><br><span class="line">    &#125;</span><br><span class="line">    startTrashEmptier(conf);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>RPC的server对象是通过ipc.RPC类的getServer()方法获得的。ipc.RPC类中的getServer()源码如下</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="function">Server <span class="title">getServer</span><span class="params">(<span class="keyword">final</span> Object instance, <span class="keyword">final</span> String bindAddress, <span class="keyword">final</span> <span class="keyword">int</span> port,</span><br><span class="line">                               <span class="keyword">final</span> <span class="keyword">int</span> numHandlers,</span><br><span class="line">                               <span class="keyword">final</span> <span class="keyword">boolean</span> verbose, Configuration conf,</span><br><span class="line">                               SecretManager &lt;? <span class="keyword">extends</span> TokenIdentifier &gt; secretManager)</span></span><br><span class="line"><span class="keyword">throws</span> IOException</span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Server(instance, conf, bindAddress, port, numHandlers, verbose, secretManager);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>getServer()是一个创建Server对象的工厂方法，但创建的却是RPC.Server类的对象。</p>
+<h2 id="运行Server">运行Server</h2><p>初始化Server后，Server端就运行起来了，看看ipc.Server的start()源码</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"> <span class="comment">/** 启动服务 */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> synchronized <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    responder.start();  <span class="comment">//启动responder</span></span><br><span class="line">    listener.start();   <span class="comment">//启动listener</span></span><br><span class="line">    handlers = <span class="keyword">new</span> Handler[handlerCount];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; handlerCount; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        handlers[i] = <span class="keyword">new</span> Handler(i);</span><br><span class="line">        handlers[i].start();   <span class="comment">//逐个启动Handler</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Server处理请求">Server处理请求</h2><ul>
+<li>分析源码得知，Server端采用Listener监听客户端的连接，下面先分析一下Listener的构造函数</li>
+</ul>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> Listener() <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">  address = <span class="keyword">new</span> InetSocketAddress(bindAddress, port);</span><br><span class="line">  <span class="comment">// 创建ServerSocketChannel,并设置成非阻塞式</span></span><br><span class="line">  acceptChannel = ServerSocketChannel.<span class="built_in">open</span>();</span><br><span class="line">  acceptChannel.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将server socket绑定到本地端口</span></span><br><span class="line">  bind(acceptChannel.socket(), address, backlogLength);</span><br><span class="line">  port = acceptChannel.socket().getLocalPort(); </span><br><span class="line">  <span class="comment">// 获得一个selector</span></span><br><span class="line">  selector= Selector.<span class="built_in">open</span>();</span><br><span class="line">  readers = <span class="keyword">new</span> Reader[readThreads];</span><br><span class="line">  readPool = Executors.newFixedThreadPool(readThreads);</span><br><span class="line">  <span class="comment">//启动多个reader线程，为了防止请求多时服务端响应延时的问题</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; readThreads; i++) &#123;       </span><br><span class="line">    Selector readSelector = Selector.<span class="built_in">open</span>();</span><br><span class="line">    Reader reader = <span class="keyword">new</span> Reader(readSelector);</span><br><span class="line">    readers[i] = reader;</span><br><span class="line">    readPool.execute(reader);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 注册连接事件</span></span><br><span class="line">  acceptChannel.register(selector, SelectionKey.OP_ACCEPT);</span><br><span class="line">  <span class="keyword">this</span>.setName(<span class="string">"IPC Server listener on "</span> + port);</span><br><span class="line">  <span class="keyword">this</span>.setDaemon(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在启动Listener线程时，服务端会一直等待客户端的连接，下面贴出Server.Listener类的run()方法</p>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> run()</span><br><span class="line">&#123;</span><br><span class="line">    ……</span><br><span class="line">    <span class="keyword">while</span> (running)</span><br><span class="line">    &#123;</span><br><span class="line">        SelectionKey <span class="variable">key</span> = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            selector.select();</span><br><span class="line">            Iterator&lt;SelectionKey&gt; iter = selector.selectedKeys().iterator();</span><br><span class="line">            <span class="keyword">while</span> (iter.hasNext())</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="variable">key</span> = iter.next();</span><br><span class="line">                iter.remove();</span><br><span class="line">                <span class="keyword">try</span></span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">if</span> (<span class="variable">key</span>.isValid())</span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="keyword">if</span> (<span class="variable">key</span>.isAcceptable())</span><br><span class="line">                            doAccept(<span class="variable">key</span>);     <span class="comment">//具体的连接方法</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">catch</span> (IOException e)</span><br><span class="line">                &#123;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="variable">key</span> = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (OutOfMemoryError e)</span><br><span class="line">        &#123;</span><br><span class="line">            ……</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>Server.Listener类中doAccept ()方法中的关键源码如下：</p>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">void</span> doAccept(SelectionKey <span class="variable">key</span>) <span class="keyword">throws</span> IOException,  OutOfMemoryError &#123;</span><br><span class="line">      Connection c = <span class="keyword">null</span>;</span><br><span class="line">      ServerSocketChannel server = (ServerSocketChannel) <span class="variable">key</span>.channel();</span><br><span class="line">      SocketChannel channel;</span><br><span class="line">      <span class="keyword">while</span> ((channel = server.accept()) != <span class="keyword">null</span>) &#123; <span class="comment">//建立连接</span></span><br><span class="line">        channel.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line">        channel.socket().setTcpNoDelay(tcpNoDelay);</span><br><span class="line">        Reader reader = getReader();  <span class="comment">//从readers池中获得一个reader</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          reader.startAdd(); <span class="comment">// 激活readSelector，设置adding为true</span></span><br><span class="line">          SelectionKey readKey = reader.registerChannel(channel);<span class="comment">//将读事件设置成兴趣事件</span></span><br><span class="line">          c = <span class="keyword">new</span> Connection(readKey, channel, System.currentTimeMillis());<span class="comment">//创建一个连接对象</span></span><br><span class="line">          readKey.attach(c);   <span class="comment">//将connection对象注入readKey</span></span><br><span class="line">          <span class="keyword">synchronized</span> (connectionList) &#123;</span><br><span class="line">            connectionList.<span class="built_in">add</span>(numConnections, c);</span><br><span class="line">            numConnections++;</span><br><span class="line">          &#125;</span><br><span class="line">        …… </span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line"><span class="comment">//设置adding为false，采用notify()唤醒一个reader,其实代码十三中启动的每个reader都使</span></span><br><span class="line"><span class="comment">//用了wait()方法等待。因篇幅有限，就不贴出源码了。</span></span><br><span class="line">          reader.finishAdd();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>当reader被唤醒，reader接着执行doRead()方法。</p>
+<ul>
+<li>接收请求<br>Server.Listener.Reader类中的doRead()方法和Server.Connection类中的readAndProcess()方法源码如下：</li>
+</ul>
+<p>Method1：<br><figure class="highlight swift"><table><tr><td class="code"><pre><span class="line"> void doRead(<span class="type">SelectionKey</span> key) <span class="keyword">throws</span> <span class="type">InterruptedException</span> &#123;</span><br><span class="line">      int <span class="built_in">count</span> = <span class="number">0</span>;</span><br><span class="line">      <span class="type">Connection</span> <span class="built_in">c</span> = (<span class="type">Connection</span>)key.attachment();  <span class="comment">//获得connection对象</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">c</span> == null) &#123;</span><br><span class="line">        <span class="keyword">return</span>;  </span><br><span class="line">      &#125;</span><br><span class="line">      <span class="built_in">c</span>.setLastContact(<span class="type">System</span>.currentTimeMillis());</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="built_in">count</span> = <span class="built_in">c</span>.readAndProcess();    <span class="comment">// 接受并处理请求  </span></span><br><span class="line">      &#125; <span class="keyword">catch</span> (<span class="type">InterruptedException</span> ieo) &#123;</span><br><span class="line">       ……</span><br><span class="line">      &#125;</span><br><span class="line">     ……    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Method2：</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">int</span> readAndProcess() <span class="keyword">throws</span> IOException, InterruptedException &#123;</span><br><span class="line">      <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">        ……</span><br><span class="line">        <span class="keyword">if</span> (!rpcHeaderRead) &#123;</span><br><span class="line">          <span class="keyword">if</span> (rpcHeaderBuffer == <span class="keyword">null</span>) &#123;</span><br><span class="line">            rpcHeaderBuffer = ByteBuffer.allocate(<span class="number">2</span>);</span><br><span class="line">          &#125;</span><br><span class="line">         <span class="comment">//读取请求头</span></span><br><span class="line">          <span class="keyword">count</span> = channelRead(channel, rpcHeaderBuffer);</span><br><span class="line">          <span class="keyword">if</span> (<span class="keyword">count</span> &lt; <span class="number">0</span> || rpcHeaderBuffer.remaining() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">count</span>;</span><br><span class="line">          &#125;</span><br><span class="line">        <span class="comment">// 读取请求版本号  </span></span><br><span class="line">          <span class="keyword">int</span> version = rpcHeaderBuffer.get(<span class="number">0</span>);</span><br><span class="line">          <span class="keyword">byte</span>[] method = <span class="keyword">new</span> <span class="keyword">byte</span>[] &#123;rpcHeaderBuffer.get(<span class="number">1</span>)&#125;;</span><br><span class="line">        ……  </span><br><span class="line">       </span><br><span class="line">          data = ByteBuffer.allocate(dataLength);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 读取请求  </span></span><br><span class="line">        <span class="keyword">count</span> = channelRead(channel, data);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (data.remaining() == <span class="number">0</span>) &#123;</span><br><span class="line">         ……</span><br><span class="line">          <span class="keyword">if</span> (useSasl) &#123;</span><br><span class="line">         ……</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            processOneRpc(data.array());<span class="comment">//处理请求</span></span><br><span class="line">          &#125;</span><br><span class="line">        ……</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">count</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获得call对象</li>
+</ul>
+<p>Method1：<br><figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">processOneRpc</span><span class="params">(<span class="keyword">byte</span>[] buf)</span> <span class="keyword">throws</span> IOException,</span><br><span class="line">        InterruptedException </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (headerRead) &#123;</span><br><span class="line">        processData(buf);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        processHeader(buf);</span><br><span class="line">        headerRead = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (!authorizeConnection()) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> AccessControlException(<span class="string">"Connection from "</span> + <span class="keyword">this</span></span><br><span class="line">              + <span class="string">" for protocol "</span> + header.getProtocol()</span><br><span class="line">              + <span class="string">" is unauthorized for user "</span> + user);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Method2：<br><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> processData(<span class="keyword">byte</span>[] buf) <span class="keyword">throws</span>  IOException, InterruptedException &#123;</span><br><span class="line">  DataInputStream dis =</span><br><span class="line">    <span class="keyword">new</span> DataInputStream(<span class="keyword">new</span> ByteArrayInputStream(buf));</span><br><span class="line">  <span class="keyword">int</span> id = dis.readInt();      <span class="comment">// 尝试读取id</span></span><br><span class="line">  Writable param = ReflectionUtils.newInstance(paramClass, conf);<span class="comment">//读取参数</span></span><br><span class="line">  param.readFields(dis);        </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">Call</span> <span class="keyword">call</span> = <span class="keyword">new</span> <span class="keyword">Call</span>(id, param, <span class="keyword">this</span>);  <span class="comment">//封装成call</span></span><br><span class="line">  callQueue.put(<span class="keyword">call</span>);   <span class="comment">// 将call存入callQueue</span></span><br><span class="line">  incRpcCount();  <span class="comment">// 增加rpc请求的计数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>处理call对象<br>对call对象的处理是Server类中的Handler内部类来处理的。Server.Handler类中run()方法中的关键代码如下：</li>
+</ul>
+<figure class="highlight fortran"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (running) &#123;</span><br><span class="line">      try &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">Call</span> <span class="keyword">call</span> = callQueue.take(); //弹出<span class="keyword">call</span>，可能会阻塞</span><br><span class="line">        ……</span><br><span class="line">        //调用ipc.Server类中的<span class="keyword">call</span>()方法，但该<span class="keyword">call</span>()方法是抽象方法，具体实现在RPC.Server类中</span><br><span class="line">        <span class="keyword">value</span> = <span class="keyword">call</span>(<span class="keyword">call</span>.connection.protocol, <span class="keyword">call</span>.param, <span class="keyword">call</span>.timestamp);</span><br><span class="line">        synchronized (<span class="keyword">call</span>.connection.responseQueue) &#123;</span><br><span class="line">          setupResponse(buf, <span class="keyword">call</span>, </span><br><span class="line">                      (error == null) ? <span class="keyword">Status</span>.SUCCESS : <span class="keyword">Status</span>.ERROR, </span><br><span class="line">                      <span class="keyword">value</span>, errorClass, error);</span><br><span class="line">           ……</span><br><span class="line">          //给客户端响应请求</span><br><span class="line">          responder.doRespond(<span class="keyword">call</span>);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>返回请求<br>Server.Responder类中的doRespond()方法源码如下：</li>
+</ul>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">void</span> doRespond(<span class="keyword">Call</span> <span class="keyword">call</span>) <span class="keyword">throws</span> IOException</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">call</span>.connection.responseQueue)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">call</span>.connection.responseQueue.addLast(<span class="keyword">call</span>);</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">call</span>.connection.responseQueue.<span class="keyword">size</span>() == <span class="number">1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 返回响应结果，并激活writeSelector</span></span><br><span class="line">            processResponse(<span class="keyword">call</span>.connection.responseQueue, <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Hadoop/">Hadoop</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/12/06/Hadoop的HA机制/" title="Hadoop的HA机制">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Hadoop的HA机制</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/12/01/一个完整的MapReduce程序/"  title="一个完整的MapReduce程序">
+ <strong>下一篇：</strong><br/> 
+ <span>一个完整的MapReduce程序
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/12/04/从源码中分析Hadoop的RPC机制/" data-title="从源码中分析Hadoop的RPC机制" data-url="http://pangjiuzala.github.io/2015/12/04/从源码中分析Hadoop的RPC机制/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#VersionedProtocol接口"><span class="toc-number">1.</span> <span class="toc-text">VersionedProtocol接口</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HDFS相关"><span class="toc-number">1.1.</span> <span class="toc-text">HDFS相关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mapreduce相关"><span class="toc-number">1.2.</span> <span class="toc-text">Mapreduce相关</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RPC实现流程"><span class="toc-number">2.</span> <span class="toc-text">RPC实现流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ipc-Client源码"><span class="toc-number">3.</span> <span class="toc-text">ipc.Client源码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ipc-Server源码分析"><span class="toc-number">4.</span> <span class="toc-text">ipc.Server源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化Server"><span class="toc-number">4.1.</span> <span class="toc-text">初始化Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行Server"><span class="toc-number">4.2.</span> <span class="toc-text">运行Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Server处理请求"><span class="toc-number">4.3.</span> <span class="toc-text">Server处理请求</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,649 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Java实现高斯模糊算法处理图像 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="高斯模糊（英语：Gaussian Blur），也叫高斯平滑，是在Adobe Photoshop、GIMP以及Paint.NET等图像处理软件中广泛使用的处理效果，通常用它来减少图像噪声以及降低细节层次。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java实现高斯模糊算法处理图像">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/12/21/Java实现高斯模糊算法处理图像/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="高斯模糊（英语：Gaussian Blur），也叫高斯平滑，是在Adobe Photoshop、GIMP以及Paint.NET等图像处理软件中广泛使用的处理效果，通常用它来减少图像噪声以及降低细节层次。">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0612.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0613.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0614.jpg">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0615.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0626.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0617.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0618.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0616.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0619.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0620.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0621.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0622.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0623.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0624.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0625.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/a.jpg">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/test.jpg">
+<meta property="og:updated_time" content="2015-12-22T02:45:01.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java实现高斯模糊算法处理图像">
+<meta name="twitter:description" content="高斯模糊（英语：Gaussian Blur），也叫高斯平滑，是在Adobe Photoshop、GIMP以及Paint.NET等图像处理软件中广泛使用的处理效果，通常用它来减少图像噪声以及降低细节层次。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/12/21/Java实现高斯模糊算法处理图像/" title="Java实现高斯模糊算法处理图像" itemprop="url">Java实现高斯模糊算法处理图像</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-12-21T14:08:37.000Z" itemprop="datePublished"> 发表于 2015-12-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">2.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#周边像素的平均值"><span class="toc-number">2.1.</span> <span class="toc-text">周边像素的平均值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正态分布的权重"><span class="toc-number">2.2.</span> <span class="toc-text">正态分布的权重</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高斯函数"><span class="toc-number">2.3.</span> <span class="toc-text">高斯函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#权重矩阵"><span class="toc-number">2.4.</span> <span class="toc-text">权重矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高斯模糊矩阵示例表"><span class="toc-number">2.5.</span> <span class="toc-text">高斯模糊矩阵示例表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#源码实现"><span class="toc-number">3.</span> <span class="toc-text">源码实现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#运行结果"><span class="toc-number">4.</span> <span class="toc-text">运行结果</span></a></li></ol>
+		
+		</div>
+		
+		<p>高斯模糊（英语：Gaussian Blur），也叫高斯平滑，是在Adobe Photoshop、GIMP以及Paint.NET等图像处理软件中广泛使用的处理效果，通常用它来减少图像噪声以及降低细节层次。</p>
+<a id="more"></a>
+<h1 id="简介">简介</h1><p>高斯模糊（Gaussian Blur）是美国Adobe图像软件公司开发的一个图像处理软件:Adobe Photoshop(系列)中的一个滤镜，具体的位置在：滤镜—模糊——高斯模糊！高斯模糊的原理中，它是根据高斯曲线调节像素色值，它是有选择地模糊图像。说得直白一点，就是高斯模糊能够把某一点周围的像素色值按高斯曲线统计起来，采用数学上加权平均的计算方法得到这条曲线的色值，最后能够留下人物的轮廓，即曲线．是指当 Adobe Photoshop 将加权平均应用于像素时生成的钟形曲线。<br>在PS中间，你应该知道所有的颜色不过都是数字，各种模糊不过都是算法。把要模糊的像素色值统计，用数学上加权平均的计算方法（高斯函数）得到色值，对范围、半径等进行模糊，大致就是高斯模糊。</p>
+<h1 id="原理">原理</h1><h2 id="周边像素的平均值">周边像素的平均值</h2><p>所谓”模糊”，可以理解成每一个像素都取周边像素的平均值。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0612.png" alt=""><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0613.png" alt=""><br></center>
+
+<p>上图中，2是中间点，周边点都是1。<br>“中间点”取”周围点”的平均值，就会变成1。在数值上，这是一种”平滑化”。在图形上，就相当于产生”模糊”效果，”中间点”失去细节。<br>显然，计算平均值时，取值范围越大，”模糊效果”越强烈。</p>
+<p>下图分别是原图、模糊半径3像素、模糊半径10像素的效果。模糊半径越大，图像就越模糊。从数值角度看，就是数值越平滑。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0614.jpg" alt=""><br></center>
+
+<p>接下来的问题就是，既然每个点都要取周边像素的平均值，那么应该如何分配权重呢？<br>如果使用简单平均，显然不是很合理，因为图像都是连续的，越靠近的点关系越密切，越远离的点关系越疏远。因此，加权平均更合理，距离越近的点权重越大，距离越远的点权重越小。</p>
+<h2 id="正态分布的权重">正态分布的权重</h2><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0615.png" alt=""><br></center>
+
+
+<p>正态分布显然是一种可取的权重分配模式。<br>在图形上，正态分布是一种钟形曲线，越接近中心，取值越大，越远离中心，取值越小。<br>计算平均值的时候，我们只需要将”中心点”作为原点，其他点按照其在正态曲线上的位置，分配权重，就可以得到一个加权平均值。</p>
+<h2 id="高斯函数">高斯函数</h2><p>上面的正态分布是一维的，图像都是二维的，所以我们需要二维的正态分布。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0626.png" alt=""><br></center>
+
+<p>正态分布的密度函数叫做”高斯函数”（Gaussian function）。它的一维形式是：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0617.png" alt="一维形式"><br></center>
+
+<p>其中，μ是x的均值，σ是x的方差。因为计算平均值的时候，中心点就是原点，所以μ等于0。据一维高斯函数，可以推导得到二维形式</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0618.png" alt="进一步推导"><br></center>
+
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0616.png" alt="二维高斯函数"><br></center>
+
+<p>有了这个函数 ，就可以计算每个点的权重了</p>
+<h2 id="权重矩阵">权重矩阵</h2><p>假定中心点的坐标是（0,0），那么距离它最近的8个点的坐标如下：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0619.png" alt="权重矩阵"><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0620.png" alt="权重矩阵"><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0621.png" alt="权重矩阵"><br></center><br>更远的点以此类推。<br><br>为了计算权重矩阵，需要设定σ的值。假定σ=1.5，则模糊半径为1的权重矩阵如下：<br>这9个点的权重总和等于0.4787147，如果只计算这9个点的加权平均，还必须让它们的权重之和等于1，因此上面9个值还要分别除以0.4787147，得到最终的权重矩阵。<br><br><br>有了权重矩阵，就可以计算高斯模糊的值了。假设现有9个像素点，灰度值（0-255）如下：<br><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0622.png" alt="计算高斯模糊"><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0623.png" alt="计算高斯模糊"><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0624.png" alt="计算高斯模糊"><br></center>
+
+
+<p>每个点乘以自己的权重值：<br>得到将这9个值加起来，就是中心点的高斯模糊的值。<br>对所有点重复这个过程，就得到了高斯模糊后的图像。如果原图是彩色图片，可以对RGB三个通道分别做高斯模糊。</p>
+<h2 id="高斯模糊矩阵示例表">高斯模糊矩阵示例表</h2><p>这是一个计算 σ = 0.84089642 的高斯分布生成的示例矩阵。注意中心元素 [4,4]] 处有最大值，随着距离中心越远数值对称地减小。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0625.png" alt=""><br></center>
+
+<p>注意中心处的 0.22508352 比 3σ 外的 0.00019117 大 1177 倍。</p>
+<h1 id="源码实现">源码实现</h1><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">package cn.zju.edu.liuxing;</span><br><span class="line"></span><br><span class="line">import java.awt.Color;</span><br><span class="line">import java.awt.image.BufferedImage;</span><br><span class="line">import java.io.File;</span><br><span class="line">import java.io.IOException;</span><br><span class="line"></span><br><span class="line">import javax.imageio.ImageIO;</span><br><span class="line"><span class="comment">/**</span><br><span class="line">*　简单高斯模糊算法</span><br><span class="line">*</span><br><span class="line">*　@param　args</span><br><span class="line">*　@throws　IOException　[参数说明]</span><br><span class="line">*</span><br><span class="line">*　@return　void　[返回类型说明]</span><br><span class="line">*　@exception　throws　[违例类型]　[违例说明]</span><br><span class="line">*　@see　[类、类#方法、类#成员]</span><br><span class="line">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> GaussianBlur &#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> throws IOException </span>&#123;</span><br><span class="line">		BufferedImage img = ImageIO.read(<span class="keyword">new</span> File(<span class="string">"./a.jpg"</span>)); <span class="comment">//将这个图片拷贝到你项目根目录下</span></span><br><span class="line">		System.out.println(img);</span><br><span class="line">		<span class="keyword">int</span> height = img.getHeight();</span><br><span class="line">		<span class="keyword">int</span> width = img.getWidth();</span><br><span class="line">		<span class="keyword">int</span>[][] martrix = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">3</span>][<span class="number">3</span>];</span><br><span class="line">		<span class="keyword">int</span>[] values = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">9</span>];</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; width; i++)</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; height; j++) &#123;</span><br><span class="line">				readPixel(img, i, j, values);</span><br><span class="line">				fillMatrix(martrix, values);</span><br><span class="line">				img.setRGB(i, j, avgMatrix(martrix));</span><br><span class="line">			&#125;</span><br><span class="line">		ImageIO.write(img, <span class="string">"jpeg"</span>, <span class="keyword">new</span> File(<span class="string">"./test.jpg"</span>));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">readPixel</span><span class="params">(BufferedImage img, <span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span>[] pixels)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">int</span> xStart = x - <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">int</span> yStart = y - <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">int</span> current = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = xStart; i &lt; <span class="number">3</span> + xStart; i++)</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> j = yStart; j &lt; <span class="number">3</span> + yStart; j++) &#123;</span><br><span class="line">				<span class="keyword">int</span> tx = i;</span><br><span class="line">				<span class="keyword">if</span> (tx &lt; <span class="number">0</span>) &#123;</span><br><span class="line">					tx = -tx;</span><br><span class="line"></span><br><span class="line">				&#125; <span class="keyword">else</span> <span class="keyword">if</span> (tx &gt;= img.getWidth()) &#123;</span><br><span class="line">					tx = x;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">int</span> ty = j;</span><br><span class="line">				<span class="keyword">if</span> (ty &lt; <span class="number">0</span>) &#123;</span><br><span class="line">					ty = -ty;</span><br><span class="line">				&#125; <span class="keyword">else</span> <span class="keyword">if</span> (ty &gt;= img.getHeight()) &#123;</span><br><span class="line">					ty = y;</span><br><span class="line">				&#125;</span><br><span class="line">				pixels[current++] = img.getRGB(tx, ty);</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fillMatrix</span><span class="params">(<span class="keyword">int</span>[][] matrix, <span class="keyword">int</span>[] values)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">int</span> filled = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; matrix.length; i++) &#123;</span><br><span class="line">			<span class="keyword">int</span>[] x = matrix[i];</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; x.length; j++) &#123;</span><br><span class="line">				x[j] = values[filled++];</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">avgMatrix</span><span class="params">(<span class="keyword">int</span>[][] matrix)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">int</span> r = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">int</span> g = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">int</span> b = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; matrix.length; i++) &#123;</span><br><span class="line">			<span class="keyword">int</span>[] x = matrix[i];</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; x.length; j++) &#123;</span><br><span class="line">				<span class="keyword">if</span> (j == <span class="number">1</span>) &#123;</span><br><span class="line">					<span class="keyword">continue</span>;</span><br><span class="line">				&#125;</span><br><span class="line">				Color c = <span class="keyword">new</span> Color(x[j]);</span><br><span class="line">				r += c.getRed();</span><br><span class="line">				g += c.getGreen();</span><br><span class="line">				b += c.getBlue();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> Color(r / <span class="number">8</span>, g / <span class="number">8</span>, b / <span class="number">8</span>).getRGB();</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="运行结果">运行结果</h1><p><strong>原图片</strong></p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/a.jpg" alt="原图片"><br></center>
+
+
+<p><strong>高斯模糊化后的图片</strong></p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/test.jpg" alt="高斯模糊化后的图片"><br></center>
+
+
+<p><strong>附</strong>：<a href="https://github.com/pangjiuzala/hadoop-practice.git" target="_blank" rel="external"><strong>程序源码下载</strong></a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a><a href="/tags/数据挖掘/">数据挖掘</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/12/23/eclipse运行spark程序/" title="eclipse运行spark程序">
+  <strong>上一篇：</strong><br/>
+  <span>
+  eclipse运行spark程序</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/12/14/Hadoop环境共享/"  title="Hadoop环境共享">
+ <strong>下一篇：</strong><br/> 
+ <span>Hadoop环境共享
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/12/21/Java实现高斯模糊算法处理图像/" data-title="Java实现高斯模糊算法处理图像" data-url="http://pangjiuzala.github.io/2015/12/21/Java实现高斯模糊算法处理图像/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#简介"><span class="toc-number">1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">2.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#周边像素的平均值"><span class="toc-number">2.1.</span> <span class="toc-text">周边像素的平均值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正态分布的权重"><span class="toc-number">2.2.</span> <span class="toc-text">正态分布的权重</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高斯函数"><span class="toc-number">2.3.</span> <span class="toc-text">高斯函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#权重矩阵"><span class="toc-number">2.4.</span> <span class="toc-text">权重矩阵</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#高斯模糊矩阵示例表"><span class="toc-number">2.5.</span> <span class="toc-text">高斯模糊矩阵示例表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#源码实现"><span class="toc-number">3.</span> <span class="toc-text">源码实现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#运行结果"><span class="toc-number">4.</span> <span class="toc-text">运行结果</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

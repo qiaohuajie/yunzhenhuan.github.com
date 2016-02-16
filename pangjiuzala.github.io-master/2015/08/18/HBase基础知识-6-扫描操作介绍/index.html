@@ -1,0 +1,632 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>HBase基础知识(6):扫描操作介绍 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="扫描操作的使用跟get()方法非常相似。同样，和其他函数类似，这里也提供了Scan类。但是由于扫描的工作方式类似于迭代器，所以用户无需调用scan()方法创建实例，只需调用HTable的getScanner()方法，此方法在返回真正的扫描器(scanner)实例的同时，用户也可以使用它迭代获取数据。可用方法如下:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase基础知识(6):扫描操作介绍">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/18/HBase基础知识-6-扫描操作介绍/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="扫描操作的使用跟get()方法非常相似。同样，和其他函数类似，这里也提供了Scan类。但是由于扫描的工作方式类似于迭代器，所以用户无需调用scan()方法创建实例，只需调用HTable的getScanner()方法，此方法在返回真正的扫描器(scanner)实例的同时，用户也可以使用它迭代获取数据。可用方法如下:">
+<meta property="og:updated_time" content="2015-12-01T07:03:21.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase基础知识(6):扫描操作介绍">
+<meta name="twitter:description" content="扫描操作的使用跟get()方法非常相似。同样，和其他函数类似，这里也提供了Scan类。但是由于扫描的工作方式类似于迭代器，所以用户无需调用scan()方法创建实例，只需调用HTable的getScanner()方法，此方法在返回真正的扫描器(scanner)实例的同时，用户也可以使用它迭代获取数据。可用方法如下:">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/18/HBase基础知识-6-扫描操作介绍/" title="HBase基础知识(6):扫描操作介绍" itemprop="url">HBase基础知识(6):扫描操作介绍</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-18T00:59:36.000Z" itemprop="datePublished"> 发表于 2015-08-18</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>扫描操作的使用跟get()方法非常相似。同样，和其他函数类似，这里也提供了Scan类。但是由于扫描的工作方式类似于迭代器，所以用户无需调用scan()方法创建实例，只需调用HTable的getScanner()方法，此方法在返回真正的扫描器(scanner)实例的同时，用户也可以使用它迭代获取数据。可用方法如下:<br><a id="more"></a></p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">ResultScanner <span class="function"><span class="title">getScanner</span><span class="params">(Scan scan)</span></span> throws IOException</span><br><span class="line">ResultScanner <span class="function"><span class="title">getScanner</span><span class="params">(byte[] family)</span></span> throws IOException</span><br><span class="line">ResultScanner <span class="function"><span class="title">getScanner</span><span class="params">(byte[] family,byte[] qualifier)</span></span> throws IOException</span><br></pre></td></tr></table></figure>
+<p>后两个为了方便用户，隐式地帮用户创建了一个Scan实例，逻辑中最后调用getScanner(Scan scan)方法。<br>Scan类拥有以下构造器：</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="title">Scan</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="title">Scan</span><span class="params">(byte[] startRow,Filter filter)</span></span></span><br><span class="line"><span class="function"><span class="title">Scan</span><span class="params">(byte[] startRow)</span></span></span><br><span class="line"><span class="function"><span class="title">Scan</span><span class="params">(byte[] startRow,byte[] stopRow)</span></span></span><br></pre></td></tr></table></figure>
+<p>这与Get类不同点是显而易见的：用户可以选择性地提供startRow参数，来定义扫描读取HBase表的起始行键，即行键不是必须指定的。同时可选stopRow参数来限定读取到何处停止。</p>
+<p><strong>起始行包括在内，而终止行时不包括在内。一般用区间表示法表示为[startRow,stopRow)。</strong><br>扫描操作有一个特点：用户提供的参数不必精确匹配这两行。扫描会匹配相等或大于给定的起始行的行键。如果没有显式地指定起始行，它会从表的起始位置开始获取数据。<br>当遇到了与设置的终止行相同或大于终止行的行键时，扫描也会停止。如果没有指定终止行键，会扫描到表尾。<br>另一个可选参数叫做过滤器(filter)，可直接指向Filter实例。尽管Scan实例通常由空白构造器构造，但其所有可选参数都有对应的getter方法和setter方法。</p>
+<p>创建Scan实例后，用户可能还要给它增加更多限制条件。这种情况下，用户任然可以使用空白参数的扫描，它可以读取整个表格，包括所有列族以及它们的所有列。可以用多种方法限制要读取的数据:</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">Scan <span class="function"><span class="title">addFamily</span><span class="params">(byte[] family)</span></span></span><br><span class="line">Scan <span class="function"><span class="title">addColumn</span><span class="params">(byte[] family,byte[] qualifier)</span></span></span><br></pre></td></tr></table></figure>
+<p>这里有很多与Get类相似的功能：可以使用addFamily()方法限制返回数据的列族，或者通过addColumn()方法限制返回的列。</p>
+<p>如果用户只需要数据的子集，那么限制扫描的范围就能发挥HBase的优势。因为<strong>HBase中的数据是按列族存储的</strong>，如果扫描不读取某个列族，那么整个列族文件就都不会被读取，这就是列式存储架构的优势。</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">Scan <span class="function"><span class="title">setTimeRange</span><span class="params">(long minStamp,long maxStamp)</span></span> throws IOExcepiton</span><br><span class="line">Scan <span class="function"><span class="title">setTimeStamp</span><span class="params">(long timestamp)</span></span></span><br><span class="line">Scan <span class="function"><span class="title">setMaxVersions</span><span class="params">()</span></span></span><br><span class="line">Scan <span class="function"><span class="title">setMaxVersions</span><span class="params">(int maxVersions)</span></span></span><br></pre></td></tr></table></figure>
+<p>用户可以通过setTimestamp()设置详细的时间戳，或者通过setTimeRange()设置时间范围，进一步对结果进行限制。还可以使用setMaxVersions()方法，让扫描只返回每一列的一些特定版本，或者全部的版本</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">Scan <span class="function"><span class="title">setStartRow</span><span class="params">(byte[] startRow)</span></span></span><br><span class="line">Scan <span class="function"><span class="title">setStopRow</span><span class="params">(byte[] stopRow)</span></span></span><br><span class="line">Scan <span class="function"><span class="title">setFilter</span><span class="params">(Filter filter)</span></span></span><br><span class="line">boolean <span class="function"><span class="title">hasFilter</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+<p>还可以使用setStartRow()、setStopRow()以及setFilter(),进一步限定返回的数据。这3个方法中的参数可以与构造器中的一样。Scan类的其他方法如下</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">getStartRow()/getStopRow()</td>
+<td style="text-align:center">查询当前设定的值</td>
+</tr>
+<tr>
+<td style="text-align:center">getTimeRange()</td>
+<td style="text-align:center">检索Get实例指定的时间范围或相关时间戳，注意，当需要指定单个时间戳时，API会在内部通过setTimeStamp()将TimeRange实例的起止时间戳设为传入值，所以Get类中此时已经没有getTimeStamp()方法了</td>
+</tr>
+<tr>
+<td style="text-align:center">getMaxVersions()</td>
+<td style="text-align:center">返回当前配置下应该从表中获取的每列的版本数</td>
+</tr>
+<tr>
+<td style="text-align:center">getFilter()</td>
+<td style="text-align:center">可以使用特定的过滤器实例，通过多种规则来筛选列和单元格。使用这个方法，用户可以设定或查看Scan实例的过滤器成员。</td>
+</tr>
+<tr>
+<td style="text-align:center">setCacheBlocks()/getCacheBlocks()</td>
+<td style="text-align:center">每个HBase的region服务器都有一个块缓存，可以有效地保存最近访问过的数据，并以此来加速之后相邻信息的读取。不过在某些情况下，例如通过全表扫描，最好能避免这种机制带来的扰动。这个方法能够控制版本次读取的块缓存机制是否起效</td>
+</tr>
+<tr>
+<td style="text-align:center">numFamilies()</td>
+<td style="text-align:center">快捷地获取FamilyMap大小的方法，包括用addFamily()和addColumn()方法添加的列族和列</td>
+</tr>
+<tr>
+<td style="text-align:center">hasFamilies()</td>
+<td style="text-align:center">检查是否添加过列族和列</td>
+</tr>
+<tr>
+<td style="text-align:center">getFamilies/setFamilyMap()/getFamilyMap()</td>
+<td style="text-align:center">这些方法能够让用户直接访问addFamily()和addColumn()添加的列族和列。FamilyMap中键是列族的名称，键对应的值是特定列族下列限定符的列表。getFamilies()方法返回一个只包含列族名的数组</td>
+</tr>
+</tbody>
+</table>
+<p>一旦设置好了Scan实例，就可以调用Htable的getScanner()方法，获得用于检索数据的ResultScanner实例。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HBase/">HBase</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/19/HBase基础知识-7-扫描操作之ResultScanner类/" title="HBase基础知识(7):扫描操作之ResultScanner类">
+  <strong>上一篇：</strong><br/>
+  <span>
+  HBase基础知识(7):扫描操作之ResultScanner类</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/17/HBase基础知识-5-行锁/"  title="HBase基础知识(5):行锁">
+ <strong>下一篇：</strong><br/> 
+ <span>HBase基础知识(5):行锁
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/18/HBase基础知识-6-扫描操作介绍/" data-title="HBase基础知识(6):扫描操作介绍" data-url="http://pangjiuzala.github.io/2015/08/18/HBase基础知识-6-扫描操作介绍/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

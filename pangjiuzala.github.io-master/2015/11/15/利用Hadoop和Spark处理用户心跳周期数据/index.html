@@ -1,0 +1,610 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>利用Hadoop和Spark处理用户心跳周期数据 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="数据源:可穿戴设备的实时数据分析。1.txt记录的是某一个用户的心跳周期数据，每一个数值表示一次心跳的周期，单位是秒。例如，0.8表示用户当时的心跳间隙是0.8秒。心跳间期按照顺序存储">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用Hadoop和Spark处理用户心跳周期数据">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/11/15/利用Hadoop和Spark处理用户心跳周期数据/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="数据源:可穿戴设备的实时数据分析。1.txt记录的是某一个用户的心跳周期数据，每一个数值表示一次心跳的周期，单位是秒。例如，0.8表示用户当时的心跳间隙是0.8秒。心跳间期按照顺序存储">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0377.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0378.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0379.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0380.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0381.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0382.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0383.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0384.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0385.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0386.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0387.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0388.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0389.png">
+<meta property="og:updated_time" content="2015-11-30T02:14:45.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用Hadoop和Spark处理用户心跳周期数据">
+<meta name="twitter:description" content="数据源:可穿戴设备的实时数据分析。1.txt记录的是某一个用户的心跳周期数据，每一个数值表示一次心跳的周期，单位是秒。例如，0.8表示用户当时的心跳间隙是0.8秒。心跳间期按照顺序存储">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/11/15/利用Hadoop和Spark处理用户心跳周期数据/" title="利用Hadoop和Spark处理用户心跳周期数据" itemprop="url">利用Hadoop和Spark处理用户心跳周期数据</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-11-15T11:44:53.000Z" itemprop="datePublished"> 发表于 2015-11-15</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MapReduce框架编写程序"><span class="toc-number">1.</span> <span class="toc-text">MapReduce框架编写程序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#具体源码如下："><span class="toc-number">1.1.</span> <span class="toc-text">具体源码如下：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#设计思路"><span class="toc-number">1.2.</span> <span class="toc-text">设计思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行结果"><span class="toc-number">1.3.</span> <span class="toc-text">运行结果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结"><span class="toc-number">2.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#上升到抽象模型：Mapper与Reducer"><span class="toc-number">2.1.</span> <span class="toc-text">上升到抽象模型：Mapper与Reducer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#上升到构架：统一构架，为程序员隐藏系统层细节"><span class="toc-number">2.2.</span> <span class="toc-text">上升到构架：统一构架，为程序员隐藏系统层细节</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用户心跳数据集下载"><span class="toc-number">3.</span> <span class="toc-text">用户心跳数据集下载</span></a></li></ol>
+		
+		</div>
+		
+		<p>数据源:可穿戴设备的实时数据分析。1.txt记录的是某一个用户的心跳周期数据，每一个数值表示一次心跳的周期，单位是秒。例如，0.8表示用户当时的心跳间隙是0.8秒。心跳间期按照顺序存储<br><a id="more"></a></p>
+<h1 id="MapReduce框架编写程序">MapReduce框架编写程序</h1><p><strong>计算出总测量时间和平均心跳间期，即求和与求平均。请写出程序，并在实验报告中简单描述你的思路。</strong></p>
+<h2 id="具体源码如下：">具体源码如下：</h2><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> Heartbeat</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//Map统计总测量时间</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> CountMapper <span class="keyword">extends</span></span><br><span class="line">        Mapper&lt;Object, Text, Text, DoublePair&gt;</span><br><span class="line">    &#123;</span><br><span class="line">      </span><br><span class="line">        <span class="keyword">private</span> Text word = <span class="keyword">new</span> Text();</span><br><span class="line">        <span class="keyword">private</span> DoublePair pair = <span class="keyword">new</span> DoublePair();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> map(Object key, Text value, Context context)</span><br><span class="line">        <span class="keyword">throws</span> IOException, InterruptedException</span><br><span class="line">        &#123;</span><br><span class="line">            StringTokenizer itr = <span class="keyword">new</span> StringTokenizer(value.toString());</span><br><span class="line">            <span class="keyword">while</span> (itr.hasMoreTokens())</span><br><span class="line">            &#123;</span><br><span class="line">                word.set(itr.nextToken());</span><br><span class="line">                pair.setValue(<span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">                context.<span class="keyword">write</span>(word, pair);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Reduce求平均心跳</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> CalulateReducer <span class="keyword">extends</span></span><br><span class="line">        Reducer&lt;Text, DoublePair, Text, DoublePair&gt;</span><br><span class="line">    &#123;</span><br><span class="line">               DoublePair pair = <span class="keyword">new</span> DoublePair();</span><br><span class="line">        Text text = <span class="keyword">new</span> Text();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> reduce(Text key, Iterable&lt;DoublePair&gt; values,</span><br><span class="line">                           Context context) <span class="keyword">throws</span> IOException, InterruptedException</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">double</span> <span class="keyword">count</span> = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">            System.out.<span class="keyword">print</span>(<span class="string">"key :"</span> + key.toString());</span><br><span class="line">            <span class="keyword">if</span>(key.toString().equals(<span class="string">"value"</span>))</span><br><span class="line">            &#123;</span><br><span class="line">                text.set(<span class="string">"result"</span>);</span><br><span class="line">                <span class="keyword">for</span> (DoublePair val : values)</span><br><span class="line">                &#123;</span><br><span class="line">                    sum += val.getvalue1();</span><br><span class="line">                    <span class="keyword">count</span> += val.getvalue2();</span><br><span class="line">                &#125;</span><br><span class="line">                pair.setValue(sum, sum <span class="regexp">/ count);/</span><span class="regexp">/sum/</span><span class="keyword">count</span>,即平均心跳</span><br><span class="line">                context.<span class="keyword">write</span>(text, pair);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">for</span> (DoublePair val : values)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">count</span> += val.getvalue2();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                sum = <span class="keyword">Double</span>.valueOf(key.toString()) * <span class="keyword">count</span>;</span><br><span class="line">                text.set(<span class="string">"value"</span>);</span><br><span class="line">                pair.setValue(sum, <span class="keyword">count</span>);</span><br><span class="line">                context.<span class="keyword">write</span>(text, pair);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.<span class="keyword">println</span>(<span class="string">"\tcount: "</span> + <span class="keyword">count</span> + <span class="string">"\tsum: "</span> + sum);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(String[] args) <span class="keyword">throws</span> Exception</span><br><span class="line">    &#123;</span><br><span class="line">        Configuration conf = <span class="keyword">new</span> Configuration();</span><br><span class="line">        String[] otherArgs = <span class="keyword">new</span> GenericOptionsParser(conf, args)</span><br><span class="line">        .getRemainingArgs();</span><br><span class="line">        <span class="keyword">if</span> (otherArgs.length &lt; <span class="number">2</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            System.err.<span class="keyword">println</span>(<span class="string">"Usage: wordcount &lt;in&gt; [&lt;in&gt;...] &lt;out&gt;"</span>);</span><br><span class="line">            System.exit(<span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Job job = <span class="keyword">new</span> Job(conf, <span class="string">"word count"</span>);<span class="comment">//执行job</span></span><br><span class="line"></span><br><span class="line">        job.setJarByClass(Heartbeat.<span class="keyword">class</span>);</span><br><span class="line">        job.setMapperClass(CountMapper.<span class="keyword">class</span>);</span><br><span class="line">        job.setCombinerClass(CalulateReducer.<span class="keyword">class</span>);</span><br><span class="line">        job.setReducerClass(CalulateReducer.<span class="keyword">class</span>);</span><br><span class="line"></span><br><span class="line">        job.setMapOutputKeyClass(Text.<span class="keyword">class</span>);</span><br><span class="line">        job.setMapOutputValueClass(DoublePair.<span class="keyword">class</span>);</span><br><span class="line"></span><br><span class="line">        job.setOutputKeyClass(Text.<span class="keyword">class</span>);</span><br><span class="line">        job.setOutputValueClass(DoubleWritable.<span class="keyword">class</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; otherArgs.length - <span class="number">1</span>; ++i)</span><br><span class="line">        &#123;</span><br><span class="line">            FileInputFormat.addInputPath(job, <span class="keyword">new</span> Path(otherArgs[i]));<span class="comment">//输出</span></span><br><span class="line">        &#125;</span><br><span class="line">        FileOutputFormat.setOutputPath(job, <span class="keyword">new</span> Path(</span><br><span class="line">                                           otherArgs[otherArgs.length - <span class="number">1</span>]));</span><br><span class="line">        job.waitForCompletion(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**@author XingLiu</span><br><span class="line">     * 自定义Writable类，这个类用来存放sum和count数对</span><br><span class="line">     * */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> DoublePair <span class="keyword">implements</span> Writable</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">double</span> value1;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">double</span> value2;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> DoublePair()</span><br><span class="line">        &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> setValue(<span class="keyword">double</span> value1, <span class="keyword">double</span> value2)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">this</span>.value1 = value1;</span><br><span class="line">            <span class="keyword">this</span>.value2 = value2;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">double</span> getvalue1()</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> value1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">double</span> getvalue2()</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> value2;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> readFields(DataInput in) <span class="keyword">throws</span> IOException</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">            value1 = in.readDouble() + <span class="keyword">Double</span>.MIN_VALUE;</span><br><span class="line">            value2 = in.readDouble() + <span class="keyword">Double</span>.MIN_VALUE;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="keyword">write</span>(DataOutput out) <span class="keyword">throws</span> IOException</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// TODO Auto-generated method stub</span></span><br><span class="line">            out.writeDouble(value1 - <span class="keyword">Double</span>.MIN_VALUE);</span><br><span class="line">            out.writeDouble(value2 - <span class="keyword">Double</span>.MIN_VALUE);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        @Override</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">int</span> hashCode()</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">int</span>) (value1 * <span class="number">157</span> + value2);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        @Override</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">boolean</span> equals(Object right)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (right <span class="keyword">instanceof</span> DoublePair)</span><br><span class="line">            &#123;</span><br><span class="line">                DoublePair r = (DoublePair) right;</span><br><span class="line">                <span class="keyword">return</span> r.value1 == value1 &amp;&amp; r.value2 == value2;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">public</span> String toString()</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> value1 + <span class="string">" "</span> + value2;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="设计思路">设计思路</h2><p>本题是要求计算出总测量时间和平均心跳间期，即对源数据进行求和和求平均。Hadoop的MapReduce过程分为两个过程，分别是map（映射）过程和reduce（化简）过程。MapReduce在执行时先指定一个Map（映射）函数，把输入键值对映射成一组新的键值对，经过一定处理后交给reduce,Reduce对相同key下的所有value进行处理后再输出键值对作为最终的结果。由于该题的要求略为简单，并且数据格式较为简单。故简化map过程，即在map过程中不对数据进行处理，存放至相同的一个key中，key命名为total.Reduce过程，是对数据的总和的计算过程，遍历数据集。</p>
+<p>最在客户端启动一个作业，向JobTracker请求一个Job ID，将运行作业所需要的资源文件复制到HDFS上，包括MapReduce程序打包的JAR文件、配置文件和客户端计算所得的输入划分信息。这些文件都存放在JobTracker专门为该作业创建的文件夹中。文件夹名为该作业的Job ID，JobTracker接收到作业后，将其放在一个作业队列里，等待作业调度器对其进行调度，TaskTracker每隔一段时间会给JobTracker发送一个心跳，告诉 JobTracker它依然在运行，同时心跳中还携带着很多的信息，比如当前map任务完成的进度等信息。当JobTracker收到作业的最后一个任务 完成信息时，便把该作业设置成“成功”。当JobClient查询状态时，它将得知任务已完成，便显示一条消息给用户，求出sum/count，即平均心跳间期。</p>
+<h2 id="运行结果">运行结果</h2><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0377.png" alt=""><br></center><br>由上图可知，总测量时间为87124.1250，平均心跳间期为0.8234<br><br>1. 探索Spark的Transformation中的mapPartition<br><strong>写出示例程序，并思考何时会用到mapPartition，为什么要用它？</strong><br><br>(1)具体源码如下<br><br><figure class="highlight scala"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">PartitionTest</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">App</span></span><br><span class="line"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> topN = <span class="number">10</span>;</span><br><span class="line">    <span class="comment">//配置环境</span></span><br><span class="line">    <span class="keyword">val</span> conf = <span class="keyword">new</span> <span class="type">SparkConf</span>().setAppName(<span class="string">"Mapreduce"</span>).setMaster(<span class="string">"local"</span>)</span><br><span class="line">    <span class="keyword">val</span> sc = <span class="keyword">new</span> <span class="type">SparkContext</span>(conf)</span><br><span class="line"></span><br><span class="line">    <span class="comment">//打印每个partition的topN</span></span><br><span class="line">    <span class="keyword">val</span> a = sc.textFile(<span class="string">"file:///home/elliottqiann/Temp/a"</span>, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">val</span> b = sc.textFile(<span class="string">"file:///home/elliottqiann/Temp/b"</span>, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">val</span> c = sc.textFile(<span class="string">"file:///home/elliottqiann/Temp/c"</span>, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">val</span> union = a.union(b).union(c)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> union2 = union.map &#123; x =&gt; (x.split(<span class="string">" "</span>)(<span class="number">0</span>), x.split(<span class="string">" "</span>)(<span class="number">1</span>).toInt)&#125; .mapPartitions&#123;iter =&gt; &#123;<span class="type">PartitionSort</span>.handing(iter, topN)&#125;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> xx = union2.collect()</span><br><span class="line"></span><br><span class="line">    <span class="comment">//打印每个partition的topN</span></span><br><span class="line">    <span class="keyword">for</span>(x &lt; - xx)</span><br><span class="line">    &#123;</span><br><span class="line">        println(x)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> tempResult = union2.sortBy(_._2, <span class="literal">false</span>).collect()</span><br><span class="line">    <span class="keyword">val</span> result = tempResult.dropRight(tempResult.size - topN)</span><br><span class="line"></span><br><span class="line">    println(<span class="string">"the top "</span> + topN + <span class="string">"is :"</span>)</span><br><span class="line">    <span class="keyword">for</span>(x &lt; - result)</span><br><span class="line">    &#123;</span><br><span class="line">        println(x)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">PartitionSort</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handing</span>(</span>iter: <span class="type">Iterator</span>[(<span class="type">String</span>, <span class="type">Int</span>)], topN: <span class="type">Int</span>): <span class="type">Iterator</span>[(<span class="type">String</span>, <span class="type">Int</span>)] = &#123;</span><br><span class="line">        <span class="keyword">var</span> list = <span class="type">List</span>[(<span class="type">String</span>, <span class="type">Int</span>)]()</span><br><span class="line">        <span class="keyword">while</span>(iter.hasNext)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">val</span> temp = iter.next()</span><br><span class="line">            list = list ::: <span class="type">List</span>(temp)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">val</span> sortedList = list.sortWith((a, b) =&gt; a._2 &gt; b._2)</span><br><span class="line">        <span class="keyword">val</span> dr = sortedList.length - topN</span><br><span class="line">        <span class="keyword">if</span>(dr &gt; <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            sortedList.dropRight(dr).iterator</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            sortedList.iterator</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;<span class="comment">//handing</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br>MapParttition转化的处理参数是针对每个Parttition中的数据生成一个Iterator迭代器，迭代的对象是每个Parttition的每个元素。Parttition是一个窄依赖，转换生成的RDD只依赖父RDD。<br><br>例如TopN问题，求全校考试前10名，可以看成是把每个班级看成一个Partition进行计算，求出每个班级的前10名，再进行reduce，求出全校前10名，这样班级之间就可以进行并行计算，提高速度。<br><br>2. 探索Spark的Transformation中的flatMap<br><br><strong>写出示例程序，并思考何时会用到它，为什么要用到它。</strong><br><br>flatMap和Map相比，flatMap函数的返回值——文件中的所有行数据仅返回了一个数组对象。而map返回的对象是，map操作是针对文件中的每一行数据返回了一个数组对象。<br>举例：对原RDD中的每个元素x产生y个元素（从1到y，y为元素x的值）<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0378.png" alt=""><br></center><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0379.png" alt=""><br></center><br>通过flatMap我们可以处理元素是序列的列表。将提供的函数应用于每个序列元素会返回包含原始列表所有序列内的元素的列表，如下图：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0380.png" alt=""><br></center><br>我们可以看到有list4的元素是两个列表。我们调用flatMap分别处理这两个列表，并用map将这两个列表的元素平方，最后的结果是一个包含所有元素的平坦的列表。<br>flatMap还可以去除无用的None，如下图：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0381.png" alt=""><br></center><br>总的来说，flatMap就是对序列进行处理的函数，场景大致就是上面三种情况，从上面例子可以看出，flatMap在处理序列方面是相当方便的。<br><br><br>3 用Java或者Scala实现SD1和SD2的计算。<br><br><strong>SD1和SD2是表征心率变异性的一种指标。</strong><br><br>(1)具体源码如下<br><br><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="variable"><span class="keyword">val</span> inFile</span>=sc.textFile(<span class="string">"/rate.txt"</span>)</span><br><span class="line"><span class="variable"><span class="keyword">var</span> rates</span>=inFile. map (_. toDouble).toArray</span><br><span class="line"><span class="variable"><span class="keyword">var</span> length</span> = rates.length-<span class="number">1</span></span><br><span class="line"><span class="variable"><span class="keyword">var</span> yavg</span>=(rates.sum-rates(<span class="number">0</span>))/length</span><br><span class="line"><span class="variable"><span class="keyword">var</span> xavg</span> = (rates.sum-rates(length))/length</span><br><span class="line">def myfunc(iter: Iterator[<span class="typename">Double</span>],sd:<span class="typename">Int</span>) : <span class="typename">Double</span> = &#123;</span><br><span class="line">    <span class="variable"><span class="keyword">var</span> SDsum</span>=<span class="number">0.0</span>;</span><br><span class="line">    <span class="variable"><span class="keyword">var</span> temp</span>=<span class="number">0.0</span>;</span><br><span class="line">    <span class="variable"><span class="keyword">var</span> pre</span>= iter.next;</span><br><span class="line">    <span class="keyword">while</span> (iter.hasNext) &#123;</span><br><span class="line">        <span class="variable"><span class="keyword">var</span> cur</span> = iter.next; </span><br><span class="line">        <span class="keyword">if</span>(sd == <span class="number">1</span>)&#123;</span><br><span class="line">          temp =(pre - cur)+(yavg - xavg);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(sd == <span class="number">2</span>)&#123;</span><br><span class="line">          temp =(pre + cur)-(yavg + xavg);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable"><span class="keyword">var</span> Xi</span> = math.pow(temp,<span class="number">2</span>)/<span class="number">2</span>;</span><br><span class="line">        SDsum+=Xi;</span><br><span class="line">        pre = cur;</span><br><span class="line">    &#125; </span><br><span class="line">   math.sqrt(SDsum/length)</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable"><span class="keyword">var</span> SD1</span>= myfunc(rates.iterator,<span class="number">1</span>)</span><br><span class="line"><span class="variable"><span class="keyword">var</span> SD2</span>= myfunc(rates.iterator,<span class="number">2</span>)</span><br></pre></td></tr></table></figure><br><br>通过阅读论文，可以得如下的计算公式：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0382.png" alt=""><br></center><br>其中,的公式分别为：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0383.png" alt=""><br></center><br>根据上述公式，可以得到SD1和SD2的计算公式如下<br>由上可知，只需编写程序实现上述的公式即可。<br><br>(2)运行过程<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0384.png" alt=""><br></center><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0385.png" alt=""><br></center>
+
+<p>(3)运行结果</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0386.png" alt=""><br></center><br>由上图可知：SD1的值为0.03552829191459；SD2的值为0.19914955267863102。</p>
+<p>4.实现一个多用户心率监控的计算程序</p>
+<p>假设我们同时监控100个用户的心率，是否能够利用Spark的RDD的特性，并行地计算SD1和SD2?（提示:把每一个用户的心率数据作为RDD里面的一个元素，RDD中不同的元素表示不同用户的心率数据，利用map对每一个用户的心率数据进行并行分析）。</p>
+<p>(1)具体源码如下：</p>
+<figure class="highlight stata"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> listRDD = <span class="keyword">List</span>[org.apache.spark.rdd.RDD[String]]();</span><br><span class="line"><span class="keyword">for</span>(i&lt;- 1 to 5)&#123;</span><br><span class="line">val <span class="keyword">inFile</span>=<span class="keyword">sc</span>.textFile(<span class="string">"/rate"</span>+i+<span class="string">".txt"</span>);</span><br><span class="line">listRDD::=(<span class="keyword">inFile</span>);</span><br><span class="line">&#125;</span><br><span class="line">def myfunc(iter: Iterator[Double],sd:Int) : Double = &#123;</span><br><span class="line">    <span class="keyword">var</span> SDsum=0.0;</span><br><span class="line">    <span class="keyword">var</span> temp=0.0;</span><br><span class="line">    <span class="keyword">var</span> pre= iter.next;</span><br><span class="line">    <span class="keyword">while</span> (iter.hasNext) &#123;</span><br><span class="line">        <span class="keyword">var</span> cur = iter.next; </span><br><span class="line">        <span class="keyword">if</span>(sd == 1)&#123;</span><br><span class="line">          temp =(pre - cur)+(yavg - xavg);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(sd == 2)&#123;</span><br><span class="line">          temp =(pre + cur)-(yavg + xavg);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> <span class="keyword">Xi</span> = math.pow(temp,2)/2;</span><br><span class="line">        SDsum+=<span class="keyword">Xi</span>;</span><br><span class="line">         </span><br><span class="line">    &#125; </span><br><span class="line">   math.<span class="literal">sqrt</span>(SDsum/length)</span><br><span class="line">&#125;</span><br><span class="line">listRDD.map(rdd=&gt;&#123;<span class="keyword">var</span> rates=rdd.map(_.toDouble).toArray;</span><br><span class="line"><span class="keyword">var</span> length=rates.length-1;<span class="keyword">var</span> yavg=(rates.<span class="keyword">sum</span>-rates(0))/length;</span><br><span class="line"><span class="keyword">var</span> xavg = (rates.<span class="keyword">sum</span>-rates(length))/length;<span class="keyword">var</span> SD1= myfunc(rates.iterator,1);SD1&#125;)</span><br><span class="line">listRDD.map(rdd=&gt;&#123;<span class="keyword">var</span> rates=rdd.map(_.toDouble).toArray;</span><br><span class="line"><span class="keyword">var</span> length=rates.length-1;<span class="keyword">var</span> yavg=(rates.<span class="keyword">sum</span>-rates(0))/length;</span><br><span class="line"><span class="keyword">var</span> xavg = (rates.<span class="keyword">sum</span>-rates(length))/length;<span class="keyword">var</span> SD2= myfunc(rates.iterator,2);SD2&#125;)</span><br></pre></td></tr></table></figure>
+<p>(2) 设计思路：<br>根据题目要求，为了实现多用户的心率数据测试，我将原始的数据复制了5份，分别命名为<strong><code>rate1.txt、rate2.txt、rate3.txt、rate4.txt、rate5.txt</code></strong>。然后循环读取文件，并将其存入<code>**List[org.apache.spark.rdd.RDD[String]]()**</code>中，由于Spark中RDD的数据是分布在集群的不同机器上，因此，我们可以利用RDD来存储数据，以此来达到分布式计算的优点。最后利用map函数对list中的各个RDD都进行心率计算，这样便实现了多用户心率的并行计算。</p>
+<p>(3) 运行过程</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0387.png" alt=""><br></center><br>(4) 运行结果</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0388.png" alt=""><br></center></p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0389.png" alt=""><br></center><br>由上图结果可知：5个用户的SD1数据均为：0.03552829191459；5个用户的SD2数据均为：0.19914955267863102。这是由于数据均是复制第一份的，所以5个用户的结果都是一样的。</p>
+<h1 id="小结">小结</h1><p>通过这次实验Hadoop中的MapReduce编程有了一定了解，理解如何进行分布式编程。这个类似于算法中的分治法思想，即分而治之。对相互间不具有计算依赖关系的大数据，实现并行最自然的办法就是采取分而治之的策略。</p>
+<h2 id="上升到抽象模型：Mapper与Reducer">上升到抽象模型：Mapper与Reducer</h2><p>MPI等并行计算方法缺少高层并行编程模型，为了克服这一缺陷，MapReduce借鉴了Lisp函数式语言中的思想，用Map和Reduce两个函数提供了高层的并行编程抽象模型.</p>
+<h2 id="上升到构架：统一构架，为程序员隐藏系统层细节">上升到构架：统一构架，为程序员隐藏系统层细节</h2><p>MPI等并行计算方法缺少统一的计算框架支持，程序员需要考虑数据存储、划分、分发、结果收集、错误恢复等诸多细节；为此，MapReduce设计并提供了统一的计算框架，为程序员隐藏了绝大多数系统层面的处理细节。</p>
+<h1 id="用户心跳数据集下载">用户心跳数据集下载</h1><p><a href="http://7xiur2.com1.z0.glb.clouddn.com/1.txt" target="_blank" rel="external">1.txt</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Hadoop/">Hadoop</a><a href="/tags/Spark/">Spark</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/11/28/基于ReliefF和K-means算法的应用/" title="基于ReliefF和K-means算法的应用">
+  <strong>上一篇：</strong><br/>
+  <span>
+  基于ReliefF和K-means算法的应用</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/11/08/数据挖掘中分类与预测的区别/"  title="数据挖掘中分类与预测的区别">
+ <strong>下一篇：</strong><br/> 
+ <span>数据挖掘中分类与预测的区别
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/11/15/利用Hadoop和Spark处理用户心跳周期数据/" data-title="利用Hadoop和Spark处理用户心跳周期数据" data-url="http://pangjiuzala.github.io/2015/11/15/利用Hadoop和Spark处理用户心跳周期数据/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MapReduce框架编写程序"><span class="toc-number">1.</span> <span class="toc-text">MapReduce框架编写程序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#具体源码如下："><span class="toc-number">1.1.</span> <span class="toc-text">具体源码如下：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#设计思路"><span class="toc-number">1.2.</span> <span class="toc-text">设计思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#运行结果"><span class="toc-number">1.3.</span> <span class="toc-text">运行结果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结"><span class="toc-number">2.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#上升到抽象模型：Mapper与Reducer"><span class="toc-number">2.1.</span> <span class="toc-text">上升到抽象模型：Mapper与Reducer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#上升到构架：统一构架，为程序员隐藏系统层细节"><span class="toc-number">2.2.</span> <span class="toc-text">上升到构架：统一构架，为程序员隐藏系统层细节</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用户心跳数据集下载"><span class="toc-number">3.</span> <span class="toc-text">用户心跳数据集下载</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

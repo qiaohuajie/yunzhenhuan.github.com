@@ -1,0 +1,587 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Java网络爬虫 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="实际的爬虫是从一系列的种子链接开始。种子链接是起始节点，种子页面的超链接指向的页面是子节点（中间节点），对于非html文档，如excel等，不能从中提取超链接，看做图的终端节点">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java网络爬虫">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/07/Java网络爬虫/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="实际的爬虫是从一系列的种子链接开始。种子链接是起始节点，种子页面的超链接指向的页面是子节点（中间节点），对于非html文档，如excel等，不能从中提取超链接，看做图的终端节点">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0135.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0136.png">
+<meta property="og:updated_time" content="2015-08-29T07:50:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java网络爬虫">
+<meta name="twitter:description" content="实际的爬虫是从一系列的种子链接开始。种子链接是起始节点，种子页面的超链接指向的页面是子节点（中间节点），对于非html文档，如excel等，不能从中提取超链接，看做图的终端节点">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/07/Java网络爬虫/" title="Java网络爬虫" itemprop="url">Java网络爬虫</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-06T23:00:20.000Z" itemprop="datePublished"> 发表于 2015-08-07</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#网络爬虫的基本知识"><span class="toc-number">1.</span> <span class="toc-text">网络爬虫的基本知识</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#网络爬虫的简单实现"><span class="toc-number">2.</span> <span class="toc-text">网络爬虫的简单实现</span></a></li></ol>
+		
+		</div>
+		
+		<p>实际的爬虫是从一系列的种子链接开始。种子链接是起始节点，种子页面的超链接指向的页面是子节点（中间节点），对于非html文档，如excel等，不能从中提取超链接，看做图的终端节点<br><a id="more"></a></p>
+<h1 id="网络爬虫的基本知识">网络爬虫的基本知识</h1><p>网络爬虫通过遍历互联网络，把网络中的相关网页全部抓取过来，这体现了爬的概念。爬虫如何遍历网络呢，互联网可以看做是一张大图，每个页面看做其中的一个节点，页面的连接看做是有向边。图的遍历方式分为宽度遍历和深度遍历，但是深度遍历可能会在深度上过深的遍历或者陷入黑洞。所以，大多数爬虫不采用这种形式。另一方面，爬虫在按照宽度优先遍历的方式时候，会给待遍历的网页赋予一定优先级，这种叫做带偏好的遍历。</p>
+<p>实际的爬虫是从一系列的种子链接开始。种子链接是起始节点，种子页面的超链接指向的页面是子节点（中间节点），对于非html文档，如excel等，不能从中提取超链接，看做图的终端节点。整个遍历过程中维护一张visited表，记录哪些节点（链接）已经处理过了，跳过不作处理。</p>
+<p>使用宽度优先搜索策略，主要原因有：</p>
+<p>a、重要的网页一般离种子比较近，例如我们打开的新闻网站时候，往往是最热门的新闻，随着深入冲浪，网页的重要性越来越低。</p>
+<p>b、万维网实际深度最多达17层，但到达某个网页总存在一条很短路径，而宽度优先遍历可以最快的速度找到这个网页</p>
+<p>c、宽度优先有利于多爬虫合作抓取。</p>
+<h1 id="网络爬虫的简单实现">网络爬虫的简单实现</h1><p><strong>代码预览</strong></p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0135.png" alt="代码结构"><br></center><br>1、定义已访问队列，待访问队列和爬取得URL的哈希表，包括出队列，入队列，判断队列是否空等操作<br><br> 代码如下:<br><br><br><figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> webspider;</span><br><span class="line"><span class="keyword">import</span> java.util.HashSet;</span><br><span class="line"><span class="keyword">import</span> java.util.PriorityQueue;</span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"><span class="keyword">import</span> java.util.Queue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkQueue</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="comment">// 已访问的 url 集合</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Set visitedUrl = <span class="keyword">new</span> HashSet();</span><br><span class="line">    <span class="comment">// 待访问的 url 集合</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Queue unVisitedUrl = <span class="keyword">new</span> PriorityQueue();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获得URL队列</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function">Queue <span class="title">getUnVisitedUrl</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> unVisitedUrl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加到访问过的URL队列中</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">void</span> <span class="title">addVisitedUrl</span><span class="params">(String url)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        visitedUrl.add(url);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 移除访问过的URL</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">void</span> <span class="title">removeVisitedUrl</span><span class="params">(String url)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        visitedUrl.remove(url);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 未访问的URL出队列</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function">Object <span class="title">unVisitedUrlDeQueue</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">return</span> unVisitedUrl.<span class="title">poll</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保证每个 url 只被访问一次</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">void</span> <span class="title">addUnvisitedUrl</span><span class="params">(String url)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (url != <span class="keyword">null</span> &amp;&amp; !url.trim().equals(<span class="string">""</span>) &amp;&amp; !visitedUrl.contains(url)</span><br><span class="line">                &amp;&amp; !unVisitedUrl.contains(url))</span><br><span class="line">            unVisitedUrl.add(url);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获得已经访问的URL数目</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">int</span> <span class="title">getVisitedUrlNum</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">return</span> visitedUrl.<span class="title">size</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断未访问的URL队列中是否为空</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="function"><span class="keyword">boolean</span> <span class="title">unVisitedUrlsEmpty</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">return</span> unVisitedUrl.<span class="title">isEmpty</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br>2、定义DownLoadFile类，根据得到的url，爬取网页内容，下载到本地保存。此处需要引用<strong>commons-httpclient.jar，commons-codec.jar，commons-logging.jar</strong>。<br><br> 代码如下:<br><br><figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line">package webspider;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.DataOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.File;</span><br><span class="line"><span class="keyword">import</span> java.io.FileOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.httpclient.HttpClient;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.httpclient.HttpException;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.httpclient.HttpStatus;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.httpclient.methods.GetMethod;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.httpclient.params.HttpMethodParams;</span><br><span class="line"></span><br><span class="line">public <span class="class"><span class="keyword">class</span> <span class="title">DownLoadFile</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 根据 url 和网页类型生成需要保存的网页的文件名 去除掉 url 中非文件名字符</span><br><span class="line">     */</span></span><br><span class="line">    public <span class="built_in">String</span> getFileNameByUrl(<span class="built_in">String</span> url, <span class="built_in">String</span> contentType)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// remove http://</span></span><br><span class="line">        url = url.substring(<span class="number">7</span>);</span><br><span class="line">        <span class="comment">// text/html类型</span></span><br><span class="line">        <span class="keyword">if</span> (contentType.indexOf(<span class="string">"html"</span>) != -<span class="number">1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            url = url.replaceAll(<span class="string">"[\\?/:*|&lt;&gt;\"]"</span>, <span class="string">"_"</span>) + <span class="string">".html"</span>;</span><br><span class="line">            <span class="keyword">return</span> url;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如application/pdf类型</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> url.replaceAll(<span class="string">"[\\?/:*|&lt;&gt;\"]"</span>, <span class="string">"_"</span>) + <span class="string">"."</span></span><br><span class="line">                   + contentType.substring(contentType.lastIndexOf(<span class="string">"/"</span>) + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 保存网页字节数组到本地文件 filePath 为要保存的文件的相对地址</span><br><span class="line">     */</span></span><br><span class="line">    private <span class="keyword">void</span> saveToLocal(byte[] data, <span class="built_in">String</span> filePath)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            DataOutputStream out = <span class="keyword">new</span> DataOutputStream(<span class="keyword">new</span> FileOutputStream(</span><br><span class="line">                        <span class="keyword">new</span> File(filePath)));</span><br><span class="line">            <span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; data.length; i++)</span><br><span class="line">                out.write(data[i]);</span><br><span class="line">            out.flush();</span><br><span class="line">            out.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IOException e)</span><br><span class="line">        &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 下载 url 指向的网页 */</span></span><br><span class="line">    public <span class="built_in">String</span> downloadFile(<span class="built_in">String</span> url)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">String</span> filePath = <span class="literal">null</span>;</span><br><span class="line">        <span class="comment">/* 1.生成 HttpClinet 对象并设置参数 */</span></span><br><span class="line">        HttpClient httpClient = <span class="keyword">new</span> HttpClient();</span><br><span class="line">        <span class="comment">// 设置 Http 连接超时 5s</span></span><br><span class="line">        httpClient.getHttpConnectionManager().getParams()</span><br><span class="line">        .setConnectionTimeout(<span class="number">5000</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 2.生成 GetMethod 对象并设置参数 */</span></span><br><span class="line">        GetMethod getMethod = <span class="keyword">new</span> GetMethod(url);</span><br><span class="line">        <span class="comment">// 设置 get 请求超时 5s</span></span><br><span class="line">        getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, <span class="number">5000</span>);</span><br><span class="line">        <span class="comment">// 设置请求重试处理</span></span><br><span class="line">        getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,</span><br><span class="line">                                           <span class="keyword">new</span> DefaultHttpMethodRetryHandler());</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 3.执行 HTTP GET 请求 */</span></span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            int statusCode = httpClient.executeMethod(getMethod);</span><br><span class="line">            <span class="comment">// 判断访问的状态码</span></span><br><span class="line">            <span class="keyword">if</span> (statusCode != HttpStatus.SC_OK)</span><br><span class="line">            &#123;</span><br><span class="line">                System.err.println(<span class="string">"Method failed: "</span></span><br><span class="line">                                   + getMethod.getStatusLine());</span><br><span class="line">                filePath = <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">/* 4.处理 HTTP 响应内容 */</span></span><br><span class="line">            byte[] responseBody = getMethod.getResponseBody();<span class="comment">// 读取为字节数组</span></span><br><span class="line">            <span class="comment">// 根据网页 url 生成保存时的文件名</span></span><br><span class="line">            filePath = <span class="string">"f:\\spider\\"</span></span><br><span class="line">                       + getFileNameByUrl(url,</span><br><span class="line">                                          getMethod.getResponseHeader(<span class="string">"Content-Type"</span>)</span><br><span class="line">                                          .getValue());</span><br><span class="line">            saveToLocal(responseBody, filePath);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (HttpException e)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 发生致命的异常，可能是协议不对或者返回的内容有问题</span></span><br><span class="line">            System.out.println(<span class="string">"Please check your provided http address!"</span>);</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IOException e)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 发生网络异常</span></span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">finally</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 释放连接</span></span><br><span class="line">            getMethod.releaseConnection();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> filePath;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br>3、定义HtmlParserTool类，用来获得网页中的超链接（包括a标签，frame中的src等等），即为了得到子节点的URL。需要引入<strong>htmlparser.jar</strong><br><br> 代码如下:<br><br><figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> webspider;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashSet;</span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.Node;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.NodeFilter;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.Parser;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.filters.NodeClassFilter;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.filters.OrFilter;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.tags.LinkTag;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.util.NodeList;</span><br><span class="line"><span class="keyword">import</span> org.htmlparser.util.ParserException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> class HtmlParserTool</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 获取一个网站上的链接,filter 用来过滤链接</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Set&lt;<span class="keyword">String</span>&gt; extracLinks(<span class="keyword">String</span> url, LinkFilter <span class="built_in">filter</span>)</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        Set&lt;<span class="keyword">String</span>&gt; links = <span class="keyword">new</span> HashSet&lt;<span class="keyword">String</span>&gt;();</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            Parser parser = <span class="keyword">new</span> Parser(url);</span><br><span class="line">            <span class="comment">//parser.setEncoding("utf-8");</span></span><br><span class="line">            <span class="comment">// 过滤 &lt;frame &gt;标签的 filter，用来提取 frame 标签里的 src 属性所表示的链接</span></span><br><span class="line">            NodeFilter frameFilter = <span class="keyword">new</span> NodeFilter()</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">public</span> <span class="built_in">boolean</span> accept(Node node)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">if</span> (node.getText().startsWith(<span class="string">"frame src="</span>))</span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            <span class="comment">// OrFilter 来设置过滤 &lt;a&gt; 标签，和 &lt;frame&gt; 标签</span></span><br><span class="line">            OrFilter linkFilter = <span class="keyword">new</span> OrFilter(<span class="keyword">new</span> NodeClassFilter(</span><br><span class="line">                                                   LinkTag.class), frameFilter);</span><br><span class="line">            <span class="comment">// 得到所有经过过滤的标签</span></span><br><span class="line">            NodeList list = parser.extractAllNodesThatMatch(linkFilter);</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; list.<span class="built_in">size</span>(); i++)</span><br><span class="line">            &#123;</span><br><span class="line">                Node tag = list.elementAt(i);</span><br><span class="line">                <span class="keyword">if</span> (tag <span class="keyword">instanceof</span> LinkTag)<span class="comment">// &lt;a&gt; 标签</span></span><br><span class="line">                &#123;</span><br><span class="line">                    LinkTag link = (LinkTag) tag;</span><br><span class="line">                    <span class="keyword">String</span> linkUrl = link.getLink();<span class="comment">// url</span></span><br><span class="line">                    <span class="keyword">if</span> (<span class="built_in">filter</span>.accept(linkUrl))</span><br><span class="line">                        links.<span class="built_in">add</span>(linkUrl);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span>  <span class="comment">// &lt;frame&gt; 标签</span></span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="comment">// 提取 frame 里 src 属性的链接如 &lt;frame src="test.html"/&gt;</span></span><br><span class="line">                    <span class="keyword">String</span> frame = tag.getText();</span><br><span class="line">                    <span class="built_in">int</span> start = frame.indexOf(<span class="string">"src="</span>);</span><br><span class="line">                    frame = frame.substring(start);</span><br><span class="line">                    <span class="built_in">int</span> end = frame.indexOf(<span class="string">" "</span>);</span><br><span class="line">                    <span class="keyword">if</span> (end == -<span class="number">1</span>)</span><br><span class="line">                        end = frame.indexOf(<span class="string">"&gt;"</span>);</span><br><span class="line">                    <span class="keyword">String</span> frameUrl = frame.substring(<span class="number">5</span>, end - <span class="number">1</span>);</span><br><span class="line">                    <span class="keyword">if</span> (<span class="built_in">filter</span>.accept(frameUrl))</span><br><span class="line">                        links.<span class="built_in">add</span>(frameUrl);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (ParserException e)</span><br><span class="line">        &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> links;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br>4、编写测试类MyCrawler，用来测试爬取效果<br><br> 代码如下:<br><br><br><figure class="highlight http"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="processing"><span class="keyword">package</span> webspider;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> class MyCrawler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 使用种子初始化 URL 队列</span><br><span class="line">     *</span><br><span class="line">     * @return</span><br><span class="line">     * @param seeds</span><br><span class="line">     *            种子URL</span><br><span class="line">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> initCrawlerWithSeeds(<span class="keyword">String</span>[] seeds)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; seeds.length; i++)</span><br><span class="line">            LinkQueue.addUnvisitedUrl(seeds[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 抓取过程</span><br><span class="line">     *</span><br><span class="line">     * @return</span><br><span class="line">     * @param seeds</span><br><span class="line">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> crawling(<span class="keyword">String</span>[] seeds)   <span class="comment">// 定义过滤器，提取以http://www.lietu.com开头的链接</span></span><br><span class="line">    &#123;</span><br><span class="line">        LinkFilter <span class="built_in">filter</span> = <span class="keyword">new</span> LinkFilter()</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">public</span> <span class="built_in">boolean</span> accept(<span class="keyword">String</span> url)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (url.startsWith(<span class="string">"http://www.baidu.com"</span>))</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="comment">// 初始化 URL 队列</span></span><br><span class="line">        initCrawlerWithSeeds(seeds);</span><br><span class="line">        <span class="comment">// 循环条件：待抓取的链接不空且抓取的网页不多于1000</span></span><br><span class="line">        <span class="keyword">while</span> (!LinkQueue.unVisitedUrlsEmpty()</span><br><span class="line">                &amp;&amp; LinkQueue.getVisitedUrlNum() &lt;= <span class="number">1000</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 队头URL出队列</span></span><br><span class="line">            <span class="keyword">String</span> visitUrl = (<span class="keyword">String</span>) LinkQueue.unVisitedUrlDeQueue();</span><br><span class="line">            <span class="keyword">if</span> (visitUrl == <span class="keyword">null</span>)</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            DownLoadFile downLoader = <span class="keyword">new</span> DownLoadFile();</span><br><span class="line">            <span class="comment">// 下载网页</span></span><br><span class="line">            downLoader.downloadFile(visitUrl);</span><br><span class="line">            <span class="comment">// 该 url 放入到已访问的 URL 中</span></span><br><span class="line">            LinkQueue.addVisitedUrl(visitUrl);</span><br><span class="line">            <span class="comment">// 提取出下载网页中的 URL</span></span><br><span class="line">            Set&lt;<span class="keyword">String</span>&gt; links = HtmlParserTool.extracLinks(visitUrl, <span class="built_in">filter</span>);</span><br><span class="line">            <span class="comment">// 新的未访问的 URL 入队</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">String</span> link : links)</span><br><span class="line">            &#123;</span><br><span class="line">                LinkQueue.addUnvisitedUrl(link);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// main 方法入口</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(<span class="keyword">String</span>[] args)</span><br><span class="line">    &#123;</span><br><span class="line">        MyCrawler crawler = <span class="keyword">new</span> MyCrawler();</span><br><span class="line">        crawler.crawling(<span class="keyword">new</span> <span class="keyword">String</span>[] &#123; <span class="string">"http://www.baidu.com"</span> &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span></span><br></pre></td></tr></table></figure><br><br>5.linkfiter接口<br><br><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> webspider;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LinkFilter</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">accept</span><span class="params">(String url)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br>至此，可以看到f:\spider文件夹下面已经出现了很多html文件，都是关于百度的，以“www.baidu.com”为开头。<br><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0136.png" alt="运行效果"><br></center>
+
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a><a href="/tags/网络爬虫/">网络爬虫</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/08/Microsoft-神经网络分析算法/" title="Microsoft 神经网络分析算法">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Microsoft 神经网络分析算法</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/06/写Java需知CPU缓存/"  title="写Java需知CPU缓存">
+ <strong>下一篇：</strong><br/> 
+ <span>写Java需知CPU缓存
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/07/Java网络爬虫/" data-title="Java网络爬虫" data-url="http://pangjiuzala.github.io/2015/08/07/Java网络爬虫/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#网络爬虫的基本知识"><span class="toc-number">1.</span> <span class="toc-text">网络爬虫的基本知识</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#网络爬虫的简单实现"><span class="toc-number">2.</span> <span class="toc-text">网络爬虫的简单实现</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

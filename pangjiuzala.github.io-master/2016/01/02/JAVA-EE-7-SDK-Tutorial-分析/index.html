@@ -1,0 +1,839 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>JAVA EE 7 SDK Tutorial 分析 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="随着Java平台企业版（Java EE），Java企业应用程序的开发从未如此简单或更快。在Java EE 7平台的目的是向开发人员提供了一套强大的API，同时缩短开发时间，降低了应用的复杂性，并提高应用程序的性能。
+在Java EE 7平台引入了一个简化的编程模型。随着Java EE 7的技术，XML部署描述符现在是可选的。相反，开发人员可以简单地输入信息作为注释直接到Java源文件，以及Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JAVA EE 7 SDK Tutorial 分析">
+<meta property="og:url" content="http://pangjiuzala.github.io/2016/01/02/JAVA-EE-7-SDK-Tutorial-分析/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="随着Java平台企业版（Java EE），Java企业应用程序的开发从未如此简单或更快。在Java EE 7平台的目的是向开发人员提供了一套强大的API，同时缩短开发时间，降低了应用的复杂性，并提高应用程序的性能。
+在Java EE 7平台引入了一个简化的编程模型。随着Java EE 7的技术，XML部署描述符现在是可选的。相反，开发人员可以简单地输入信息作为注释直接到Java源文件，以及Java">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0633.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0634.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0635.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0636.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0637.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0640.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0638.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0639.png">
+<meta property="og:updated_time" content="2016-01-02T06:34:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JAVA EE 7 SDK Tutorial 分析">
+<meta name="twitter:description" content="随着Java平台企业版（Java EE），Java企业应用程序的开发从未如此简单或更快。在Java EE 7平台的目的是向开发人员提供了一套强大的API，同时缩短开发时间，降低了应用的复杂性，并提高应用程序的性能。
+在Java EE 7平台引入了一个简化的编程模型。随着Java EE 7的技术，XML部署描述符现在是可选的。相反，开发人员可以简单地输入信息作为注释直接到Java源文件，以及Java">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/01/02/JAVA-EE-7-SDK-Tutorial-分析/" title="JAVA EE 7 SDK Tutorial 分析" itemprop="url">JAVA EE 7 SDK Tutorial 分析</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2016-01-02T06:12:23.000Z" itemprop="datePublished"> 发表于 2016-01-02</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">1.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#新特性"><span class="toc-number">1.1.</span> <span class="toc-text">新特性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#应用模型"><span class="toc-number">1.2.</span> <span class="toc-text">应用模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#分布式多层应用程序"><span class="toc-number">1.3.</span> <span class="toc-text">分布式多层应用程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Web层"><span class="toc-number">1.4.</span> <span class="toc-text">Web层</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#源码解析"><span class="toc-number">2.</span> <span class="toc-text">源码解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Servlet_3-1"><span class="toc-number">2.1.</span> <span class="toc-text">Servlet 3.1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Annotations_Servlet"><span class="toc-number">2.1.1.</span> <span class="toc-text">Annotations Servlet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Absolute_Ordering_of_Web_Fragments"><span class="toc-number">2.1.2.</span> <span class="toc-text">Absolute Ordering of Web Fragments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File_Upload"><span class="toc-number">2.1.3.</span> <span class="toc-text">File Upload</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JAX-RS_2-0"><span class="toc-number">2.2.</span> <span class="toc-text">JAX-RS 2.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Asynchronous_Chat_JAX-RS"><span class="toc-number">2.2.1.</span> <span class="toc-text">Asynchronous Chat JAX-RS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#客户和地址实体类"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">客户和地址实体类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CustomerService类"><span class="toc-number">2.2.1.2.</span> <span class="toc-text">CustomerService类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CustomerBean类"><span class="toc-number">2.2.1.3.</span> <span class="toc-text">CustomerBean类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JSON_Processing_1-0"><span class="toc-number">2.3.</span> <span class="toc-text">JSON Processing 1.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JAX-RS_JSONP"><span class="toc-number">2.3.1.</span> <span class="toc-text">JAX-RS JSONP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket_1-0"><span class="toc-number">2.4.</span> <span class="toc-text">WebSocket 1.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Echo_WebSocket"><span class="toc-number">2.4.1.</span> <span class="toc-text">Echo WebSocket</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#websocket回声服务器"><span class="toc-number">2.4.1.1.</span> <span class="toc-text">websocket回声服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#web-xml配置"><span class="toc-number">2.4.1.2.</span> <span class="toc-text">web.xml配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ServerApplicationConfig接口"><span class="toc-number">2.4.1.3.</span> <span class="toc-text">ServerApplicationConfig接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#echo-html"><span class="toc-number">2.4.1.4.</span> <span class="toc-text">echo.html</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#运行"><span class="toc-number">2.4.1.5.</span> <span class="toc-text">运行</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Auction_WebSocket"><span class="toc-number">2.4.2.</span> <span class="toc-text">Auction WebSocket</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocketDeviceServlet_类"><span class="toc-number">2.4.2.1.</span> <span class="toc-text">WebSocketDeviceServlet 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocketDeviceInboundl_类"><span class="toc-number">2.4.2.2.</span> <span class="toc-text">WebSocketDeviceInboundl 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocketDeviceInboundl_类-1"><span class="toc-number">2.4.2.3.</span> <span class="toc-text">WebSocketDeviceInboundl 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#websocket-js客户端"><span class="toc-number">2.4.2.4.</span> <span class="toc-text">websocket.js客户端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#项目类图"><span class="toc-number">2.4.2.5.</span> <span class="toc-text">项目类图</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#结果分析"><span class="toc-number">3.</span> <span class="toc-text">结果分析</span></a></li></ol>
+		
+		</div>
+		
+		<p>随着Java平台企业版（Java EE），Java企业应用程序的开发从未如此简单或更快。在Java EE 7平台的目的是向开发人员提供了一套强大的API，同时缩短开发时间，降低了应用的复杂性，并提高应用程序的性能。</p>
+<p>在Java EE 7平台引入了一个简化的编程模型。随着Java EE 7的技术，XML部署描述符现在是可选的。相反，开发人员可以简单地输入信息作为注释直接到Java源文件，以及Java EE服务器将配置组件在部署和运行。这些注解通常用于，否则将在一个部署描述符中提供一个节目数据嵌入。使用注释，规范信息直接把你的代码下一个程序单元，它的影响。</p>
+<p>本文分析了Servlet 3.1、JAX-RS 2.0、JSON Processing 1.0、WebSocket 1.0相关技术的几个示例，以及相关技术下的应用。<br><a id="more"></a></p>
+<h1 id="原理">原理</h1><h2 id="新特性">新特性</h2><p>开发人员现在越来越多地认识到需要分布式事务，并利用速度，安全性和服务器端技术的可靠性便携式应用。在信息技术的世界中，企业应用程序必须设计，建设和生产用更少的钱，以更快的速度，并以更少的资源。<br>Java EE平台是通过Java进程（JCP），开发了负责所有的Java技术。有关方面组成的专家小组已经创建Java规范请求（JSR）来定义各种Java EE技术。 Java社区在JCP程序的工作有助于确保Java技术的标准，稳定性和跨平台的兼容性。</p>
+<p>Java EE平台使用简化的编程模型。 XML部署描述符是可选的。相反，开发人员可以简单地输入信息作为注释直接插入Java源文件，以及Java EE服务器将配置组件在部署和运行。这些注解通常用于嵌入，否则将在部署来布置一个节目数据描述符。使用注释，你把规范的信息在你的代码下一个程序单元的影响。</p>
+<p>在Java EE平台，依赖注入可以应用于所有资源组件的需求，从而有效地隐藏资源的创建和查询应用程序代码。依赖注入可以在企业JavaBeans（EJB）中使用容器，Web容器和应用程序客户端。依赖注入允许Java EE容器自动插入引用其他所需的组件或<br>资源，使用注释。</p>
+<p>Java持久性API提供了在企业Bean，Web组件和应用程序的客户管理关系数据的对象/关系映射。它也可以在Java SE应用程序所使用的，Java EE的环境之外。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0633.png" alt="JAVA EE 7新特性"><br></center>
+
+
+<p>主要包括加强对 HTML5 动态可伸缩应用程序的支持、提高开发人员的生产力和满足苛刻的企业需求。</p>
+<p>(1)提高开发人员的生产力<br>通过一个紧密集成的平台简化了应用架构，减少样板代码和加强对注释的使用来提高效率，另外借助标准 RESTful Web 服务对客户端的支持提高了应用程序的可移植性。</p>
+<p>(2)加强对 HTML 5 动态可伸缩应用程序的支持<br>基 于其可扩展的基础架构，Java EE 7 推动了对 HTML 5 应用的构建和支持。在新的平台中，借助具有行业标准的 JSON 简化了数据分析和交换，并通过低延迟和双向通信的 WebSockets 减少了响应时间。以及利用改进的 JAX-RS 2.0 更好地支持异步的、可扩展的、高性能的 RESTful 服务，从而更好地支持多用户的并发操作。</p>
+<p>(3)满足苛刻的企业需求<br>为更好地满足企业的需求，Java EE 7 提供了许多新功能：</p>
+<ul>
+<li>细化批处理作业，形成可管理的区块，以实现不间断的 OLTP 性能；</li>
+<li>简化多线程并发任务的定义，以提高可扩展性；</li>
+<li>以及提供具有选择性和灵活性的事务应用程序等。</li>
+</ul>
+<h2 id="应用模型">应用模型</h2><p>在Java EE应用程序模型从Java编程语言和Java虚拟机。事实证明，便携性，安全性和开发人员的生产力提供形成所述应用模型的基础。</p>
+<p>Java EE的旨在支持实现客户，员工，供应商的企业服务的应用程序，合作伙伴和其他人谁作出要求或贡献的企业。这样应用本质上是复杂，从各种可能访问数据源和应用程序分发到各种客户端。为了更好地控制和管理这些应用中，业务功能，以支持这些不同的用户在中间层进行。中间层代表这是密切企业的信息化控制的环境部门。中间层通常运行在专门的服务器硬件，并具有访问企业的全程服务。</p>
+<p>在Java EE应用程序模型定义的架构实施服务能够提供可扩展性，可访问性和可管理性多层应用程序及分布式多层应用程序需要企业级的应用。这种模式划分所需的工作<br>实现的多层服务分为以下几个部分：</p>
+<p>(1)业务和表示逻辑由开发商实施</p>
+<p>(2)由Java EE平台提供的标准的系统服务，可以依靠在平台上，以提供所述硬系统级解决方案开发多层服务的问题。</p>
+<h2 id="分布式多层应用程序">分布式多层应用程序</h2><p>Java EE平台使用，为企业的分布式多层应用模型和应用程序。应用逻辑被分成部件根据功能，和该应用程序组件，使Java EE应用程序被安装在根据层的多层Java EE的环境中各种机械该应用程序组件所属。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0634.png" alt="两个多层的Java EE应用程序分为描述的层次"><br></center>
+
+
+<p>在下面的列表中。在图1-1所示的Java EE应用程序部分呈现的Java EE组件。</p>
+<p>(1)客户端层组件的客户端机器上运行。</p>
+<p>(2)在Java EE服务器上运行的Web层组件。</p>
+<p>(3)业务层组件的Java EE服务器上运行。</p>
+<p>(4)企业信息系统（EIS）层软件的EIS服务器上运行。</p>
+<p>尽管Java EE应用程序可以由图1-1中，Java EE的显示所有层多层应用程序通常被认为是三层应用因为它们分布在三个地方：客户端机器上，Java EE服务器机，数据库或传统的机器在后端。三层以这种方式运行的应用程序扩展标准双层客户机和服务器<br>模型通过将多线程应用程序服务器的客户端应用程序之间和后端存储。</p>
+<h2 id="Web层">Web层</h2><p>Java EE Web组件使用JavaServer创建或者servlet或网页Faces技术和/或JSP技术（JSP页面）。 </p>
+<p>Servlet是Java编程语言类动态处理请求并构建响应。 JSP页面是基于文本的文档为servlet执行，但允许更自然的方法来创建静态内容。</p>
+<p>JavaServer Faces技术建立在servlet和JSP技术，并提供了用于网络应用程序用户界面组件的框架。</p>
+<p>静态的HTML页面和小应用程序捆绑在一起的应用程序中的Web组件装配，但不被视为Web组件由Java EE规范。</p>
+<p>服务器端实用工具类也可以绑定Web组件，像HTML页面，不被视为Web组件。</p>
+<p>Web层，就像客户层，可能包括一个JavaBeans组件来管理用户输入和发送输入到企业Bean运行在业务层进行处理。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0635.png" alt="Web层和Java EE应用程序"><br></center>
+
+
+<h1 id="源码解析">源码解析</h1><h2 id="Servlet_3-1">Servlet 3.1</h2><h3 id="Annotations_Servlet">Annotations Servlet</h3><p>Servlet3.1规范大量使用注解来声明Servlet中，过滤器，监听器和安全性。配置文件web.xml中现在是可选的。<br>源码如下:</p>
+<figure class="highlight scala"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> sample;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">import</span> java.io.<span class="type">IOException</span>;</span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.http.*;</span><br><span class="line"> </span><br><span class="line">  </span><br><span class="line"><span class="annotation">@WebServlet</span>(name=<span class="string">"testServlet"</span>, urlPatterns=&#123;<span class="string">"/hello"</span>&#125;,</span><br><span class="line">        initParams=&#123; <span class="annotation">@WebInitParam</span>(name=<span class="string">"simpleParam"</span>, value=<span class="string">"paramValue"</span>) &#125; )</span><br><span class="line">      </span><br><span class="line">public <span class="class"><span class="keyword">class</span> <span class="title">TestServlet</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">HttpServlet</span> &#123;</span></span><br><span class="line">            </span><br><span class="line">    <span class="keyword">protected</span> void doGet(<span class="type">HttpServletRequest</span> request, <span class="type">HttpServletResponse</span> response) <span class="keyword">throws</span> <span class="type">ServletException</span>, <span class="type">IOException</span> &#123;</span><br><span class="line">        <span class="type">PrintWriter</span> out = response.getWriter();</span><br><span class="line">        <span class="type">String</span> simpleParam = getServletConfig().getInitParameter(<span class="string">"simpleParam"</span>);</span><br><span class="line">            out.println(<span class="string">"Hello World "</span>+simpleParam);</span><br><span class="line">                out.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">protected</span> void doPost(<span class="type">HttpServletRequest</span> request, <span class="type">HttpServletResponse</span> response) <span class="keyword">throws</span> <span class="type">ServletException</span>, <span class="type">IOException</span> &#123;</span><br><span class="line">         doGet(request,response);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上面的代码，我们已经注册了的TestServlet下的URL模式“/你好”（注意复数形式可以有一个以上的）。此外，我们已经设置了一个名为“simpleParam”的初始参数。不需要web.xml中运行这个servlet。</p>
+<p>你可以声明以及器过滤器使用注释，想在这个exampleYou可以声明以及过滤器在这个例子中使用注释，代码如下:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.annotation.*;</span><br><span class="line"> </span><br><span class="line"><span class="annotation">@WebFilter</span>(urlPatterns=&#123;<span class="string">"/*"</span>&#125;,</span><br><span class="line">        initParams=&#123; <span class="annotation">@WebInitParam</span>(name=<span class="string">"simpleParam"</span>, value=<span class="string">"paramValue"</span>) &#125;)</span><br><span class="line">        <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestFilter</span> <span class="keyword">implements</span> <span class="title">Filter</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(ServletRequest request, ServletResponse response,</span><br><span class="line">            FilterChain chain)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">        StringWriter sw = <span class="keyword">new</span> StringWriter();</span><br><span class="line">        PrintWriter writer = <span class="keyword">new</span> PrintWriter(sw);</span><br><span class="line"> </span><br><span class="line">        writer.println(<span class="string">"==============="</span>);</span><br><span class="line">        writer.println(<span class="string">"Filter intercepted!"</span>);</span><br><span class="line">        writer.println(<span class="string">"==============="</span>);</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// Log the resulting string</span></span><br><span class="line">        writer.flush();</span><br><span class="line">        filterConfig.getServletContext().</span><br><span class="line">        log(sw.getBuffer().toString());</span><br><span class="line"> </span><br><span class="line">        chain.doFilter(request, response);</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">private</span> FilterConfig filterConfig = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(FilterConfig filterConfig)</span> </span><br><span class="line">    <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.filterConfig = filterConfig;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述过滤器将拦截发到网络环境中的所有请求。<br>下边介绍另一个有用的注释是@WebListener注释可以用来标记一个Java类为WebListener，代码如下:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> sample;</span><br><span class="line"><span class="keyword">import</span> javax.servlet.*;</span><br><span class="line"><span class="annotation">@javax</span>.servlet.annotation.WebListener</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SessionListener</span> <span class="keyword">implements</span> <span class="title">ServletContextListener</span> </span>&#123;</span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">contextDestroyed</span><span class="params">(ServletContextEvent sce)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Context destroyed!"</span>);</span><br><span class="line">         </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">contextInitialized</span><span class="params">(ServletContextEvent sce)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Context created!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Absolute_Ordering_of_Web_Fragments">Absolute Ordering of Web Fragments</h3><p>为了更好地进行适配，减少配置，在Servlet的3.1h中引入了web-fragment的概念。一个web-fragment是可指定的，并包括在一个库或框架jar文件中的web.xml的一部分或全部。如果有很多个web-fragment jars时，那么人们可能会喜欢指定处理Web-fragment.xml之和注释的顺序。这个很重要。例如，过滤器可以为在web.xml中指定的顺序被执行，类似于监听。在Servlet3.1中，引入了web.xml 中的的<absolute-ordering>标签和web-fragment.xml中的<ordering>标签。</ordering></absolute-ordering></p>
+<p>Web Fragments的顺序被指定在以下优先级：</p>
+<p>(1)在web.xml中如果存在<absolute-ordering></absolute-ordering></p>
+<p>(2)如果<ordering>存在于每一个web-fragment.xml</ordering></p>
+<p>(3)其他未指定</p>
+<p>在web.xml的<absolute-ordering> 中提供了一种方法，以指定加载web的fragment.xml之和web fragments的注释处理的顺序。代码如下:</absolute-ordering></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">web-app</span>&gt;</span></span><br><span class="line">        ...</span><br><span class="line">        <span class="tag">&lt;<span class="title">absolute-ordering</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>A<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="title">others</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>B<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="title">absolute-ordering</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">web-app</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>另外，在上述例子中，web fragment A 将被第一个处理，web fragment B 被最后处理。名称A和B在web-fragment.xml之中的元素指定的（见下面的例子）。</p>
+<p>排序是在web-fragment.xml中被指定的。如果在web.xml中没有<absolute-ordering>，会查找web-fragment.xml中的<ordering>。<br>仅仅在web-fragment.xml存在一个<ordering>的jar包，代码如下</ordering></ordering></absolute-ordering></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">web-fragment</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>A<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="tag">&lt;<span class="title">ordering</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">before</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="title">others</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="title">before</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="title">ordering</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">web-fragment</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在这种情况下，web-fragment A将首先被处理。<br>下面是在web-fragment.xml存在两个<ordering>的示例，代码如下:<br>web-fragment A</ordering></p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">web-fragment</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>A<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="tag">&lt;<span class="title">ordering</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">before</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="title">others</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="title">before</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="title">ordering</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">web-fragment</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>web-fragment B</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">web-fragment</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>B<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="tag">&lt;<span class="title">ordering</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">before</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="title">others</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="title">before</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="title">ordering</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">web-fragment</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这时web-fragment A和web-fragment B会首先被处理。在这种情况下，人们只能保证web-fragment A和web-fragment B在其他web-fragment之前处理。但是A和B的顺序并不确定，在这种情况下这是随机的。<br>有两个包含 <ordering>的jars 存在于web-fragment.xml之中，如下</ordering></p>
+<p>web-fragment A</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">web-fragment</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>A<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="tag">&lt;<span class="title">ordering</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">before</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="title">others</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="title">before</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="title">ordering</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">web-fragment</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>web-fragment B</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">web-fragment</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">name</span>&gt;</span>B<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">            ...</span><br><span class="line">            <span class="tag">&lt;<span class="title">ordering</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">after</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="title">name</span>&gt;</span>A<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="title">after</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">before</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="title">others</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="title">before</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="title">ordering</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">web-fragment</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在这种情况下，A将首先被处理，其次是B，然后其他web fragments。如果想有一个确定的顺序，那么建议使用在web.xml中的absolute-ordering。<br>如何存放web fragments？如果一个框架被打包为一个jar文件，并在部署描述符的形式的元数据信息，那么Web fragments需要被放置在jar文件的META-INF/文件夹。</p>
+<p>另一方面，如果一个框架，优先使用web fragment.xml这种方法，而且它增强了Web应用程序的web.xml，该框架必须在Web应用程序中被放置在的WEB-INF/ lib目录中。</p>
+<h3 id="File_Upload">File Upload</h3><p>File Upload示例应用程序由一个单一的servlet和HTML表单。这使得上载文件到servlet。这个例子包括两个字段，文件和目标非常简单的HTML表单。输入类型，文件，使得用户能够浏览本地文件系统，选择该文件。</p>
+<p>当选择了文件时，它被发送给服务器作为POST请求的一部分。在这一过程中，下面有两个强制性限制应用于具有输入类型的文件的形式。</p>
+<p>(1)该enctype属性必须设置为multipart / form-数据的值。</p>
+<p>(2)它的方法必须是POST。</p>
+<p>当以这种方式指定的形式时，整个请求被发送到服务器编码形式。然后servlet使用它自己的方式来处理，以处理该请求传入的文件数据，并提取从流的一个文件。目的地是路径某个位置的文件会被保存在电脑上。</p>
+<p>在按下上传按钮<br>表格的下方张贴数据到servlet，它保存在文件中指定的目的地。<br>index.html中的HTML格式如下：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="doctype">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"</span><br><span class="line">    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">html</span> <span class="attribute">lang</span>=<span class="value">"en"</span> <span class="attribute">xmlns</span>=<span class="value">"http://www.w3.org/1999/xhtml"</span> <span class="attribute">xml:lang</span>=<span class="value">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">title</span>&gt;</span>File Upload<span class="tag">&lt;/<span class="title">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">meta</span> <span class="attribute">http-equiv</span>=<span class="value">"Content-Type"</span> <span class="attribute">content</span>=<span class="value">"text/html; charset=UTF-8"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">form</span> <span class="attribute">method</span>=<span class="value">"post"</span> <span class="attribute">action</span>=<span class="value">"upload"</span> <span class="attribute">enctype</span>=<span class="value">"multipart/form-data"</span>&gt;</span></span><br><span class="line">    File: <span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"file"</span> <span class="attribute">name</span>=<span class="value">"file"</span> <span class="attribute">id</span>=<span class="value">"file"</span> /&gt;</span><span class="tag">&lt;<span class="title">br</span> /&gt;</span></span><br><span class="line">    Destination: <span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"text"</span> <span class="attribute">value</span>=<span class="value">"/tmp"</span> <span class="attribute">name</span>=<span class="value">"destination"</span> /&gt;</span><span class="tag">&lt;<span class="title">br</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="title">input</span> <span class="attribute">type</span>=<span class="value">"submit"</span> <span class="attribute">value</span>=<span class="value">"Upload"</span> <span class="attribute">name</span>=<span class="value">"upload"</span> <span class="attribute">id</span>=<span class="value">"upload"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>当客户端需要发送数据到服务器作为POST请求方法用于的要求，上传文件或提交填妥的表格时等部分。相反，GET请求方法发出URL和headers 仅给服务器，而POST请求还包括消息正文。这允许随机长度的数据键入要发送到服务器。</p>
+<p>在POST请求中的报头字段通常指示消息正文的互联网媒体类型。当提交表单时，浏览器流的内容，联合各个部分，与每个部分代表一个形式下一个字段。部分被命名为输入元素后，相互之间用命名边界字符串分隔。<br>从文件上传表单提交的数据看，选择sample.txt的作为将要上传到tmp目录上的本地文件，代码如下:</p>
+<figure class="highlight applescript"><table><tr><td class="code"><pre><span class="line">POST /fileupload/upload HTTP/<span class="number">1.1</span></span><br><span class="line">Host: localhost:<span class="number">8080</span></span><br><span class="line">Content-Type: multipart/form-data;</span><br><span class="line">boundary=<span class="comment">---------------------------263081694432439</span></span><br><span class="line">Content-Length: <span class="number">441</span></span><br><span class="line"><span class="comment">-----------------------------263081694432439</span></span><br><span class="line">Content-Disposition: form-data; <span class="property">name</span>=<span class="string">"file"</span>; filename=<span class="string">"sample.txt"</span></span><br><span class="line">Content-Type: <span class="type">text</span>/plain</span><br><span class="line">Data <span class="keyword">from</span> sample <span class="type">file</span></span><br><span class="line"><span class="comment">-----------------------------263081694432439</span></span><br><span class="line">Content-Disposition: form-data; <span class="property">name</span>=<span class="string">"destination"</span></span><br><span class="line">/tmp</span><br><span class="line"><span class="comment">-----------------------------263081694432439</span></span><br><span class="line">Content-Disposition: form-data; <span class="property">name</span>=<span class="string">"upload"</span></span><br><span class="line">Upload</span><br><span class="line"><span class="comment">-----------------------------263081694432439--</span></span><br></pre></td></tr></table></figure>
+<p>该servlet FileUploadServlet.java开头如下：</p>
+<figure class="highlight scala"><table><tr><td class="code"><pre><span class="line"><span class="annotation">@WebServlet</span>(name = <span class="string">"FileUploadServlet"</span>, urlPatterns = &#123;<span class="string">"/upload"</span>&#125;)</span><br><span class="line"><span class="annotation">@MultipartConfig</span></span><br><span class="line">public <span class="class"><span class="keyword">class</span> <span class="title">FileUploadServlet</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">HttpServlet</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> static <span class="type">Logger</span> <span class="type">LOGGER</span> =</span><br><span class="line">        <span class="type">Logger</span>.getLogger(<span class="type">FileUploadServlet</span>.<span class="keyword">class</span>.getCanonicalName());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>@WebServlet标注使用URL模式属性来定义的servlet映射。</p>
+</li>
+<li><p>@MultipartConfig注释指示该servlet的期望请求被使用的multipart / form-data的MIME类型进行。</p>
+</li>
+<li><p>processRequest方法从请求检索目的地和文件的一部分，然后调用 getFileName方法来检索从文件部分的文件名。该方法然后创建一个-   FileOutputStream并将该文件复制到指定的目的地。该方法捕获的错误处理部和处理一些最常见的原因，一个文件就不会被发现,其中的processRequest和getFileName方法是这样的：</p>
+</li>
+</ul>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> processRequest(HttpServletRequest request,</span><br><span class="line">                              HttpServletResponse response)</span><br><span class="line"><span class="keyword">throws</span> ServletException, IOException</span><br><span class="line">&#123;</span><br><span class="line">    response.setContentType(<span class="string">"text/html;charset=UTF-8"</span>);</span><br><span class="line">    <span class="comment">// Create path components to save the file</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">String</span> path = request.getParameter(<span class="string">"destination"</span>);</span><br><span class="line">    <span class="keyword">final</span> Part filePart = request.getPart(<span class="string">"file"</span>);</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">String</span> fileName = getFileName(filePart);</span><br><span class="line">    OutputStream out = <span class="keyword">null</span>;</span><br><span class="line">    InputStream filecontent = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">final</span> PrintWriter writer = response.getWriter();</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        out = <span class="keyword">new</span> FileOutputStream(<span class="keyword">new</span> File(path + File.separator</span><br><span class="line">             + fileName));</span><br><span class="line">        filecontent = filePart.getInputStream();</span><br><span class="line">        <span class="built_in">int</span> read = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">final</span> <span class="built_in">byte</span>[] bytes = <span class="keyword">new</span> <span class="built_in">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">while</span> ((read = filecontent.read(bytes)) != -<span class="number">1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            out.write(bytes, <span class="number">0</span>, read);</span><br><span class="line">        &#125;</span><br><span class="line">        writer.<span class="built_in">println</span>(<span class="string">"New file "</span> + fileName + <span class="string">" created at "</span> + path);</span><br><span class="line">        LOGGER.<span class="built_in">log</span>(Level.INFO, <span class="string">"File&#123;0&#125;being uploaded to &#123;1&#125;"</span>,</span><br><span class="line">                   <span class="keyword">new</span> <span class="keyword">Object</span>[] &#123;fileName, path&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (FileNotFoundException fne)</span><br><span class="line">    &#123;</span><br><span class="line">        writer.<span class="built_in">println</span>(<span class="string">"You either did not specify a file to upload or are "</span></span><br><span class="line">                       + <span class="string">"trying to upload a file to a protected or nonexistent "</span></span><br><span class="line">                       + <span class="string">"location."</span>);</span><br><span class="line">        writer.<span class="built_in">println</span>(<span class="string">"&lt;br/&gt; ERROR: "</span> + fne.getMessage());</span><br><span class="line">        LOGGER.<span class="built_in">log</span>(Level.SEVERE, <span class="string">"Problems during file upload. Error: &#123;0&#125;"</span>,</span><br><span class="line">                   <span class="keyword">new</span> <span class="keyword">Object</span>[] &#123;fne.getMessage()&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">finally</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (out != <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            out.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (filecontent != <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            filecontent.close();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (writer != <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            writer.close();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">String</span> getFileName(<span class="keyword">final</span> Part part)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">String</span> partHeader = part.getHeader(<span class="string">"content-disposition"</span>);</span><br><span class="line">    LOGGER.<span class="built_in">log</span>(Level.INFO, <span class="string">"Part Header = &#123;0&#125;"</span>, partHeader);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">String</span> content : part.getHeader(<span class="string">"content-disposition"</span>).<span class="built_in">split</span>(<span class="string">";"</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (content.<span class="built_in">trim</span>().startsWith(<span class="string">"filename"</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> content.substring(</span><br><span class="line">                       content.indexOf(<span class="string">'='</span>) + <span class="number">1</span>).<span class="built_in">trim</span>().replace(<span class="string">"\""</span>, <span class="string">""</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="JAX-RS_2-0">JAX-RS 2.0</h2><h3 id="Asynchronous_Chat_JAX-RS">Asynchronous Chat JAX-RS</h3><p>该示例应用用程序有三个部分。</p>
+<p>(1)客户和地址实体类。这些类模型的数据应用和含有JAXB注解。</p>
+<p>(2)客户示例应用程序:CustomerService类。此类包含JAX-RS资源方法<br>上表示为XML或JSON数据的客户实例执行操作使用JAXB。</p>
+<p>(3)CustomerBean会话bean充当辅助bean的Web客户端。CustomerBean使用JAX-RS客户端API调用的CustomerService的方法。</p>
+<h4 id="客户和地址实体类">客户和地址实体类</h4><p>地址实体类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="annotation">@Entity</span></span><br><span class="line"><span class="annotation">@Table</span>(name = <span class="string">"CUSTOMER_ADDRESS"</span>)</span><br><span class="line"><span class="annotation">@XmlRootElement</span>(name = <span class="string">"address"</span>)</span><br><span class="line"><span class="annotation">@XmlAccessorType</span>(XmlAccessType.FIELD)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Address</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="annotation">@Id</span></span><br><span class="line">    <span class="annotation">@GeneratedValue</span>(strategy = GenerationType.AUTO)</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">int</span> number;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String street;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String city;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String province;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String zip;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String country;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Address</span><span class="params">()</span> </span>&#123; &#125;</span><br><span class="line">    </span><br><span class="line">		    <span class="function"><span class="keyword">public</span> Long <span class="title">getId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> id;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(Long id)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.id = id;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getNumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> number;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNumber</span><span class="params">(<span class="keyword">int</span> number)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.number = number;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> String <span class="title">getStreet</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> street;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setStreet</span><span class="params">(String street)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.street = street;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> String <span class="title">getCity</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> city;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCity</span><span class="params">(String city)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.city = city;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> String <span class="title">getProvince</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> province;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setProvince</span><span class="params">(String province)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.province = province;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> String <span class="title">getZip</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> zip;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setZip</span><span class="params">(String zip)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.zip = zip;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> String <span class="title">getCountry</span><span class="params">()</span> </span>&#123;</span><br><span class="line">				<span class="keyword">return</span> country;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCountry</span><span class="params">(String country)</span> </span>&#123;</span><br><span class="line">				<span class="keyword">this</span>.country = country;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>@XmlRootElement(name = “address”)标注这个类映射到地址XML元素。</p>
+</li>
+<li><p>@XmlAccessorType（XmlAccessType.FIELD）注解指定这个类的所有字段默认绑定到XML。</p>
+</li>
+<li><p>@XmlElement(required=true)注解指定一个元素必须出现在XML中表示。</p>
+</li>
+</ul>
+<p>客户实体类:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="annotation">@Entity</span></span><br><span class="line"><span class="annotation">@Table</span>(name = <span class="string">"CUSTOMER_CUSTOMER"</span>)</span><br><span class="line"><span class="annotation">@NamedQuery</span>(</span><br><span class="line">    name = <span class="string">"findAllCustomers"</span>,</span><br><span class="line">    query = <span class="string">"SELECT c FROM Customer c "</span> +</span><br><span class="line">            <span class="string">"ORDER BY c.id"</span></span><br><span class="line">)</span><br><span class="line"><span class="annotation">@XmlRootElement</span>(name = <span class="string">"customer"</span>)</span><br><span class="line"><span class="annotation">@XmlAccessorType</span>(XmlAccessType.FIELD)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Customer</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="annotation">@Id</span></span><br><span class="line">    <span class="annotation">@GeneratedValue</span>(strategy = GenerationType.AUTO)</span><br><span class="line">    <span class="annotation">@XmlAttribute</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">int</span> id;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String firstname;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String lastname;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="annotation">@OneToOne</span></span><br><span class="line">    <span class="keyword">protected</span> Address address;</span><br><span class="line">    <span class="annotation">@XmlElement</span>(required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String email;</span><br><span class="line">    <span class="annotation">@XmlElement</span> (required = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">protected</span> String phone;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Customer</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getId</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(<span class="keyword">int</span> id)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.id = id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getFirstname</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> firstname;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setFirstname</span><span class="params">(String firstname)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.firstname = firstname;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getLastname</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> lastname;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setLastname</span><span class="params">(String lastname)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.lastname = lastname;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Address <span class="title">getAddress</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> address;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAddress</span><span class="params">(Address address)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.address = address;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getEmail</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> email;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEmail</span><span class="params">(String email)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.email = email;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPhone</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> phone;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPhone</span><span class="params">(String phone)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.phone = phone;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Customer类包含相同的JAXB注解，除了为@XmlAttribute(required=true)标注，它的属性映射到代表类的XML元素的属性。</p>
+<p>客户类包含一个属性，其类型为另一个实体，Address类。这种机制允许你定义在Java代码中的层次关系无需编写.xsd文件自己的实体之间。</p>
+<p>JAXB生成前两个类用以下XML模式定义:</p>
+<figure class="highlight vim"><table><tr><td class="code"><pre><span class="line">&lt;?xml <span class="keyword">version</span>=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span> standalone=<span class="string">"yes"</span>?&gt;</span><br><span class="line">&lt;<span class="keyword">x</span><span class="variable">s:schema</span> <span class="keyword">version</span>=<span class="string">"1.0"</span> xmln<span class="variable">s:xs</span>=<span class="string">"http://www.w3.org/2001/XMLSchema"</span>&gt;</span><br><span class="line">  &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"address"</span> <span class="built_in">type</span>=<span class="string">"address"</span> /&gt;</span><br><span class="line">  &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"customer"</span> <span class="built_in">type</span>=<span class="string">"customer"</span> /&gt;</span><br><span class="line">  &lt;<span class="keyword">x</span><span class="variable">s:complexType</span> name=<span class="string">"address"</span>&gt;</span><br><span class="line">    &lt;<span class="keyword">x</span><span class="variable">s:sequence</span>&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"id"</span> <span class="built_in">type</span>=<span class="string">"xs:long"</span> minOccurs=<span class="string">"0"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"number"</span> <span class="built_in">type</span>=<span class="string">"xs:int"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"street"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"city"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"province"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"zip"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"country"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">    &lt;/<span class="keyword">x</span><span class="variable">s:sequence</span>&gt;</span><br><span class="line">  &lt;/<span class="keyword">x</span><span class="variable">s:complexType</span>&gt;</span><br><span class="line">  &lt;<span class="keyword">x</span><span class="variable">s:complexType</span> name=<span class="string">"customer"</span>&gt;</span><br><span class="line">    &lt;<span class="keyword">x</span><span class="variable">s:sequence</span>&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"firstname"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"lastname"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> ref=<span class="string">"address"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"email"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">      &lt;<span class="keyword">x</span><span class="variable">s:element</span> name=<span class="string">"phone"</span> <span class="built_in">type</span>=<span class="string">"xs:string"</span> /&gt;</span><br><span class="line">    &lt;/<span class="keyword">x</span><span class="variable">s:sequence</span>&gt;</span><br><span class="line">    &lt;<span class="keyword">x</span><span class="variable">s:attribute</span> name=<span class="string">"id"</span> <span class="built_in">type</span>=<span class="string">"xs:int"</span> use=<span class="string">"required"</span> /&gt;</span><br><span class="line">  &lt;/<span class="keyword">x</span><span class="variable">s:complexType</span>&gt;</span><br><span class="line">&lt;/<span class="keyword">x</span><span class="variable">s:schema</span>&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="CustomerService类">CustomerService类</h4><p>CustomerService类在创建一个客户类的createCustomer方法资源的基础上，并返回给客户类一个新的URI资源，代码如下</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="annotation">@Stateless</span></span><br><span class="line"><span class="annotation">@Path</span>(<span class="string">"/Customer"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomerService</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger logger =</span><br><span class="line">        Logger.getLogger(CustomerService.class.getCanonicalName());</span><br><span class="line">    <span class="annotation">@PersistenceContext</span></span><br><span class="line">    <span class="keyword">private</span> EntityManager em;</span><br><span class="line">    <span class="keyword">private</span> CriteriaBuilder cb;</span><br><span class="line">    <span class="annotation">@PostConstruct</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        cb = em.getCriteriaBuilder();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="annotation">@POST</span></span><br><span class="line">    <span class="annotation">@Consumes</span>( &#123;MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON&#125;)</span><br><span class="line">    <span class="keyword">public</span> <span class="function">Response <span class="title">createCustomer</span><span class="params">(Customer customer)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">long</span> customerId = persist(customer);</span><br><span class="line">            <span class="keyword">return</span> Response.created(URI.create(<span class="string">"/"</span> + customerId)).build();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Exception e)</span><br><span class="line">        &#123;</span><br><span class="line">            logger.log(Level.SEVERE,</span><br><span class="line">                       <span class="string">"Error creating customer for customerId &#123;0&#125;. &#123;1&#125;"</span>,</span><br><span class="line">                       <span class="keyword">new</span> Object[] &#123;customer.getId(), e.getMessage()&#125;);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> WebApplicationException(e,</span><br><span class="line">                                              Response.Status.INTERNAL_SERVER_ERROR);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">long</span> <span class="title">persist</span><span class="params">(Customer customer)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            Address address = customer.getAddress();</span><br><span class="line">            em.persist(address);</span><br><span class="line">            em.persist(customer);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Exception ex)</span><br><span class="line">        &#123;</span><br><span class="line">            logger.<span class="keyword">warning</span>(<span class="string">"Something went wrong when persisting the customer"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">return</span> customer.<span class="title">getId</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>返回到客户端的响应具有一个新创建的URI资源。返回类型是从与状态码的响应的属性映射的实体主体通过响应的状态属性指定。</p>
+<p>WebApplicationException客户示例应用程序的RuntimeException用来包裹适当的HTTP错误状态代码，例如404，406，415或500。</p>
+<figure class="highlight less"><table><tr><td class="code"><pre><span class="line"><span class="variable">@Consumes</span>(&#123;MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON&#125;)和<span class="variable">@Produces</span>(&#123;MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON&#125;)</span><br></pre></td></tr></table></figure>
+<p>注释设置请求和响应媒体类型使用适当的MIME客户。这些注释可以应用于一个资源的方法，资源类，或甚至一个实体提供者。如果不使用这些注释，JAX-RS允许使用任何媒体类型 <code>（”*/*”）</code>。</p>
+<p>下面的代码 fragments显示了getCustomer的实现和findbyId方法。该getCustomer方法使用@Produces注释和返回一个客户对象，它被转换成XML或JSON表示根据接收由客户指定的headers。</p>
+<figure class="highlight dart"><table><tr><td class="code"><pre><span class="line"><span class="annotation">@GET</span></span><br><span class="line"><span class="annotation">@Path</span>(<span class="string">"&#123;id&#125;"</span>)</span><br><span class="line"><span class="annotation">@Produces</span>( &#123;MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON&#125;)</span><br><span class="line">public Customer getCustomer(<span class="annotation">@PathParam</span>(<span class="string">"id"</span>) <span class="built_in">String</span> customerId)</span><br><span class="line">&#123;</span><br><span class="line">    Customer customer = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        customer = findById(customerId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (Exception ex)</span><br><span class="line">    &#123;</span><br><span class="line">        logger.log(Level.SEVERE,</span><br><span class="line">                   <span class="string">"Error calling findCustomer() for customerId &#123;0&#125;. &#123;1&#125;"</span>,</span><br><span class="line">                   <span class="keyword">new</span> <span class="built_in">Object</span>[] &#123;customerId, ex.getMessage()&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> customer;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private Customer findById(<span class="built_in">String</span> customerId)</span><br><span class="line">&#123;</span><br><span class="line">    Customer customer = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        customer = em.find(Customer.<span class="keyword">class</span>, customerId);</span><br><span class="line">        <span class="keyword">return</span> customer;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (Exception ex)</span><br><span class="line">    &#123;</span><br><span class="line">        logger.log(Level.WARNING,</span><br><span class="line">                   <span class="string">"Couldn't find customer with ID of &#123;0&#125;"</span>, customerId);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> customer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="CustomerBean类">CustomerBean类</h4><p>使用JAX-RS客户端API来编写客户端为客户示例应用程序。CustomerBean类调用JAX-RS客户端API测试，启动CustomerService Web服务：</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="annotation">@Named</span></span><br><span class="line"><span class="annotation">@Stateless</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomerBean</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> Client client;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger logger =</span><br><span class="line">        Logger.getLogger(CustomerBean.class.getName());</span><br><span class="line">    <span class="annotation">@PostConstruct</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        client = ClientBuilder.newClient();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="annotation">@PreDestroy</span></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">void</span> <span class="title">clean</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        client.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function">String <span class="title">createCustomer</span><span class="params">(Customer customer)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (customer == <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            logger.log(Level.WARNING, <span class="string">"customer is null."</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"customerError"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        String navigation;</span><br><span class="line">        Response response =</span><br><span class="line">            client.<span class="keyword">target</span>(<span class="string">"http://localhost:8080/customer/webapi/Customer"</span>)</span><br><span class="line">            .request(MediaType.APPLICATION_XML)</span><br><span class="line">            .post(Entity.entity(customer, MediaType.APPLICATION_XML),</span><br><span class="line">                  Response.class);</span><br><span class="line">        <span class="keyword">if</span> (response.getStatus() == Status.CREATED.getStatusCode())</span><br><span class="line">        &#123;</span><br><span class="line">            navigation = <span class="string">"customerCreated"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            logger.log(Level.WARNING, <span class="string">"couldn''t create customer with "</span> +</span><br><span class="line">                       <span class="string">"id &#123;0&#125;. Status returned was &#123;1&#125;"</span>,</span><br><span class="line">                       <span class="keyword">new</span> Object[] &#123;customer.getId(), response.getStatus()&#125;);</span><br><span class="line">            navigation = <span class="string">"customerError"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> navigation;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function">String <span class="title">retrieveCustomer</span><span class="params">(String id)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        String navigation;</span><br><span class="line">        Customer customer =</span><br><span class="line">            client.<span class="keyword">target</span>(<span class="string">"http://localhost:8080/customer/webapi/Customer"</span>)</span><br><span class="line">            .path(id)</span><br><span class="line">            .request(MediaType.APPLICATION_XML)</span><br><span class="line">            .get(Customer.class);</span><br><span class="line">        <span class="keyword">if</span> (customer == <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            navigation = <span class="string">"customerError"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            navigation = <span class="string">"customerRetrieved"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> navigation;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> List&lt;Customer&gt; retrieveAllCustomers()</span><br><span class="line">    &#123;</span><br><span class="line">        List&lt;Customer&gt; customers =</span><br><span class="line">            client.<span class="keyword">target</span>(<span class="string">"http://localhost:8080/customer/webapi/Customer"</span>)</span><br><span class="line">            .path(<span class="string">"all"</span>)</span><br><span class="line">            .request(MediaType.APPLICATION_XML)</span><br><span class="line">        .get(<span class="keyword">new</span> GenericType&lt;List&lt;Customer&gt;&gt;() &#123;&#125;);</span><br><span class="line">        <span class="keyword">return</span> customers;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不难看出，此客户端使用了POST和GET方法。<br>HTTP状态代码表示</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">success：<span class="number">201</span> POST</span><br><span class="line"><span class="number">200</span> GET</span><br><span class="line"><span class="number">204</span> DELETE</span><br></pre></td></tr></table></figure>
+<h2 id="JSON_Processing_1-0">JSON Processing 1.0</h2><h3 id="JAX-RS_JSONP">JAX-RS JSONP</h3><p>JAX-RS可自动读取并使用JAXB写入XML，但它也可以读写JSON数据。 JSON是从获得的数据交换一个简单的基于文本的格式JavaScript的。对于前述示例，一个产品的XML表示是</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="pi">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">product</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">id</span>&gt;</span>1<span class="tag">&lt;/<span class="title">id</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">name</span>&gt;</span>Mattress<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">description</span>&gt;</span>Queen size mattress<span class="tag">&lt;/<span class="title">description</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">price</span>&gt;</span>500<span class="tag">&lt;/<span class="title">price</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">product</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>用json格式表示为：</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">"<span class="attribute">id</span>":<span class="value"><span class="string">"1"</span></span>,</span><br><span class="line">"<span class="attribute">name</span>":<span class="value"><span class="string">"Mattress"</span></span>,</span><br><span class="line">"<span class="attribute">description</span>":<span class="value"><span class="string">"Queen size mattress"</span></span>,</span><br><span class="line">"<span class="attribute">price</span>":<span class="value"><span class="number">500</span></span><br><span class="line"></span>&#125;</span><br></pre></td></tr></table></figure>
+<p>   添加格式的应用程序/ JSON或MediaType.APPLICATION_JSON到<br>@Produces注释资源的方法来生产使用JSON数据响应：</p>
+<figure class="highlight less"><table><tr><td class="code"><pre><span class="line"><span class="variable">@GET</span></span><br><span class="line"><span class="variable">@Path</span>(<span class="string">"/get"</span>)</span><br><span class="line"><span class="variable">@Produces</span>(&#123;<span class="string">"application/xml"</span>,<span class="string">"application/json"</span>&#125;)</span><br><span class="line">public Product <span class="function">getProduct</span>() &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<p>这个例子中，默认响应是XML，但反应是一个JSON对象，如果客户端发出包含这个头的GET请求：</p>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line"><span class="attribute">Accept</span>: <span class="string">application/json</span></span><br></pre></td></tr></table></figure>
+<p>方法还可以接受JSON数据和JAXB注释类:  </p>
+<figure class="highlight less"><table><tr><td class="code"><pre><span class="line"><span class="variable">@POST</span></span><br><span class="line"><span class="variable">@Path</span>(<span class="string">"/create"</span>)</span><br><span class="line"><span class="variable">@Consumes</span>(&#123;<span class="string">"application/xml"</span>,<span class="string">"application/json"</span>&#125;)</span><br><span class="line">public Response <span class="function">createProduct</span>(Product prod) &#123; ...</span><br></pre></td></tr></table></figure>
+<p>则必须包含request post:</p>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line"><span class="attribute">Content-Type</span>: <span class="string">application/json</span></span><br></pre></td></tr></table></figure>
+<p>根据JAX-RS2.0规范，为JSON处理JSR-353的Java API的支持是强制性的要求，意味着消息reader(s)/writer(s)为以下几种类型的存在：JsonStructure，JsonArray和的JSONObject。在Apache CXF提供JsrJsonpProvider提供者的形式，例如一个支持被Apache CXF的JAX-RS扩展模块提供商(cxf-rt-rs-extension-providers)代码如下。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">jaxrs:providers</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="title">bean</span> <span class="attribute">class</span>=<span class="value">"org.apache.cxf.jaxrs.provider.jsrjsonp.JsrJsonpProvider"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">jaxrs:providers</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>单独加入JsrJsonpProvider提供商（或与其他提供者的组合）允许JAX-RS资源，以本身使用JsonStructure，JsonArray的JSONObject对象作为输入参数或返回值。 例如：<br>GET</p>
+<figure class="highlight less"><table><tr><td class="code"><pre><span class="line"><span class="variable">@Path</span>(<span class="string">"/books"</span>)</span><br><span class="line"><span class="variable">@Produces</span>(MediaType.APPLICATION_JSON)</span><br><span class="line">public JsonArray <span class="function">getBooks</span>() &#123;</span><br><span class="line">    <span class="comment">// Implementation here</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">@GET</span></span><br><span class="line"><span class="variable">@Path</span>(<span class="string">"/books/&#123;bookId&#125;"</span>)</span><br><span class="line"><span class="variable">@Produces</span>(MediaType.APPLICATION_JSON)</span><br><span class="line">public JsonObject <span class="function">getBook</span>(<span class="variable">@PathParam</span>(<span class="string">"bookId"</span>) Long id) &#123;</span><br><span class="line">    <span class="comment">// Implementation here</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">@POST</span></span><br><span class="line"><span class="variable">@Path</span>(<span class="string">"/books"</span>)</span><br><span class="line"><span class="variable">@Consumes</span>(MediaType.APPLICATION_JSON)</span><br><span class="line">public Response <span class="function">addBook</span>(<span class="variable">@Context</span> final UriInfo uriInfo, JsonObject obj) &#123;</span><br><span class="line">    <span class="comment">// Implementation here</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="WebSocket_1-0">WebSocket 1.0</h2><p>作为HTML5新特性之一的WebSocket组件，在实时性有一定要求的WEB应用开发 中还是有一定用武之地，高版本的IE、Chrome、FF浏览器都支持Websocket，标准的Websocket通信是基于RFC6455实现服务器 端与客户端握手与消息接发的。如果对Websocket通信不是太理解，可以查看RFC文档即可，简单说就是通过发送HTTP请求，实现双方握手，将无状 态的HTTP通信协议进一步升级成有状态的通信协议，同时Websocket还支持子协议选项与安全传输。标准的websocket连接URL以ws开 头，如果是基于TLS的则以wss开头。</p>
+<p>Java EE平台包括的WebSocket（JSR356），这使的Java API<br>您可以创建，配置和在Web应用程序部署的WebSocket端点。该<br>在JSR356中指定的WebSocket客户端API，您还可以访问远程的WebSocket端点从任何Java应用程序。</p>
+<h3 id="Echo_WebSocket">Echo WebSocket</h3><h4 id="websocket回声服务器">websocket回声服务器</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.websocket.demo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.nio.ByteBuffer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.websocket.OnMessage;</span><br><span class="line"><span class="keyword">import</span> javax.websocket.OnOpen;</span><br><span class="line"><span class="keyword">import</span> javax.websocket.Session;</span><br><span class="line"><span class="keyword">import</span> javax.websocket.server.ServerEndpoint;</span><br><span class="line"></span><br><span class="line"><span class="annotation">@ServerEndpoint</span>(value = <span class="string">"/echo"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EchoExample</span> </span>&#123;</span><br><span class="line">	</span><br><span class="line">	<span class="annotation">@OnMessage</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">echoTextMessage</span><span class="params">(Session session, String msg, <span class="keyword">boolean</span> last)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (session.isOpen()) &#123;</span><br><span class="line">				System.out.println(<span class="string">"received from client message = "</span> + msg);</span><br><span class="line">				session.getBasicRemote().sendText(msg, last);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				session.close();</span><br><span class="line">			&#125; <span class="keyword">catch</span> (IOException e1) &#123;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="annotation">@OnOpen</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">openConn</span><span class="params">(Session session)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    	session.getBasicRemote().sendText(<span class="string">"hello web socket"</span>); <span class="comment">// means open it</span></span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">    <span class="annotation">@OnMessage</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">echoBinaryMessage</span><span class="params">(Session session, ByteBuffer bb, <span class="keyword">boolean</span> last)</span> </span>&#123;</span><br><span class="line">    	System.out.println(<span class="string">"send binary message..."</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (session.isOpen()) &#123;</span><br><span class="line">            	System.out.println(<span class="string">"byte buffer lenghth : "</span> + bb.array().length);</span><br><span class="line">            	System.out.println(<span class="string">"byte buffer content: "</span> + ((bb.array()[<span class="number">0</span>]) &amp; <span class="number">0xff</span>));</span><br><span class="line">            	System.out.println(<span class="string">"byte buffer content: "</span> + ((bb.array()[<span class="number">1</span>]) &amp; <span class="number">0xff</span>));</span><br><span class="line">            	System.out.println(<span class="string">"byte buffer content: "</span> + ((bb.array()[<span class="number">2</span>]) &amp; <span class="number">0xff</span>));</span><br><span class="line">                session.getBasicRemote().sendBinary(bb, last);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                session.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e1) &#123;</span><br><span class="line">                <span class="comment">// Ignore</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="web-xml配置">web.xml配置</h4><figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">&lt;listener&gt;</span><br><span class="line">		&lt;listener-class&gt;org<span class="class">.apache</span><span class="class">.tomcat</span><span class="class">.websocket</span><span class="class">.server</span><span class="class">.WsContextListener</span>&lt;/listener-class&gt;</span><br><span class="line">&lt;/listener&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="ServerApplicationConfig接口">ServerApplicationConfig接口</h4><figure class="highlight nimrod"><table><tr><td class="code"><pre><span class="line">package com.config.websocket.client;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.<span class="type">HashSet</span>;</span><br><span class="line"><span class="keyword">import</span> java.util.<span class="type">Set</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.websocket.<span class="type">Endpoint</span>;</span><br><span class="line"><span class="keyword">import</span> javax.websocket.server.<span class="type">ServerApplicationConfig</span>;</span><br><span class="line"><span class="keyword">import</span> javax.websocket.server.<span class="type">ServerEndpointConfig</span>;</span><br><span class="line"></span><br><span class="line">public class <span class="type">ScanWebSocketSeverConfig</span> implements <span class="type">ServerApplicationConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">	@<span class="type">Override</span></span><br><span class="line">	public <span class="type">Set</span>&lt;<span class="type">ServerEndpointConfig</span>&gt; getEndpointConfigs(<span class="type">Set</span>&lt;<span class="type">Class</span>&lt;? extends <span class="type">Endpoint</span>&gt;&gt; scanned) &#123;</span><br><span class="line"></span><br><span class="line">		<span class="type">Set</span>&lt;<span class="type">ServerEndpointConfig</span>&gt; <span class="literal">result</span> = new <span class="type">HashSet</span>&lt;<span class="type">ServerEndpointConfig</span>&gt;();</span><br><span class="line">/*		<span class="keyword">if</span> (scanned.contains(<span class="type">EchoWsChatSever</span>.class)) &#123;</span><br><span class="line">			<span class="literal">result</span>.add(<span class="type">ServerEndpointConfig</span>.<span class="type">Builder</span>.create(<span class="type">EchoWsChatSever</span>.class, <span class="string">"/echo"</span>).build());</span><br><span class="line">		&#125;*/</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">result</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@<span class="type">Override</span></span><br><span class="line">	public <span class="type">Set</span>&lt;<span class="type">Class</span>&lt;?&gt;&gt; getAnnotatedEndpointClasses(<span class="type">Set</span>&lt;<span class="type">Class</span>&lt;?&gt;&gt; scanned) &#123;</span><br><span class="line">		<span class="type">Set</span>&lt;<span class="type">Class</span>&lt;?&gt;&gt; results = new <span class="type">HashSet</span>&lt;<span class="type">Class</span>&lt;?&gt;&gt;();</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">Class</span>&lt;?&gt; clazz : scanned) &#123;</span><br><span class="line">			<span class="keyword">if</span> (clazz.getPackage().getName().startsWith(<span class="string">"com.websocket."</span>)) &#123;</span><br><span class="line">				<span class="type">System</span>.<span class="keyword">out</span>.println(<span class="string">"find end point : "</span> + clazz.getName());</span><br><span class="line">				results.add(clazz);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> results;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="echo-html">echo.html</h4><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">title</span>&gt;</span>Web Socket Echo Test<span class="tag">&lt;/<span class="title">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">script</span>&gt;</span><span class="javascript"></span><br><span class="line">        <span class="keyword">var</span> ws = <span class="literal">null</span>;</span><br><span class="line">		<span class="keyword">var</span> count = <span class="number">0</span>;</span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">setConnected</span>(<span class="params">connected</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">document</span>.getElementById(<span class="string">'connect'</span>).disabled = connected;</span><br><span class="line">            <span class="built_in">document</span>.getElementById(<span class="string">'disconnect'</span>).disabled = !connected;</span><br><span class="line">            <span class="built_in">document</span>.getElementById(<span class="string">'echo'</span>).disabled  = !connected;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">connect</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">var</span> target = <span class="built_in">document</span>.getElementById(<span class="string">'target'</span>).value;</span><br><span class="line">            <span class="keyword">if</span> (target == <span class="string">''</span>) &#123;</span><br><span class="line">                alert(<span class="string">'Please select server side connection implementation.'</span>);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="string">'WebSocket'</span> <span class="keyword">in</span> <span class="built_in">window</span>) &#123;</span><br><span class="line">                ws = <span class="keyword">new</span> WebSocket(target);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">'MozWebSocket'</span> <span class="keyword">in</span> <span class="built_in">window</span>) &#123;</span><br><span class="line">                ws = <span class="keyword">new</span> MozWebSocket(target);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                alert(<span class="string">'WebSocket is not supported by this browser.'</span>);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            ws.onopen = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">                setConnected(<span class="literal">true</span>);</span><br><span class="line">                log(<span class="string">'Info: WebSocket connection opened.'</span>);</span><br><span class="line">            &#125;;</span><br><span class="line">            ws.onmessage = <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span><br><span class="line">                log(<span class="string">'Received: '</span> + event.data);</span><br><span class="line">                <span class="keyword">if</span>(event.data <span class="keyword">instanceof</span> <span class="built_in">ArrayBuffer</span>)</span><br><span class="line">               	&#123;</span><br><span class="line">                	<span class="keyword">var</span> bytes = <span class="keyword">new</span> <span class="built_in">Uint8Array</span>(event.data);</span><br><span class="line">                	alert(bytes.length + <span class="string">" : "</span> + bytes[<span class="number">0</span>]);</span><br><span class="line">               	&#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            ws.onclose = <span class="function"><span class="keyword">function</span> (<span class="params">event</span>) </span>&#123;</span><br><span class="line">                setConnected(<span class="literal">false</span>);</span><br><span class="line">                log(<span class="string">'Info: WebSocket connection closed, Code: '</span> + event.code + (event.reason == <span class="string">""</span> ? <span class="string">""</span> : <span class="string">", Reason: "</span> + event.reason));</span><br><span class="line">            &#125;;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">disconnect</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (ws != <span class="literal">null</span>) &#123;</span><br><span class="line">            	ws.doClose();</span><br><span class="line">            	ws = <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            setConnected(<span class="literal">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">echo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (ws != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">var</span> message = <span class="built_in">document</span>.getElementById(<span class="string">'message'</span>).value;</span><br><span class="line">                log(<span class="string">'Sent: '</span> + message);</span><br><span class="line">                ws.send(<span class="built_in">JSON</span>.stringify(&#123;<span class="string">'textMessage'</span>: message&#125;)); </span><br><span class="line">                count++</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                alert(<span class="string">'WebSocket connection not established, please connect.'</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">function</span> <span class="title">log</span>(<span class="params">message</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">var</span> echomsg = <span class="built_in">document</span>.getElementById(<span class="string">'echomsg'</span>);</span><br><span class="line">            <span class="keyword">var</span> p = <span class="built_in">document</span>.createElement(<span class="string">'p'</span>);</span><br><span class="line">            p.style.wordWrap = <span class="string">'break-word'</span>;</span><br><span class="line">            p.appendChild(<span class="built_in">document</span>.createTextNode(message));</span><br><span class="line">            echomsg.appendChild(p);</span><br><span class="line">            <span class="keyword">while</span> (echomsg.childNodes.length &gt; <span class="number">25</span>) &#123;</span><br><span class="line">            	echomsg.removeChild(<span class="built_in">console</span>.firstChild);</span><br><span class="line">            &#125;</span><br><span class="line">            echomsg.scrollTop = <span class="built_in">console</span>.scrollHeight;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">document</span>.addEventListener(<span class="string">"DOMContentLoaded"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">            <span class="comment">// Remove elements with "noscript" class - &lt;noscript&gt; is not allowed in XHTML</span></span><br><span class="line">            <span class="keyword">var</span> noscripts = <span class="built_in">document</span>.getElementsByClassName(<span class="string">"noscript"</span>);</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; noscripts.length; i++) &#123;</span><br><span class="line">                noscripts[i].parentNode.removeChild(noscripts[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="literal">false</span>);</span><br><span class="line"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">body</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="title">div</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="title">h4</span>&gt;</span>URL - ws://localhost:8080/websocket/echo<span class="tag">&lt;/<span class="title">h4</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="title">input</span> <span class="attribute">id</span>=<span class="value">"target"</span> <span class="attribute">type</span>=<span class="value">"text"</span> <span class="attribute">size</span>=<span class="value">"40"</span> <span class="attribute">style</span>=<span class="value">"width: 350px"</span> /&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="title">div</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="title">div</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="title">button</span> <span class="attribute">id</span>=<span class="value">"connect"</span> <span class="attribute">onclick</span>=<span class="value">"connect();"</span>&gt;</span>Connect<span class="tag">&lt;/<span class="title">button</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="title">button</span> <span class="attribute">id</span>=<span class="value">"disconnect"</span> <span class="attribute">disabled</span>=<span class="value">"disabled"</span> <span class="attribute">onclick</span>=<span class="value">"disconnect();"</span>&gt;</span>Disconnect<span class="tag">&lt;/<span class="title">button</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="title">div</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="title">div</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="title">textarea</span> <span class="attribute">id</span>=<span class="value">"message"</span> <span class="attribute">style</span>=<span class="value">"width: 350px"</span>&gt;</span>Here is a message!<span class="tag">&lt;/<span class="title">textarea</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="title">div</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="title">div</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="title">button</span> <span class="attribute">id</span>=<span class="value">"echo"</span> <span class="attribute">onclick</span>=<span class="value">"echo();"</span> <span class="attribute">disabled</span>=<span class="value">"disabled"</span>&gt;</span>Echo message<span class="tag">&lt;/<span class="title">button</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="title">div</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="title">div</span> <span class="attribute">id</span>=<span class="value">"echomsg"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="title">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="运行">运行</h4><p>打包部署到tomcat之后，启动chrom浏览器，输入地址：<code>http://localhost:8080/websocket/echo.html</code> </p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0636.png" alt="运行截图"><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0637.png" alt="项目类图"><br></center>
+
+
+
+
+<h3 id="Auction_WebSocket">Auction WebSocket</h3><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0640.png" alt="系统顺序图"><br></center>
+
+
+
+<h4 id="WebSocketDeviceServlet_类">WebSocketDeviceServlet 类</h4><p>买入类或者 拍卖类发起 WebSocket 长连接后，服务端接受请求的是 WebSocketDeviceServlet 类，跟传统 HttpServlet 不同的是，WebSocketDeviceServlet 类实现 createWebSocketInbound 方法，类似 SocketServer 的 accept 方法，新生产的 WebSocketInbound 实例对应客户端 HTTP 长连接，处理与客户端交互功能。<br>WebSocketDeviceServlet 服务端代码示例如下：</p>
+<figure class="highlight scala"><table><tr><td class="code"><pre><span class="line">public <span class="class"><span class="keyword">class</span> <span class="title">WebSocketDeviceServlet</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">org</span>.<span class="title">apache</span>.<span class="title">catalina</span>.<span class="title">websocket</span>.<span class="title">WebSocketServlet</span></span><br><span class="line"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> static <span class="keyword">final</span> long serialVersionUID = <span class="number">1</span>L;</span><br><span class="line"></span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="type">StreamInbound</span> createWebSocketInbound(<span class="type">String</span> subProtocol, <span class="type">HttpServletRequest</span> request)</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">WebSocketDeviceInbound</span> newClientConn = <span class="keyword">new</span> <span class="type">WebSocketDeviceInbound</span>(request);</span><br><span class="line">        <span class="type">WebSocketDeviceInboundPool</span>.addMessageInbound(newClientConn);</span><br><span class="line">        <span class="keyword">return</span> newClientConn;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>WebSocketServlet 是 WebSocket 协议的后台监听进程，和传统 HTTP 请求一样，WebSocketServlet 类似 Spring/Struct 中的 Servlet 监听进程，只不过通过客户端 ws 的前缀指定了其监听的协议为 WebSocket。<br>WebSocketDeviceInboundPool 实现了类似 JDBC 数据库连接池的客户端 WebSocket 连接池功能，并统一处理 WebSocket 服务端对单个客户端/多个客户端（同组 买家类拍卖物品）的消息推送，详见 WebSocketDeviceInboundPool 代码类解释。</p>
+<h4 id="WebSocketDeviceInboundl_类">WebSocketDeviceInboundl 类</h4><p>WebSocketDeviceInbound 类为每个 买家类和 卖家类拍卖物品验证登录后，客户端建立的 HTTP 长连接的对应后台服务类，类似 Socket 编程中的 SocketServer accept 后的 Socket 进程，在 WebSocketInbound 中接收客户端发送的实时位置信息等消息，并向客户端（卖家类拍卖物品）发送下属 买家类拍卖物品实时位置信息及位置分析结果数据，输入流和输出流都是 WebSocket 协议定制的。WsOutbound 负责输出结果，StreamInbound 和 WsInputStream 负责接收数据：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WebSocketDeviceInbound</span> <span class="keyword">extends</span> <span class="title">MessageInbound</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> HttpServletRequest request;</span><br><span class="line">    <span class="keyword">private</span> DeviceAccount connectedDevice;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DeviceAccount <span class="title">getConnectedDevice</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> connectedDevice;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setConnectedDevice</span><span class="params">(DeviceAccount connectedDevice)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.connectedDevice = connectedDevice;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HttpServletRequest <span class="title">getRequest</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> request;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">WebSocketDeviceInbound</span><span class="params">(HttpServletRequest request)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.request = request;</span><br><span class="line">        DeviceAccount connectedDa = (DeviceAccount)request.getSession(<span class="keyword">true</span>).getAttribute(<span class="string">"connectedDevice"</span>);</span><br><span class="line">        <span class="keyword">if</span>(connectedDa == <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            String deviceId = request.getParameter(<span class="string">"id"</span>);</span><br><span class="line">            DeviceAccountDao deviceDao = <span class="keyword">new</span> DeviceAccountDao();</span><br><span class="line">            connectedDa = deviceDao.getDaById(Integer.parseInt(deviceId));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.setConnectedDevice(connectedDa);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onOpen</span><span class="params">(WsOutbound outbound)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        /</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onClose</span><span class="params">(<span class="keyword">int</span> status)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        WebSocketDeviceInboundPool.removeMessageInbound(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onBinaryMessage</span><span class="params">(ByteBuffer message)</span> <span class="keyword">throws</span> IOException</span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException(<span class="string">"Binary message not supported."</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onTextMessage</span><span class="params">(CharBuffer message)</span> <span class="keyword">throws</span> IOException</span><br><span class="line">    </span>&#123;</span><br><span class="line">        WebSocketDeviceInboundPool.processTextMessage(<span class="keyword">this</span>, message.toString());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(BaseEvent event)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        String eventStr = JSON.toJSONString(event);</span><br><span class="line">        <span class="keyword">try</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">this</span>.getWsOutbound().writeTextMessage(CharBuffer.wrap(eventStr));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IOException e)</span><br><span class="line">        &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>connectedDevice 是当前连接的 A/卖家类客户端拍卖物品类实例，在这里做为成员变量以便后续处理交互。</p>
+<p>sendMessage 函数向客户端发送数据，使用 Websocket WsOutbound 输出流向客户端推送数据，数据格式统一为 JSON。</p>
+<p>onTextMessage 函数为客户端发送消息到服务器时触发事件，调用 WebSocketDeviceInboundPool 的 processTextMessage 统一处理 买家类拍卖物品的登入，更新位置，离线等消息。</p>
+<p>onClose 函数触发关闭事件，在连接池中移除连接。</p>
+<p>WebSocketDeviceInbound 构造函数为客户端建立连接后，WebSocketServlet 的 createWebSocketInbound 函数触发，查询 买家类/卖家类拍卖物品在后台数据库的详细数据并实例化 connectedDevice 做为 WebSocketDeviceInbound 的成员变量，WebSocketServlet 类此时将新的 WebSocketInbound 实例加入自定义的 WebSocketDeviceInboundPool 连接池中，以便统一处理 A/B 拍卖物品组员关系及位置分布信息计算等业务逻辑。</p>
+<h4 id="WebSocketDeviceInboundl_类-1">WebSocketDeviceInboundl 类</h4><p>WebSocketInboundPool 类: 由于需要处理大量 买家类 卖家类拍卖物品的实时消息，服务端会同时存在大量 HTTP 长连接，为统一管理和有效利用 HTTP 长连接资源，项目中使用了简单的 HashMap 实现内存连接池机制，每次拍卖物品登入新建的 WebSocketInbound 都放入 WebSocketInbound 实例的连接池中，当拍卖物品登出时，从连接池中 remove 对应的 WebSocketInbound 实例。</p>
+<p>此外，WebSocketInboundPool 类还承担 WebSocket 客户端处理 买家类和 卖家类拍卖物品间消息传递的作用，在客户端发送 买家类拍卖物品登入、登出及位置更新消息的时候，服务端 WebSocketInboundPool 进行位置分布信息的计算，并将计算完的结果向同时在线的 卖家类拍卖物品推送。</p>
+<p>代码如下:</p>
+<figure class="highlight cs"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">WebSocketDeviceInboundPool</span></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> final ArrayList&lt;WebSocketDeviceInbound&gt; connections =</span><br><span class="line">        <span class="keyword">new</span> ArrayList&lt;WebSocketDeviceInbound&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">addMessageInbound</span>(<span class="params">WebSocketDeviceInbound inbound</span>)</span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="comment">//添加连接</span></span><br><span class="line">        DeviceAccount da = inbound.getConnectedDevice();</span><br><span class="line">        System.<span class="keyword">out</span>.println(<span class="string">"新上线拍卖物品 : "</span> + da.getDeviceNm());</span><br><span class="line">        connections.add(inbound);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ArrayList&lt;DeviceAccount&gt; <span class="title">getOnlineDevices</span>(<span class="params"></span>)</span><br><span class="line">    </span>&#123;</span><br><span class="line">        ArrayList&lt;DeviceAccount&gt; onlineDevices = <span class="keyword">new</span> ArrayList&lt;DeviceAccount&gt;();</span><br><span class="line">        <span class="keyword">for</span>(WebSocketDeviceInbound webClient: connections)</span><br><span class="line">        &#123;</span><br><span class="line">            onlineDevices.add(webClient.getConnectedDevice());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> onlineDevices;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> WebSocketDeviceInbound <span class="title">getGroupBDevices</span>(<span class="params">String <span class="keyword">group</span></span>)</span><br><span class="line">    </span>&#123;</span><br><span class="line">        WebSocketDeviceInbound retWebClient = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">for</span>(WebSocketDeviceInbound webClient: connections)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(webClient.getConnectedDevice().getDeviceGroup().equals(<span class="keyword">group</span>) &amp;&amp;</span><br><span class="line">                    webClient.getConnectedDevice().getType().equals(<span class="string">"B"</span>))</span><br><span class="line">            &#123;</span><br><span class="line">                retWebClient = webClient;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> retWebClient;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">removeMessageInbound</span>(<span class="params">WebSocketDeviceInbound inbound</span>)</span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="comment">//移除连接</span></span><br><span class="line">        System.<span class="keyword">out</span>.println(<span class="string">"拍卖物品离线 : "</span> + inbound.getConnectedDevice());</span><br><span class="line">        connections.remove(inbound);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">processTextMessage</span>(<span class="params">WebSocketDeviceInbound inbound, String message</span>)</span><br><span class="line">    </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        BaseEvent receiveEvent = (BaseEvent)JSON.parseObject(message.toString(), BaseEvent.class);</span><br><span class="line">        DBEventHandleImpl dbEventHandle = <span class="keyword">new</span> DBEventHandleImpl();</span><br><span class="line">        dbEventHandle.setReceiveEvent(receiveEvent);</span><br><span class="line">        dbEventHandle.HandleEvent();</span><br><span class="line">        <span class="keyword">if</span>(receiveEvent.getEventType() == EventConst.EVENT_MATCHMATIC_RESULT ||</span><br><span class="line">                receiveEvent.getEventType() == EventConst.EVENT_GROUP_DEVICES_RESULT ||</span><br><span class="line">                receiveEvent.getEventType() == EventConst.EVENT_A_REPAIRE)</span><br><span class="line">        &#123;</span><br><span class="line">            String clientDeviceGroup = ((ArrayList&lt;DeviceAccount&gt;)</span><br><span class="line">                                        receiveEvent.getEventObjs()).<span class="keyword">get</span>(<span class="number">0</span>).getDeviceGroup();</span><br><span class="line">            WebSocketDeviceInbound bClient = getGroupBDevices(clientDeviceGroup);</span><br><span class="line">            <span class="keyword">if</span>(bClient != <span class="keyword">null</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                sendMessageToSingleClient(bClient, dbEventHandle.getReceiveEvent());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sendMessageToAllDevices</span>(<span class="params">BaseEvent <span class="keyword">event</span></span>)</span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (WebSocketDeviceInbound webClient : connections)</span><br><span class="line">        &#123;</span><br><span class="line">            webClient.sendMessage(<span class="keyword">event</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (Exception e)</span><br><span class="line">    &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sendMessageToSingleClient</span>(<span class="params">WebSocketDeviceInbound webClient, BaseEvent <span class="keyword">event</span></span>)</span><br><span class="line"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        webClient.sendMessage(<span class="keyword">event</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (Exception e)</span><br><span class="line">    &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>addMessageInbound 函数向连接池中添加客户端建立好的连接。</p>
+<p>getOnlineDevices 函数获取所有的连线的 A/卖家类拍卖物品。</p>
+<p>removeMessageInbound 函数实现 买家类拍卖物品或者 卖家类拍卖物品离线退出（服务端收到客户端关闭 WebSocket 连接事件，触发 WebSocketInbound 中的 onClose 方法），从连接池中删除连接拍卖物品客户端的连接实例。</p>
+<p>processTextMessage 完成处理客户端消息，这里使用了消息处理的机制，包括解码客户端消息，根据消息构造 Event 事件，通过 EventHandle 多线程处理，处理完后向客户端返回，可以向该组 B 拍卖物品推送消息，也可以向发送消息的客户端推送消息。</p>
+<p>sendMessageToAllDevices 函数实现发送数据给所有在线 A/卖家类拍卖物品客户端。sendMessageToSingleClient 函数实现向某一 A/卖家类拍卖物品客户端发送数据。</p>
+<h4 id="websocket-js客户端">websocket.js客户端</h4><p>客户端代码 websocket.js，客户端使用标准 HTML5 定义的 WebSocket API，从而保证支持 IE9+，Chrome，FireFox 等多种浏览器，并结合 jQueryJS 库 API 处理 JSON 数据的处理及发送。代码如下:</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> websocket=<span class="built_in">window</span>.WebSocket || <span class="built_in">window</span>.MozWebSocket; </span><br><span class="line"><span class="keyword">var</span> isConnected = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doOpen</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line"> isConnected = <span class="literal">true</span>;</span><br><span class="line"><span class="keyword">if</span>(deviceType==<span class="string">'B'</span>)&#123;</span><br><span class="line"> mapArea=<span class="string">'mapB'</span>;</span><br><span class="line"> doLoginB(mapArea);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">else</span>&#123;</span><br><span class="line"> mapArea=<span class="string">'mapA'</span>;</span><br><span class="line"> doLoginA(mapArea);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doClose</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">showDiagMsg(<span class="string">"infoField"</span>,<span class="string">"已经断开连接"</span>, <span class="string">"infoDialog"</span>);</span><br><span class="line">isConnected = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doError</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">showDiagMsg(<span class="string">"infoField"</span>,<span class="string">"连接异常!"</span>, <span class="string">"infoDialog"</span>);</span><br><span class="line">isConnected = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doMessage</span>(<span class="params">message</span>)</span>&#123;</span><br><span class="line"><span class="keyword">var</span> event = $.parseJSON(message.data);</span><br><span class="line">doReciveEvent(event);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doSend</span>(<span class="params">message</span>) </span>&#123;</span><br><span class="line"><span class="keyword">if</span> (websocket != <span class="literal">null</span>) &#123;</span><br><span class="line">websocket.send(<span class="built_in">JSON</span>.stringify(message));</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">showDiagMsg(<span class="string">"infoField"</span>,<span class="string">"您已经掉线，无法与服务器通信!"</span>, <span class="string">"infoDialog"</span>);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//初始话 WebSocket</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">initWebSocket</span>(<span class="params">wcUrl</span>) </span>&#123;</span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">window</span>.WebSocket) &#123;</span><br><span class="line">websocket = <span class="keyword">new</span> WebSocket(<span class="built_in">encodeURI</span>(wcUrl));</span><br><span class="line">websocket.onopen = doOpen;</span><br><span class="line">websocket.onerror = doError;</span><br><span class="line">websocket.onclose = doClose;</span><br><span class="line">websocket.onmessage = doMessage;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line">showDiagMsg(<span class="string">"infoField"</span>,<span class="string">"您的拍卖物品不支持 webSocket!"</span>, <span class="string">"infoDialog"</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doReciveEvent</span>(<span class="params">event</span>)</span>&#123;</span><br><span class="line"><span class="comment">//拍卖物品不存在，客户端断开连接</span></span><br><span class="line"><span class="keyword">if</span>(event.eventType==<span class="number">101</span>)&#123;</span><br><span class="line">showDiagMsg(<span class="string">"infoField"</span>,<span class="string">"拍卖物品不存在或拍卖物品号密码错!"</span>, <span class="string">"infoDialog"</span>);</span><br><span class="line">websocket.close();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//返回组拍卖物品及计算目标位置信息，更新地图</span></span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span>(event.eventType==<span class="number">104</span>||event.eventType==<span class="number">103</span>)&#123;</span><br><span class="line">clearGMapOverlays(mapB); </span><br><span class="line"> $.each(event.eventObjs,<span class="function"><span class="keyword">function</span>(<span class="params">idx,item</span>)</span>&#123;</span><br><span class="line"> <span class="keyword">var</span> deviceNm = item.deviceNm;</span><br><span class="line"> <span class="comment">//google api</span></span><br><span class="line"><span class="comment">// var deviceLocale = new google.maps.LatLng(item.lag,item.lat);</span></span><br><span class="line"><span class="comment">//baidu api</span></span><br><span class="line"> <span class="keyword">var</span> deviceLocale = <span class="keyword">new</span> BMap.Point(item.lng,item.lat);</span><br><span class="line"> <span class="keyword">var</span> newMarker;</span><br><span class="line"> <span class="keyword">if</span>(item.status==<span class="string">'target'</span>)&#123;</span><br><span class="line"> newMarker = addMarkToMap(mapB,deviceLocale,deviceNm,<span class="literal">true</span>);</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">else</span>&#123;</span><br><span class="line"> newMarker = addMarkToMap(mapB,deviceLocale,deviceNm);</span><br><span class="line"> &#125; </span><br><span class="line"> markArray.push(newMarker);</span><br><span class="line"> &#125;);</span><br><span class="line"> showDiagMsg(<span class="string">"infoField"</span>,<span class="string">"有新报修拍卖物品或拍卖物品离线, 地图已更新！"</span>, <span class="string">"infoDialog"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>oOpen 回调函数处理打开 WebSocket，买家类拍卖物品或者卖家类拍卖物品连接上 WebSocket 服务端后，将初始化地图并显示默认位置，然后向服务端发送拍卖物品登入的消息。</p>
+<p>doReciveEvent 函数处理关闭 WebSocket，买家类/卖家类拍卖物品离线（退出移动终端上的应用）时，服务端关闭 HTTP 长连接，客户端 WebSocket 对象执行 onclose 回调句柄。</p>
+<p>initWebSocket 初始化 WebSocket，连接 WebSocket 服务端，并设置处理回调句柄，如果浏览器版本过低而不支持 HTML5，提示客户拍卖物品不支持 WebSocket。</p>
+<p>doSend 函数处理客户端向服务端发送消息，注意 message 是 JSON OBJ 对象，通过 JSON 标准 API 格式化字符串。</p>
+<p>doMessage 函数处理 WebSocket 服务端返回的消息，后台返回的 message 为 JSON 字符串，通过 jQuery 的 parseJSON API 格式化为 JSON Object 以便客户端处理 doReciveEvent 函数时客户端收到服务端返回消息的具体处理，由于涉及大量业务逻辑在此不再赘述。</p>
+<h4 id="项目类图">项目类图</h4><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0638.png" alt=" 项目类图"><br></center>
+
+
+
+<h1 id="结果分析">结果分析</h1><p>Java EE 7 新特性中加强了对 HTML 5 动态可伸缩应用程序的支持、提高了开发人员的生产力和进一步满足了企业的苛刻需求。Java EE 7 使得开发人员可以使用依赖注入和默认资源的样本文件来减少代码的编写；更好地支持最新的 Web 应用和框架，拥有更好的扩展性和更丰富的功能；使得企业从便捷式批处理等新功能中获益。</p>
+<p>(1)提高开发人员的生产力</p>
+<p>从 Java EE 5 开始，重心就一直放在提高开发人员的生产力上。这对于 Java 开发者来说非常重要，因为这使得使用 Java EE 进行开发更加便捷，更重要的是能够满足快速管理和生产的需求。鉴于此，Java EE 7 大大提高了开发人员的生产力。首先，减少了编写大量核心业务逻辑所需要的样板代码。其次，该平台引入更多的注释 POJOS 来降低 XML 配置的复杂性。最后，Java EE 7 使用更紧密集成的技术，提供一个更加无缝的开发体验。</p>
+<p>(2)减少冗余代码</p>
+<p>Java EE 7 一直在致力于减少在核心业务逻辑代码运行前必须执行的样板代码。减少样板代码的三大核心区域是默认资源、JMS 2.0 和 JAX-RS 客户端 API。默认资源是一个新的功能，要求平台提供商预配置一个默认的数据源和一个默认的 JMS 连接工厂。这可以让开发人员直接使用默认的资源而无需进行额外的定义。JMS2.0 在可伸缩性和可移植性上经历了重大的改进，减少了冗余代码，已运用在无数的产品部署上，事实证明它是一个良好的规范，能够较好地满足企业的需求。</p>
+<p>(3)更多带注释的POJO</p>
+<p>通过注释 Java EE 使开发人员更专注于 Java 对象的编程而无需关注繁琐的配置。</p>
+<p>CDI 现在默认情况下已不需要使用 beans.xml 文件就可以直接使用。开发人员可以不需要任何配置而是简单的使用 @Inject 来注入任何 Java 对象。包括新的资源注释 @JMSDestinationDefinition 和 @MailSessionDefinition ，使得开发人员在源代码中就可以指定元数据资源，简化了 DevOps 体验。</p>
+<p>(4)更紧密集成的平台</p>
+<p>Java EE 6 引入了 Managed Beans 1.0 作为第一步来朝着 EJBs、JSF Managed Beans 和 CDI beans 发展。Java EE 7 继承了这一点，例如，对 JSF Managed Beans 进行了改进来更好支持 CDI Beans。Java EE 7 为平台引入了易用的 EJB 容器管理事物，使用基于 CDI 拦截器的解决方案来保证事务可用在 CDI managed beans 和其它 Java EE 组件中，把注释 @Transactional 应用到任何 CDI bean 或者任何支持事务的方法中。</p>
+<p>Bean Validation 在 Java EE 7 中使用广泛，现在可以用于方法级别的验证，包括内置和自定义的约束。约束可被应用于方法的参数以及返回值。约束也可以使用灵活渲染和违反约束的字符串格式的 Java EE 的表达语言。</p>
+<p>Bean Validation 也延伸到 JAX-RS 2.0。注释约束可以应用到公共构造函数的参数、方法参数、字段和 bean 的属性。此外，他们还可以修饰资源类、实体参数和资源的方法。例如，约束可以通过 @ POST 和 @ PUT 应用于 JAX-RS 方法参数来验证表单提交的数据。</p>
+<p>(5)通过精简现有技术来简化Java EE</p>
+<p>Java EE 7 中新增加了许多新的特性，有些老的特性和功能已经被更简单的特性所替代或直接弃用。Java EE 6 为过时技术的弃用和功能的修剪引入了一个正式的流程，以下的 API 在 Java EE 7 中已成可选，但在 Java EE 8 中将会被移除：</p>
+<p>Java EE Management (JSR-77)，原本是用于为应用 服务器创建监控管理的 API，可各大供应商对此 API 热情并不高涨；</p>
+<p>Java EE Application Deployment (JSR-88)，JSR 88 是当初用于 J2EE 应用程序在应用 服务器上进行配置和部署的标准 API 。可是该 API 始终没有得到众供应商的支持；</p>
+<p>JAX-RPC，是早期通过 RPC 调用和 SOAP web services 进行交互的编程模型。由于 Web services 成熟后从 RPC 模型中分离出来，被更加健壮和具备更多特性的 JAX-WS API 所替代；</p>
+<p>EJB 2.x Entity Beans CMP，复杂、笨重、过度复杂的 EJB2.* 的 Entity Bean 模型已经被 Java EE 5 的基于 POJO 的流行轻量级 JPA 持久层模型所代替。</p>
+<p>(6)对 HTML 5 动态可伸缩应用程序的支持</p>
+<p>HTML5 是包括 HTML、JavaScript 和 CSS3 在内的一套技术组合，它加快了开发人员创建高度互动的应用程序的步伐。开发出的应用程序都是以高度互动的方式提供实时的数据，如聊天应用程序，比赛实况报 导等，并且这些应用程序只需要编写一次，就可以应用在桌面、移动客户端等不同设备上，具有非常好的跨平台性。这些高度动态的应用程序，使得用户可以在任何 地点任何时间进行访问，从而对服务器端向客户端传送数据的规模提出了更高的要求。Java EE 7 在更新现有技术如 JAX-RS 2.0、Java Server Faces 2.2、和 Servlet 3.1 NIO 基础上，又借助新的应用技术 WebSockets 和 JSON 处理为支持动态应用程序 HTML5 奠定了坚实的基础。</p>
+<p>(7)低延迟数据交换：Java API for WebSocket 1.0</p>
+<p>越来越多的 web 应用程序依赖于从中央服务器及时获取并更新数据。基于 HTTP 的 WebSockets 为解决低延迟和双向通信提供了一种解决方案。在 WebSocket API 的最基层是一个带注释的 Java 对象（POJO），如下边代码所示：<br>带注释的 Java 对象（POJO）</p>
+<figure class="highlight less"><table><tr><td class="code"><pre><span class="line"><span class="variable">@ServerEndpoint</span>(<span class="string">"/test"</span>) </span><br><span class="line"> public class TestEndpoint&#123; </span><br><span class="line"> <span class="variable">@OnOpen</span> </span><br><span class="line">	 public void <span class="function">onOpen</span>(...)&#123; &#125; </span><br><span class="line"> <span class="variable">@OnClose</span> </span><br><span class="line">	 public void <span class="function">onClose</span>(...)&#123; &#125; </span><br><span class="line">     <span class="variable">@OnError</span> </span><br><span class="line"> public void <span class="function">onError</span>(...)&#123; &#125; </span><br><span class="line"> <span class="variable">@OnMessage</span> </span><br><span class="line"> public void <span class="function">testMessage</span>(String message,...)&#123; &#125; </span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>通过注释 @ServerEndpoint 来指定一个 URI。诸如客户端连接、接收消息和客户端断开这样的回调函数都可以用注释来指定。WebSocket API 的最基层支持发送和接收简单文本和二进制信息。API 的简单性也使得开发人员可以快速入门。</p>
+<p>当然，功能丰富的应用拥有更复杂的需求，因此需要支持对最基础的网络协议进行控制和自定义，而 WebSocket API 正好能够满足以上需求。另外，WebSocket 利用现有 Web 容器的安全特性，开发人员只需付出较少的代价就可以建立良好的保密通信。</p>
+<p>(8)简化应用数据分析和处理：Java API for JSON Processing 1.0<br>JSON 作为一个轻量级的数据交换格式被应用在许多流行的 Web 服务中用来调用和返回数据。许多流行的在线服务都是使用基于 JSON 的 RESTful 服务。在 Java EE 7 之前，Java 应用程序使用了不同的类库去生成和解析 RESTful 服务中的 JSON 对象。然而，现在这个功能已被标准化。</p>
+<p>通过 Java API 中的 JSON Processing 1.0，JSON 处理过程标准化为一个单一的 API，应用程序不需要使用第三方的类库。这样使得应用程序更小更简便。同时 API 包括了支持任何转换器和生成器实现的插件，使得开发人员可以选择最好的实现方式去完成工作。</p>
+<p>(9)可扩展的RESTful服务：JAX-RS 2.0<br>JAX-RS 2.0 增加了异步响应处理，这对于支持对数据有着高要求的 HTML5 客户端的扩展是至关重要的。异步处理是一种更好更有效利用线程处理的技术。在服务器端，处理请求的线程在等待外部任务去完成时应该避免阻塞，从而保证在这 一时间段内到达的其他请求能够得到响应。</p>
+<p>同样的，在客户端，一个发出请求的线程在等待响应的时候也会发生阻塞，这影响了应用程序的性能。新 的 JAX-RS 2.0 异步客户端 API 使得客户端调用 RESTful 可以和其他客户端活动并行执行。异步的好处是使得一个客户端可以同时调用多个后台服务，对于一个使用者来说减少了总体的延迟时间。</p>
+<p>同时为了增强 RESTful 服务，JAX-RS 2.0 开发人员可以使用过滤器和实体拦截器。这样开发人员就可以使用标准的 API 来实现过滤和拦截功能，使开发过程变得更加便捷和高效。</p>
+<p>(10)增强开发的易用性：JSF 2.2</p>
+<p>JavaServer Faces (JSF) 是一种用于构建 Web 应用程序的 Java 新标准框架。它提供了一种以组件为中心来开发 Java Web 用户界面的方法，从而简化了开发。在这个版本中，JSF 增加了对 HTML5 的支持。JSF 2.2 增加了一个叫“pass-through elements”的新功能。并为现有的元素增加了一系列的新属性，如输入元素“tel”、“range”和“date”等。</p>
+<p>不幸的是，现有的 JSF 组件不能识别这些新的属性，因此 JSF 应用程序会忽略这些属性不能进行使用，直到创建专有的解决方案。对于“pass-through elements”，JSF 渲染器将会忽略这些元素，只是把它们传给支持 HTML5 的浏览器，这使得可以利用现有的 JSF 组件来利用 HTML5 的特性来正常渲染。</p>
+<p>JSF 引入了一个新的 pass-through 命名空间 <code>http://xmlns.jcp.org/jsf/passthrough</code> 映射到“p:”，任何组件的 name/value 对都可以以“p:” 开始，然后传给浏览器。如清单 2 所示，HTML 5 “type=color”不需要 JSF 组件的任何解析就可以传递给浏览器。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">h:inputText</span> <span class="attribute">Value</span>=<span class="value">”#&#123;bean.color&#125;”</span> <span class="attribute">P:type</span>=<span class="value">”color”</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>HTML5 的动态性使得服务器端处理信息更新的请求不断增多。在 Java EE 6，Servlet 异步 I/O 通过移除“一个请求需要一个线程”的限制，使一个线程可以处理多个并发请求。这可以使 HTML5 客户端快速得到响应。但是，如果服务器端读取数据的速度比客户端发送的速度要快，那么可能会由于缓慢的客户端连接而不能提供更多的数据导致线程阻塞，这样 就限制了扩展性。在 Java EE 7 中使用新的事件驱动 API Servlet 3.1 从客户端读取数据将不会造成阻塞。如果有数据可用时，Servlet 线程将会读取和处理这些数据，否则就去处理其他请求。</p>
+<p>(11)满足苛刻的企业需求</p>
+<p>Java EE 十几年来一直努力满足企业的需求，使用 Java 连接器连接到企业服务端、使用 Java 事务支持事务处理、使用 Java 消息服务让系统间可以进行相互通信。现在企业希望利用开发人员的 Java 技能编写基于标准的 API 并能够跨平台运行的批处理应用程序。企业也需构建高度可扩展的应用来满足更高的服务要求并提高现有资产的利用率。Concurrency Utilities 使得 Java EE 开发人员编写可扩展的应用程序成为可能。</p>
+<p>(12)在Java平台中，提高批处理应用程序的效率使开发过程变得更加便捷和高效</p>
+<p>绝 大部分的 Java EE 应用都是在线用户驱动的系统，但同时有一些需要进行批处理的服务器端应用程序，尤其是离线分析和 ETL 等。这些面向批处理的应用程序是非交互式的、需要长时间运行，这些任务通常需要大量计算，同时可以按顺序或者并行执行，并可以通过特定的事件启动或者定时 调度。批处理较适合选择闲置的时间进行处理，这样可以有效利用计算机资源。</p>
+<p>以前，对于批处理程序没有标准的 Java 编程模型。现在，批处理应用程序为 Java 平台提供了如图4.1 非常容易理解的模型。批处理过程包括任务、步骤、存储库、读取 - 处理 - 写入模式和工作流等。</p>
+<p>如图4.1 所示，一个任务 job 代表一系列执行离散业务流程但又密切相关的步骤。步骤可以按顺序或者并行执行。同时，在同一个工作流，当前步骤是可选的，基于前一步骤的运行结果决定当前 步骤将被执行或者跳过。另外，步骤可以根据实际的需要被重新执行。存储库 (repository) 存储了当前任务的信息，比如任务的最后执行时间。<br>通过操作员 (operator) 可以对任务进行排序、开始、停止、暂停和取消操作。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0639.png" alt=" 用步骤描述工作"><br></center>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/01/04/大数据可视化Google-Chart实现/" title="大数据可视化Google Chart实现">
+  <strong>上一篇：</strong><br/>
+  <span>
+  大数据可视化Google Chart实现</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/12/26/一个用Python编写的股票数据（沪深）爬虫和选股策略测试框架/"  title="一个用Python编写的股票数据（沪深）爬虫和选股策略测试框架">
+ <strong>下一篇：</strong><br/> 
+ <span>一个用Python编写的股票数据（沪深）爬虫和选股策略测试框架
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2016/01/02/JAVA-EE-7-SDK-Tutorial-分析/" data-title="JAVA EE 7 SDK Tutorial 分析" data-url="http://pangjiuzala.github.io/2016/01/02/JAVA-EE-7-SDK-Tutorial-分析/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">1.</span> <span class="toc-text">原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#新特性"><span class="toc-number">1.1.</span> <span class="toc-text">新特性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#应用模型"><span class="toc-number">1.2.</span> <span class="toc-text">应用模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#分布式多层应用程序"><span class="toc-number">1.3.</span> <span class="toc-text">分布式多层应用程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Web层"><span class="toc-number">1.4.</span> <span class="toc-text">Web层</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#源码解析"><span class="toc-number">2.</span> <span class="toc-text">源码解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Servlet_3-1"><span class="toc-number">2.1.</span> <span class="toc-text">Servlet 3.1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Annotations_Servlet"><span class="toc-number">2.1.1.</span> <span class="toc-text">Annotations Servlet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Absolute_Ordering_of_Web_Fragments"><span class="toc-number">2.1.2.</span> <span class="toc-text">Absolute Ordering of Web Fragments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File_Upload"><span class="toc-number">2.1.3.</span> <span class="toc-text">File Upload</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JAX-RS_2-0"><span class="toc-number">2.2.</span> <span class="toc-text">JAX-RS 2.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Asynchronous_Chat_JAX-RS"><span class="toc-number">2.2.1.</span> <span class="toc-text">Asynchronous Chat JAX-RS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#客户和地址实体类"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">客户和地址实体类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CustomerService类"><span class="toc-number">2.2.1.2.</span> <span class="toc-text">CustomerService类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CustomerBean类"><span class="toc-number">2.2.1.3.</span> <span class="toc-text">CustomerBean类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JSON_Processing_1-0"><span class="toc-number">2.3.</span> <span class="toc-text">JSON Processing 1.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JAX-RS_JSONP"><span class="toc-number">2.3.1.</span> <span class="toc-text">JAX-RS JSONP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket_1-0"><span class="toc-number">2.4.</span> <span class="toc-text">WebSocket 1.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Echo_WebSocket"><span class="toc-number">2.4.1.</span> <span class="toc-text">Echo WebSocket</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#websocket回声服务器"><span class="toc-number">2.4.1.1.</span> <span class="toc-text">websocket回声服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#web-xml配置"><span class="toc-number">2.4.1.2.</span> <span class="toc-text">web.xml配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ServerApplicationConfig接口"><span class="toc-number">2.4.1.3.</span> <span class="toc-text">ServerApplicationConfig接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#echo-html"><span class="toc-number">2.4.1.4.</span> <span class="toc-text">echo.html</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#运行"><span class="toc-number">2.4.1.5.</span> <span class="toc-text">运行</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Auction_WebSocket"><span class="toc-number">2.4.2.</span> <span class="toc-text">Auction WebSocket</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocketDeviceServlet_类"><span class="toc-number">2.4.2.1.</span> <span class="toc-text">WebSocketDeviceServlet 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocketDeviceInboundl_类"><span class="toc-number">2.4.2.2.</span> <span class="toc-text">WebSocketDeviceInboundl 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WebSocketDeviceInboundl_类-1"><span class="toc-number">2.4.2.3.</span> <span class="toc-text">WebSocketDeviceInboundl 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#websocket-js客户端"><span class="toc-number">2.4.2.4.</span> <span class="toc-text">websocket.js客户端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#项目类图"><span class="toc-number">2.4.2.5.</span> <span class="toc-text">项目类图</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#结果分析"><span class="toc-number">3.</span> <span class="toc-text">结果分析</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

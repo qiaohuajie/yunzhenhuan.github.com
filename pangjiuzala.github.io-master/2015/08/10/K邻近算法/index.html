@@ -1,0 +1,606 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>K邻近算法 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="k-近邻算法是基于实例的学习方法中最基本的，先介绍基于实例学习的相关概念。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="K邻近算法">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/10/K邻近算法/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="k-近邻算法是基于实例的学习方法中最基本的，先介绍基于实例学习的相关概念。">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0144.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0145.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0147.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0148.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0149.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0150.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0151.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0152.png">
+<meta property="og:updated_time" content="2015-09-02T05:44:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="K邻近算法">
+<meta name="twitter:description" content="k-近邻算法是基于实例的学习方法中最基本的，先介绍基于实例学习的相关概念。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/10/K邻近算法/" title="K邻近算法" itemprop="url">K邻近算法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-09T21:21:55.000Z" itemprop="datePublished"> 发表于 2015-08-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#基于实例的学习。"><span class="toc-number">1.</span> <span class="toc-text">基于实例的学习。</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#k-近邻法"><span class="toc-number">2.</span> <span class="toc-text">k-近邻法</span></a></li></ol>
+		
+		</div>
+		
+		<p>k-近邻算法是基于实例的学习方法中最基本的，先介绍基于实例学习的相关概念。<br><a id="more"></a></p>
+<h1 id="基于实例的学习。">基于实例的学习。</h1><p>1、已知一系列的训练样例，很多学习方法为目标函数建立起明确的一般化描述；但与此不同，基于实例的学习方法只是简单地把训练样例存储起来。<br>从这些实例中泛化的工作被推迟到必须分类新的实例时。每当学习器遇到一个新的查询实例，它分析这个新实例与以前存储的实例的关系，并据此把一个目标函数值赋给新实例。</p>
+<p>2、基于实例的方法可以为不同的待分类查询实例建立不同的目标函数逼近。事实上，很多技术只建立目标函数的局部逼近，将其应用于与新查询实例邻近的实例，而从不建立在整个实例空间上都表现良好的逼近。当目标函数很复杂，但它可用不太复杂的局部逼近描述时，这样做有显著的优势。</p>
+<p>3、基于实例方法的不足：</p>
+<p>（1）分类新实例的开销可能很大。这是因为几乎所有的计算都发生在分类时，而不是在第一次遇到训练样例时。所以，如何有效地索引训练样例，以减少查询时所需计算是一个重要的实践问题。</p>
+<p>（2）当从存储器中检索相似的训练样例时，它们一般考虑实例的所有属性。如果目标概念仅依赖于很多属性中的几个时，那么真正最“相似”的实例之间很可能相距甚远。</p>
+<h1 id="k-近邻法">k-近邻法</h1><p>基于实例的学习方法中最基本的是k-近邻算法。这个算法假定所有的实例对应于n维欧氏空间Ân中的点。一个实例的最近邻是根据标准欧氏距离定义的。更精确地讲，把任意的实例x表示为下面的特征向量：<br><code>&lt;a1(x)，a2(x)，...，an(x)&gt;</code><br>其中ar(x)表示实例x的第r个属性值。那么两个实例xi和xj间的距离定义为d(xi,xj)，其中：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0144.png" alt=""><br></center><br>说明：<br>1、在最近邻学习中，目标函数值可以为离散值也可以为实值。<br><br><br>2、我们先考虑学习以下形式的离散目标函数。其中V是有限集合{v1，…vs}。下表给出了逼近离散目标函数的k-近邻算法。<br><br><br>3、正如下表中所指出的，这个算法的返回值f’(xq)为对f(xq)的估计，它就是距离xq最近的k个训练样例中最普遍的f值。<br><br>4、如果我们选择k=1，那么“1-近邻算法”就把f(xi)赋给(xq)，其中xi是最靠近xq的训练实例。对于较大的k值，这个算法返回前k个最靠近的训练实例中最普遍的f值。<br><br><br>逼近离散值函数f: Ân_V的k-近邻算法<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0145.png" alt=""><br></center>
+
+
+<p>下图图解了一种简单情况下的k-近邻算法，在这里实例是二维空间中的点，目标函数具有布尔值。正反训练样例用“+”和“-”分别表示。图中也画出了一个查询点xq。注意在这幅图中，1-近邻算法把xq分类为正例，然而5-近邻算法把xq分类为反例。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0147.png" alt=""><br></center><br>图解说明：左图画出了一系列的正反训练样例和一个要分类的查询实例xq。1-近邻算法把xq分类为正例，然而5-近邻算法把xq分类为反例。<br>右图是对于一个典型的训练样例集合1-近邻算法导致的决策面。围绕每个训练样例的凸多边形表示最靠近这个点的实例空间（即这个空间中的实例会被1-近邻算法赋予该训练样例所属的分类）。<br><br><br>对前面的k-近邻算法作简单的修改后，它就可被用于逼近连续值的目标函数。为了实现这一点，我们让算法计算k个最接近样例的平均值，而不是计算其中的最普遍的值。更精确地讲，为了逼近一个实值目标函数，我们只要把算法中的公式替换为：<br><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0148.png" alt=""><br></center>
+
+<p>距离加权最近邻算法<br>对k-近邻算法的一个显而易见的改进是对k个近邻的贡献加权，根据它们相对查询点xq的距离，将较大的权值赋给较近的近邻。<br>例如，在上表逼近离散目标函数的算法中，我们可以根据每个近邻与xq的距离平方的倒数加权这个近邻的“选举权”。<br>方法是通过用下式取代上表算法中的公式来实现：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0149.png" alt=""><br></center><br>其中<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0150.png" alt=""><br></center><br>为了处理查询点xq恰好匹配某个训练样例xi，从而导致分母为0的情况，我们令这种情况下的f ‘(xq)等于f(xi)。如果有多个这样的训练样例，我们使用它们中占多数的分类。<br>我们也可以用类似的方式对实值目标函数进行距离加权，只要用下式替换上表的公式：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0151.png" alt=""><br></center><br>其中wi的定义与之前公式中相同。<br>注意这个公式中的分母是一个常量，它将不同权值的贡献归一化（例如，它保证如果对所有的训练样例xi，f(xi)=c，那么(xq)&lt;–c）。<br>注意以上k-近邻算法的所有变体都只考虑k个近邻以分类查询点。如果使用按距离加权，那么允许所有的训练样例影响xq的分类事实上没有坏处，因为非常远的实例对(xq)的影响很小。考虑所有样例的惟一不足是会使分类运行得更慢。如果分类一个新的查询实例时考虑所有的训练样例，我们称此为全局（global）法。如果仅考虑最靠近的训练样例，我们称此为局部（local）法。<br><br><br>对k-近邻算法的说明<br><br>按距离加权的k-近邻算法是一种非常有效的归纳推理方法。它对训练数据中的噪声有很好的鲁棒性，而且当给定足够大的训练集合时它也非常有效。注意通过取k个近邻的加权平均，可以消除孤立的噪声样例的影响。<br><br><br>1、问题一：近邻间的距离会被大量的不相关属性所支配。<br>应用k-近邻算法的一个实践问题是，实例间的距离是根据实例的所有属性（也就是包含实例的欧氏空间的所有坐标轴）计算的。这与那些只选择全部实例属性的一个子集的方法不同，例如决策树学习系统。<br>比如这样一个问题：每个实例由20个属性描述，但在这些属性中仅有2个与它的分类是有关。在这种情况下，这两个相关属性的值一致的实例可能在这个20维的实例空间中相距很远。结果，依赖这20个属性的相似性度量会误导k-近邻算法的分类。近邻间的距离会被大量的不相关属性所支配。这种由于存在很多不相关属性所导致的难题，有时被称为维度灾难（curse of dimensionality）。最近邻方法对这个问题特别敏感。<br><br><br>2、解决方法：当计算两个实例间的距离时对每个属性加权。<br>这相当于按比例缩放欧氏空间中的坐标轴，缩短对应于不太相关属性的坐标轴，拉长对应于更相关的属性的坐标轴。每个坐标轴应伸展的数量可以通过交叉验证的方法自动决定。<br><br><br>3、问题二：应用k-近邻算法的另外一个实践问题是如何建立高效的索引。因为这个算法推迟所有的处理，直到接收到一个新的查询，所以处理每个新查询可能需要大量的计算。<br><br><br>4、解决方法：目前已经开发了很多方法用来对存储的训练样例进行索引，以便在增加一定存储开销情况下更高效地确定最近邻。一种索引方法是kd-tree（Bentley 1975；Friedman et al. 1977），它把实例存储在树的叶结点内，邻近的实例存储在同一个或附近的结点内。通过测试新查询xq的选定属性，树的内部结点把查询xq排列到相关的叶结点。<br><br><br>python版本：<br>这里实现一个手写识别算法，这里只简单识别0~9熟悉，在上篇文章中也展示了手写识别的应用，可以参考：机器学习与数据挖掘-logistic回归及手写识别实例的实现<br>输入：每个手写数字已经事先处理成32*32的二进制文本，存储为txt文件。0～9每个数字都有10个训练样本，5个测试样本。训练样本集如下图：左边是文件目录，右边是其中一个文件打开显示的结果，看着像1，这里有0~9，每个数字都有是个样本来作为训练集。<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0152.png" alt=""><br></center>
+
+
+<p>第一步：将每个txt文本转化为一个向量，即32<em>32的数组转化为1</em>1024的数组，这个1*1024的数组用机器学习的术语来说就是特征向量。</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">[python] view plaincopy</span><br><span class="line">&lt;<span class="tag">span</span> style=<span class="string">"font-size:14px;"</span>&gt;def <span class="function"><span class="title">img2vector</span><span class="params">(filename)</span></span>:  </span><br><span class="line">    returnVect = <span class="function"><span class="title">zeros</span><span class="params">((<span class="number">1</span>,<span class="number">1024</span>)</span></span>)  </span><br><span class="line">    fr = <span class="function"><span class="title">open</span><span class="params">(filename)</span></span>  </span><br><span class="line">    <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> <span class="function"><span class="title">range</span><span class="params">(<span class="number">32</span>)</span></span>:  </span><br><span class="line">        lineStr = fr.<span class="function"><span class="title">readline</span><span class="params">()</span></span>  </span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="function"><span class="title">range</span><span class="params">(<span class="number">32</span>)</span></span>:  </span><br><span class="line">            returnVect[<span class="number">0</span>,<span class="number">32</span>*i+j] = <span class="function"><span class="title">int</span><span class="params">(lineStr[j])</span></span>  </span><br><span class="line">    return returnVect&lt;/span&gt;</span><br></pre></td></tr></table></figure>
+<p>第二步：训练样本中有10<em>10个图片，可以合并成一个100</em>1024的矩阵，每一行对应一个图片，也就是一个txt文档。</p>
+<figure class="highlight scheme"><table><tr><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">python</span>] view plaincopy</span><br><span class="line">def handwritingClassTest<span class="list">()</span>:  </span><br><span class="line">  </span><br><span class="line">    hwLabels = <span class="list">[]  </span><br><span class="line">    trainingFileList = listdir<span class="list">(<span class="variable">'trainingDigits</span>')</span>    </span><br><span class="line">    print trainingFileList          </span><br><span class="line">    m = len<span class="list">(<span class="keyword">trainingFileList</span>)</span>  </span><br><span class="line">    trainingMat = zeros<span class="list">(<span class="list">(<span class="keyword">m</span>,<span class="number">1024</span>)</span>)</span>  </span><br><span class="line">    for i in range<span class="list">(<span class="keyword">m</span>)</span>:  </span><br><span class="line">        fileNameStr = trainingFileList<span class="list">[<span class="keyword">i</span>]            </span><br><span class="line">        fileStr = fileNameStr.split<span class="list">(<span class="variable">'.</span>')</span><span class="list">[<span class="keyword">0</span>]  </span><br><span class="line">        classNumStr = int<span class="list">(<span class="keyword">fileStr.split</span><span class="list">(<span class="variable">'_</span>')</span><span class="list">[<span class="keyword">0</span>])   </span><br><span class="line">        hwLabels.append<span class="list">(<span class="keyword">classNumStr</span>)</span>  </span><br><span class="line">        #print hwLabels  </span><br><span class="line">        #print fileNameStr     </span><br><span class="line">        trainingMat<span class="list">[<span class="keyword">i</span>,:] = img2vector<span class="list">(<span class="variable">'trainingDigits/%s</span>' % fileNameStr)</span>  </span><br><span class="line">        #print trainingMat<span class="list">[<span class="keyword">i</span>,:]   </span><br><span class="line">        #print len<span class="list">(<span class="keyword">trainingMat</span><span class="list">[<span class="keyword">i</span>,:])  </span><br><span class="line">       </span><br><span class="line">    testFileList = listdir<span class="list">(<span class="variable">'testDigits</span>')</span>         </span><br><span class="line">    errorCount = <span class="number">0.0</span>  </span><br><span class="line">    mTest = len<span class="list">(<span class="keyword">testFileList</span>)</span>  </span><br><span class="line">    for i in range<span class="list">(<span class="keyword">mTest</span>)</span>:  </span><br><span class="line">        fileNameStr = testFileList<span class="list">[<span class="keyword">i</span>]  </span><br><span class="line">        fileStr = fileNameStr.split<span class="list">(<span class="variable">'.</span>')</span><span class="list">[<span class="keyword">0</span>]       </span><br><span class="line">        classNumStr = int<span class="list">(<span class="keyword">fileStr.split</span><span class="list">(<span class="variable">'_</span>')</span><span class="list">[<span class="keyword">0</span>])  </span><br><span class="line">        vectorUnderTest = img2vector<span class="list">(<span class="variable">'testDigits/%s</span>' % fileNameStr)</span>  </span><br><span class="line">        classifierResult = classify0<span class="list">(<span class="keyword">vectorUnderTest</span>, trainingMat, hwLabels, <span class="number">3</span>)</span>  </span><br><span class="line">        print <span class="string">"the classifier came back with: %d, the real answer is: %d"</span> % <span class="list">(<span class="keyword">classifierResult</span>, classNumStr)</span>  </span><br><span class="line">        if <span class="list">(<span class="keyword">classifierResult</span> != classNumStr)</span>: errorCount += <span class="number">1.0</span>  </span><br><span class="line">    print <span class="string">"\nthe total number of errors is: %d"</span> % errorCount  </span><br><span class="line">    print <span class="string">"\nthe total error rate is: %f"</span> % <span class="list">(<span class="keyword">errorCount/float</span><span class="list">(<span class="keyword">mTest</span>)</span>)</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><br></pre></td></tr></table></figure>
+<p>第三步：测试样本中有10<em>5个图片，同样的，对于测试图片，将其转化为1</em>1024的向量，然后计算它与训练样本中各个图片的“距离”（这里两个向量的距离采用欧式距离），然后对距离排序，选出较小的前k个，因为这k个样本来自训练集，是已知其代表的数字的，所以被测试图片所代表的数字就可以确定为这k个中出现次数最多的那个数字。</p>
+<figure class="highlight scheme"><table><tr><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">python</span>] view plaincopy</span><br><span class="line">def classify0<span class="list">(<span class="keyword">inX</span>, dataSet, labels, k)</span>:  </span><br><span class="line">    dataSetSize = dataSet.shape<span class="list">[<span class="keyword">0</span>]  </span><br><span class="line">    <span class="literal">#t</span>ile<span class="list">(<span class="keyword">A</span>,<span class="list">(<span class="keyword">m</span>,n)</span>)</span>     </span><br><span class="line">    print dataSet  </span><br><span class="line">    print <span class="string">"----------------"</span>  </span><br><span class="line">    print tile<span class="list">(<span class="keyword">inX</span>, <span class="list">(<span class="keyword">dataSetSize</span>,<span class="number">1</span>)</span>)</span>  </span><br><span class="line">    print <span class="string">"----------------"</span>  </span><br><span class="line">    diffMat = tile<span class="list">(<span class="keyword">inX</span>, <span class="list">(<span class="keyword">dataSetSize</span>,<span class="number">1</span>)</span>)</span> - dataSet        </span><br><span class="line">    print diffMat  </span><br><span class="line">    sqDiffMat = diffMat**2  </span><br><span class="line">    sqDistances = sqDiffMat.sum<span class="list">(<span class="keyword">axis=1</span>)</span>                    </span><br><span class="line">    distances = sqDistances**0.5  </span><br><span class="line">    sortedDistIndicies = distances.argsort<span class="list">()</span>              </span><br><span class="line">    classCount=&#123;&#125;                                        </span><br><span class="line">    for i in range<span class="list">(<span class="keyword">k</span>)</span>:  </span><br><span class="line">        voteIlabel = labels<span class="list">[<span class="keyword">sortedDistIndicies</span><span class="list">[<span class="keyword">i</span>]]  </span><br><span class="line">        classCount<span class="list">[<span class="keyword">voteIlabel</span>] = classCount.get<span class="list">(<span class="keyword">voteIlabel</span>,<span class="number">0</span>)</span> + <span class="number">1</span>  </span><br><span class="line">    sortedClassCount = sorted<span class="list">(<span class="keyword">classCount.iteritems</span><span class="list">()</span>, key=operator.itemgetter<span class="list">(<span class="keyword">1</span>)</span>, reverse=True)</span>  </span><br><span class="line">    return sortedClassCount<span class="list">[<span class="keyword">0</span>]<span class="list">[<span class="keyword">0</span>]</span></span></span></span></span></span></span></span><br></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/数据挖掘/">数据挖掘</a><a href="/tags/算法/">算法</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/11/Hadoop与Spark常用参数配置/" title="Hadoop与Spark常用参数配置">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Hadoop与Spark常用参数配置</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/09/宝贵数据集-用于数据挖掘、机器学习、文本分析等/"  title="宝贵数据集-用于数据挖掘、机器学习、文本分析等">
+ <strong>下一篇：</strong><br/> 
+ <span>宝贵数据集-用于数据挖掘、机器学习、文本分析等
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/10/K邻近算法/" data-title="K邻近算法" data-url="http://pangjiuzala.github.io/2015/08/10/K邻近算法/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#基于实例的学习。"><span class="toc-number">1.</span> <span class="toc-text">基于实例的学习。</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#k-近邻法"><span class="toc-number">2.</span> <span class="toc-text">k-近邻法</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

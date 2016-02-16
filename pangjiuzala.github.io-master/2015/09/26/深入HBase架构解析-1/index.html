@@ -1,0 +1,713 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>深入HBase架构解析(1) | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="HBase架构组成HBase采用Master/Slave架构搭建集群，它隶属于Hadoop生态系统，由一下类型节点组成：HMaster节点、HRegionServer节点、ZooKeeper集群，而在底层，它将数据存储于HDFS中，因而涉及到HDFS的NameNode、DataNode等，总体结构如下：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入HBase架构解析(1)">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/09/26/深入HBase架构解析-1/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="HBase架构组成HBase采用Master/Slave架构搭建集群，它隶属于Hadoop生态系统，由一下类型节点组成：HMaster节点、HRegionServer节点、ZooKeeper集群，而在底层，它将数据存储于HDFS中，因而涉及到HDFS的NameNode、DataNode等，总体结构如下：">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0289.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0290.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0291.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0292.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0293.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0294.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0295.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0296.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0297.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0298.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0299.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0300.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0301.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0302.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0303.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0304.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0305.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0306.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0307.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0308.png">
+<meta property="og:updated_time" content="2015-09-28T14:43:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入HBase架构解析(1)">
+<meta name="twitter:description" content="HBase架构组成HBase采用Master/Slave架构搭建集群，它隶属于Hadoop生态系统，由一下类型节点组成：HMaster节点、HRegionServer节点、ZooKeeper集群，而在底层，它将数据存储于HDFS中，因而涉及到HDFS的NameNode、DataNode等，总体结构如下：">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/09/26/深入HBase架构解析-1/" title="深入HBase架构解析(1)" itemprop="url">深入HBase架构解析(1)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-09-26T14:26:05.000Z" itemprop="datePublished"> 发表于 2015-09-26</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HBase架构组成"><span class="toc-number">1.</span> <span class="toc-text">HBase架构组成</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HRegion"><span class="toc-number">2.</span> <span class="toc-text">HRegion</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HMaster"><span class="toc-number">3.</span> <span class="toc-text">HMaster</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Admin职能"><span class="toc-number">4.</span> <span class="toc-text">Admin职能</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ZooKeeper：协调者"><span class="toc-number">5.</span> <span class="toc-text">ZooKeeper：协调者</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HBase的第一次读写"><span class="toc-number">6.</span> <span class="toc-text">HBase的第一次读写</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#hbase:meta表"><span class="toc-number">7.</span> <span class="toc-text">hbase:meta表</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HRegionServer详解"><span class="toc-number">8.</span> <span class="toc-text">HRegionServer详解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HRegionServer中数据写流程图解"><span class="toc-number">9.</span> <span class="toc-text">HRegionServer中数据写流程图解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MemStore_Flush"><span class="toc-number">10.</span> <span class="toc-text">MemStore Flush</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HFile格式"><span class="toc-number">11.</span> <span class="toc-text">HFile格式</span></a></li></ol>
+		
+		</div>
+		
+		<h1 id="HBase架构组成">HBase架构组成</h1><p>HBase采用Master/Slave架构搭建集群，它隶属于Hadoop生态系统，由一下类型节点组成：HMaster节点、HRegionServer节点、ZooKeeper集群，而在底层，它将数据存储于HDFS中，因而涉及到HDFS的NameNode、DataNode等，总体结构如下：<br><a id="more"></a></p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0289.png" alt=""><br></center>
+
+<p>其中HMaster节点用于：</p>
+<p>管理HRegionServer，实现其负载均衡。</p>
+<p>管理和分配HRegion，比如在HRegion split时分配新的HRegion；在HRegionServer退出时迁移其内的HRegion到其他HRegionServer上。</p>
+<p>实现DDL操作（Data Definition Language，namespace和table的增删改，column familiy的增删改等）。</p>
+<p>管理namespace和table的元数据（实际存储在HDFS上）。</p>
+<p>权限控制（ACL）。</p>
+<p>HRegionServer节点用于：</p>
+<p>存放和管理本地HRegion。</p>
+<p>读写HDFS，管理Table中的数据。</p>
+<p>Client直接通过HRegionServer读写数据（从HMaster中获取元数据，找到RowKey所在的HRegion/HRegionServer后）。</p>
+<p>ZooKeeper集群是协调系统，用于：</p>
+<p>存放整个 HBase集群的元数据以及集群的状态信息。</p>
+<p>实现HMaster主从节点的failover。</p>
+<p>HBase Client通过RPC方式和HMaster、HRegionServer通信；一个HRegionServer可以存放1000个HRegion；底层Table数据存储于HDFS中，而HRegion所处理的数据尽量和数据所在的DataNode在一起，实现数据的本地化；数据本地化并不是总能实现，比如在HRegion移动(如因Split)时，需要等下一次Compact才能继续回到本地化。</p>
+<p>本着半翻译的原则，再贴一个《An In-Depth Look At The HBase Architecture》的架构图：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0290.png" alt=""><br></center>
+
+<p>这个架构图比较清晰的表达了HMaster和NameNode都支持多个热备份，使用ZooKeeper来做协调；ZooKeeper并不是云般神秘，它一般由三台机器组成一个集群，内部使用PAXOS算法支持三台Server中的一台宕机，也有使用五台机器的，此时则可以支持同时两台宕机，既少于半数的宕机，然而随着机器的增加，它的性能也会下降；RegionServer和DataNode一般会放在相同的Server上实现数据的本地化。</p>
+<h1 id="HRegion">HRegion</h1><p>HBase使用RowKey将表水平切割成多个HRegion，从HMaster的角度，每个HRegion都纪录了它的StartKey和EndKey（第一个HRegion的StartKey为空，最后一个HRegion的EndKey为空），由于RowKey是排序的，因而Client可以通过HMaster快速的定位每个RowKey在哪个HRegion中。HRegion由HMaster分配到相应的HRegionServer中，然后由HRegionServer负责HRegion的启动和管理，和Client的通信，负责数据的读(使用HDFS)。每个HRegionServer可以同时管理1000个左右的HRegion（这个数字怎么来的？没有从代码中看到限制，难道是出于经验？超过1000个会引起性能问题？）。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0291.png" alt=""><br></center>
+
+<h1 id="HMaster">HMaster</h1><p>HMaster没有单点故障问题，可以启动多个HMaster，通过ZooKeeper的Master Election机制保证同时只有一个HMaster出于Active状态，其他的HMaster则处于热备份状态。一般情况下会启动两个HMaster，非Active的HMaster会定期的和Active HMaster通信以获取其最新状态，从而保证它是实时更新的，因而如果启动了多个HMaster反而增加了Active HMaster的负担。前文已经介绍过了HMaster的主要用于HRegion的分配和管理，DDL(Data Definition Language，既Table的新建、删除、修改等)的实现等，既它主要有两方面的职责：</p>
+<p>1.协调HRegionServer</p>
+<p>启动时HRegion的分配，以及负载均衡和修复时HRegion的重新分配。</p>
+<p>监控集群中所有HRegionServer的状态(通过Heartbeat和监听ZooKeeper中的状态)。</p>
+<h1 id="Admin职能">Admin职能</h1><p>创建、删除、修改Table的定义。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0292.png" alt=""><br></center>
+
+
+<h1 id="ZooKeeper：协调者">ZooKeeper：协调者</h1><p>ZooKeeper为HBase集群提供协调服务，它管理着HMaster和HRegionServer的状态(available/alive等)，并且会在它们宕机时通知给HMaster，从而HMaster可以实现HMaster之间的failover，或对宕机的HRegionServer中的HRegion集合的修复(将它们分配给其他的HRegionServer)。ZooKeeper集群本身使用一致性协议(PAXOS协议)保证每个节点状态的一致性。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0293.png" alt=""><br></center>
+
+<p>How The Components Work Together</p>
+<p>ZooKeeper协调集群所有节点的共享信息，在HMaster和HRegionServer连接到ZooKeeper后创建Ephemeral节点，并使用Heartbeat机制维持这个节点的存活状态，如果某个Ephemeral节点实效，则HMaster会收到通知，并做相应的处理。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0294.png" alt=""><br></center>
+
+
+<p>另外，HMaster通过监听ZooKeeper中的Ephemeral节点(默认：/hbase/rs/*)来监控HRegionServer的加入和宕机。在第一个HMaster连接到ZooKeeper时会创建Ephemeral节点(默认：/hbasae/master)来表示Active的HMaster，其后加进来的HMaster则监听该Ephemeral节点，如果当前Active的HMaster宕机，则该节点消失，因而其他HMaster得到通知，而将自身转换成Active的HMaster，在变为Active的HMaster之前，它会创建在/hbase/back-masters/下创建自己的Ephemeral节点。</p>
+<h1 id="HBase的第一次读写">HBase的第一次读写</h1><p>在HBase 0.96以前，HBase有两个特殊的Table：-ROOT-和.META.（如BigTable中的设计），其中-ROOT- Table的位置存储在ZooKeeper，它存储了.META. Table的RegionInfo信息，并且它只能存在一个HRegion，而.META. Table则存储了用户Table的RegionInfo信息，它可以被切分成多个HRegion，因而对第一次访问用户Table时，首先从ZooKeeper中读取-ROOT- Table所在HRegionServer；然后从该HRegionServer中根据请求的TableName，RowKey读取.META. Table所在HRegionServer；最后从该HRegionServer中读取.META. Table的内容而获取此次请求需要访问的HRegion所在的位置，然后访问该HRegionSever获取请求的数据，这需要三次请求才能找到用户Table所在的位置，然后第四次请求开始获取真正的数据。当然为了提升性能，客户端会缓存-ROOT- Table位置以及-ROOT-/.META. Table的内容。如下图所示：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0295.png" alt=""><br></center>
+
+<p>可是即使客户端有缓存，在初始阶段需要三次请求才能直到用户Table真正所在的位置也是性能低下的，而且真的有必要支持那么多的HRegion吗？或许对Google这样的公司来说是需要的，但是对一般的集群来说好像并没有这个必要。在BigTable的论文中说，每行METADATA存储1KB左右数据，中等大小的Tablet(HRegion)在128MB左右，3层位置的Schema设计可以支持2^34个Tablet(HRegion)。即使去掉-ROOT- Table，也还可以支持2^17(131072)个HRegion， 如果每个HRegion还是128MB，那就是16TB，这个貌似不够大，但是现在的HRegion的最大大小都会设置的比较大，比如我们设置了2GB，此时支持的大小则变成了4PB，对一般的集群来说已经够了，因而在HBase 0.96以后去掉了-ROOT- Table，只剩下这个特殊的目录表叫做Meta Table(hbase:meta)，它存储了集群中所有用户HRegion的位置信息，而ZooKeeper的节点中(/hbase/meta-region-server)存储的则直接是这个Meta Table的位置，并且这个Meta Table如以前的-ROOT- Table一样是不可split的。这样，客户端在第一次访问用户Table的流程就变成了：</p>
+<p>从ZooKeeper(/hbase/meta-region-server)中获取hbase:meta的位置（HRegionServer的位置），缓存该位置信息。</p>
+<p>从HRegionServer中查询用户Table对应请求的RowKey所在的HRegionServer，缓存该位置信息。</p>
+<p>从查询到HRegionServer中读取Row。</p>
+<p>从这个过程中，我们发现客户会缓存这些位置信息，然而第二步它只是缓存当前RowKey对应的HRegion的位置，因而如果下一个要查的RowKey不在同一个HRegion中，则需要继续查询hbase:meta所在的HRegion，然而随着时间的推移，客户端缓存的位置信息越来越多，以至于不需要再次查找hbase:meta Table的信息，除非某个HRegion因为宕机或Split被移动，此时需要重新查询并且更新缓存。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0296.png" alt=""><br></center>
+
+
+<h1 id="hbase:meta表">hbase:meta表</h1><p>hbase:meta表存储了所有用户HRegion的位置信息，它的RowKey是：tableName,regionStartKey,regionId,replicaId等，它只有info列族，这个列族包含三个列，他们分别是：info:regioninfo列是RegionInfo的proto格式：regionId,tableName,startKey,endKey,offline,split,replicaId；info:server格式：HRegionServer对应的server:port；info:serverstartcode格式是HRegionServer的启动时间戳。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0297.png" alt=""><br></center>
+
+
+<h1 id="HRegionServer详解">HRegionServer详解</h1><p>HRegionServer一般和DataNode在同一台机器上运行，实现数据的本地性。HRegionServer包含多个HRegion，由WAL(HLog)、BlockCache、MemStore、HFile组成。</p>
+<p>1.WAL即Write Ahead Log，在早期版本中称为HLog，它是HDFS上的一个文件，如其名字所表示的，所有写操作都会先保证将数据写入这个Log文件后，才会真正更新MemStore，最后写入HFile中。采用这种模式，可以保证HRegionServer宕机后，我们依然可以从该Log文件中读取数据，Replay所有的操作，而不至于数据丢失。这个Log文件会定期Roll出新的文件而删除旧的文件(那些已持久化到HFile中的Log可以删除)。WAL文件存储在/hbase/WALs/${HRegionServer_Name}的目录中(在0.94之前，存储在/hbase/.logs/目录中)，一般一个HRegionServer只有一个WAL实例，也就是说一个HRegionServer的所有WAL写都是串行的(就像log4j的日志写也是串行的)，这当然会引起性能问题，因而在HBase 1.0之后，通过HBASE-5699实现了多个WAL并行写(MultiWAL)，该实现采用HDFS的多个管道写，以单个HRegion为单位。关于WAL可以参考Wikipedia的Write-Ahead Logging。顺便吐槽一句，英文版的维基百科竟然能毫无压力的正常访问了，这是某个GFW的疏忽还是以后的常态？</p>
+<p>2.BlockCache是一个读缓存，即“引用局部性”原理（也应用于CPU，分空间局部性和时间局部性，空间局部性是指CPU在某一时刻需要某个数据，那么有很大的概率在一下时刻它需要的数据在其附近；时间局部性是指某个数据在被访问过一次后，它有很大的概率在不久的将来会被再次的访问），将数据预读取到内存中，以提升读的性能。HBase中提供两种BlockCache的实现：默认on-heap LruBlockCache和BucketCache(通常是off-heap)。通常BucketCache的性能要差于LruBlockCache，然而由于GC的影响，LruBlockCache的延迟会变的不稳定，而BucketCache由于是自己管理BlockCache，而不需要GC，因而它的延迟通常比较稳定，这也是有些时候需要选用BucketCache的原因。这篇文章BlockCache101对on-heap和off-heap的BlockCache做了详细的比较。</p>
+<p>3.HRegion是一个Table中的一个Region在一个HRegionServer中的表达。一个Table可以有一个或多个Region，他们可以在一个相同的HRegionServer上，也可以分布在不同的HRegionServer上，一个HRegionServer可以有多个HRegion，他们分别属于不同的Table。HRegion由多个Store(HStore)构成，每个HStore对应了一个Table在这个HRegion中的一个Column Family，即每个Column Family就是一个集中的存储单元，因而最好将具有相近IO特性的Column存储在一个Column Family，以实现高效读取(数据局部性原理，可以提高缓存的命中率)。HStore是HBase中存储的核心，它实现了读写HDFS功能，一个HStore由一个MemStore 和0个或多个StoreFile组成。</p>
+<p>MemStore是一个写缓存(In Memory Sorted Buffer)，所有数据的写在完成WAL日志写后，会 写入MemStore中，由MemStore根据一定的算法将数据Flush到地层HDFS文件中(HFile)，通常每个HRegion中的每个 Column Family有一个自己的MemStore。</p>
+<p>HFile(StoreFile) 用于存储HBase的数据(Cell/KeyValue)。在HFile中的数据是按RowKey、Column Family、Column排序，对相同的Cell(即这三个值都一样)，则按timestamp倒序排列。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0298.png" alt=""><br></center>
+
+<p>虽然上面这张图展现的是最新的HRegionServer的架构(但是并不是那么的精确)，但是我一直比较喜欢看以下这张图，即使它展现的应该是0.94以前的架构。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0299.png" alt=""><br></center>
+
+
+<h1 id="HRegionServer中数据写流程图解">HRegionServer中数据写流程图解</h1><p>当客户端发起一个Put请求时，首先它从hbase:meta表中查出该Put数据最终需要去的HRegionServer。然后客户端将Put请求发送给相应的HRegionServer，在HRegionServer中它首先会将该Put操作写入WAL日志文件中(Flush到磁盘中)。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0300.png" alt=""><br></center>
+
+<p>写完WAL日志文件后，HRegionServer根据Put中的TableName和RowKey找到对应的HRegion，并根据Column Family找到对应的HStore，并将Put写入到该HStore的MemStore中。此时写成功，并返回通知客户端。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0301.png" alt=""><br></center>
+
+
+
+<h1 id="MemStore_Flush">MemStore Flush</h1><p>MemStore是一个In Memory Sorted Buffer，在每个HStore中都有一个MemStore，即它是一个HRegion的一个Column Family对应一个实例。它的排列顺序以RowKey、Column Family、Column的顺序以及Timestamp的倒序，如下所示：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0302.png" alt=""><br></center>
+
+
+<p>每一次Put/Delete请求都是先写入到MemStore中，当MemStore满后会Flush成一个新的StoreFile(底层实现是HFile)，即一个HStore(Column Family)可以有0个或多个StoreFile(HFile)。有以下三种情况可以触发MemStore的Flush动作，需要注意的是MemStore的最小Flush单元是HRegion而不是单个MemStore。据说这是Column Family有个数限制的其中一个原因，估计是因为太多的Column Family一起Flush会引起性能问题？具体原因有待考证。</p>
+<p>当一个MemStore的大小超过了hbase.hregion.memstore.flush.size的大小，默认128MB。此时当前的HRegion中所有的MemStore会Flush到HDFS中。</p>
+<p>当全局MemStore的大小超过了hbase.regionserver.global.memstore.upperLimit的大小，默认40％的内存使用量。此时当前HRegionServer中所有HRegion中的MemStore都会Flush到HDFS中，Flush顺序是MemStore大小的倒序（一个HRegion中所有MemStore总和作为该HRegion的MemStore的大小还是选取最大的MemStore作为参考？有待考证），直到总体的MemStore使用量低于hbase.regionserver.global.memstore.lowerLimit，默认38%的内存使用量。</p>
+<p>当前HRegionServer中WAL的大小超过了hbase.regionserver.hlog.blocksize <em> hbase.regionserver.max.logs的数量，当前HRegionServer中所有HRegion中的MemStore都会Flush到HDFS中，Flush使用时间顺序，最早的MemStore先Flush直到WAL的数量少于hbase.regionserver.hlog.blocksize </em> hbase.regionserver.max.logs。这里说这两个相乘的默认大小是2GB，查代码，hbase.regionserver.max.logs默认值是32，而hbase.regionserver.hlog.blocksize是HDFS的默认blocksize，32MB。但不管怎么样，因为这个大小超过限制引起的Flush不是一件好事，可能引起长时间的延迟，因而这篇文章给的建议：“Hint: keep hbase.regionserver.hlog.blocksize <em> hbase.regionserver.maxlogs just a bit above hbase.regionserver.global.memstore.lowerLimit </em> HBASE_HEAPSIZE.”。并且需要注意，这里给的描述是有错的(虽然它是官方的文档)。</p>
+<p>在MemStore Flush过程中，还会在尾部追加一些meta数据，其中就包括Flush时最大的WAL sequence值，以告诉HBase这个StoreFile写入的最新数据的序列，那么在Recover时就直到从哪里开始。在HRegion启动时，这个sequence会被读取，并取最大的作为下一次更新时的起始sequence。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0303.png" alt=""><br></center>
+
+
+
+<h1 id="HFile格式">HFile格式</h1><p>HBase的数据以KeyValue(Cell)的形式顺序的存储在HFile中，在MemStore的Flush过程中生成HFile，由于MemStore中存储的Cell遵循相同的排列顺序，因而Flush过程是顺序写，我们直到磁盘的顺序写性能很高，因为不需要不停的移动磁盘指针。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0304.png" alt=""><br></center>
+
+
+
+<p>HFile参考BigTable的SSTable和Hadoop的TFile实现，从HBase开始到现在，HFile经历了三个版本，其中V2在0.92引入，V3在0.98引入。首先我们来看一下V1的格式：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0305.png" alt=""><br></center>
+
+
+<p>V1的HFile由多个Data Block、Meta Block、FileInfo、Data Index、Meta Index、Trailer组成，其中Data Block是HBase的最小存储单元，在前文中提到的BlockCache就是基于Data Block的缓存的。一个Data Block由一个魔数和一系列的KeyValue(Cell)组成，魔数是一个随机的数字，用于表示这是一个Data Block类型，以快速监测这个Data Block的格式，防止数据的破坏。Data Block的大小可以在创建Column Family时设置(HColumnDescriptor.setBlockSize())，默认值是64KB，大号的Block有利于顺序Scan，小号Block利于随机查询，因而需要权衡。Meta块是可选的，FileInfo是固定长度的块，它纪录了文件的一些Meta信息，例如：AVG_KEY_LEN, AVG_VALUE_LEN, LAST_KEY, COMPARATOR, MAX_SEQ_ID_KEY等。Data Index和Meta Index纪录了每个Data块和Meta块的其实点、未压缩时大小、Key(起始RowKey？)等。Trailer纪录了FileInfo、Data Index、Meta Index块的起始位置，Data Index和Meta Index索引的数量等。其中FileInfo和Trailer是固定长度的。</p>
+<p>HFile里面的每个KeyValue对就是一个简单的byte数组。但是这个byte数组里面包含了很多项，并且有固定的结构。我们来看看里面的具体结构：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0306.png" alt=""><br></center>
+
+
+
+<p>开始是两个固定长度的数值，分别表示Key的长度和Value的长度。紧接着是Key，开始是固定长度的数值，表示RowKey的长度，紧接着是 RowKey，然后是固定长度的数值，表示Family的长度，然后是Family，接着是Qualifier，然后是两个固定长度的数值，表示Time Stamp和Key Type（Put/Delete）。Value部分没有这么复杂的结构，就是纯粹的二进制数据了。随着HFile版本迁移，KeyValue(Cell)的格式并未发生太多变化，只是在V3版本，尾部添加了一个可选的Tag数组。</p>
+<p>HFileV1版本的在实际使用过程中发现它占用内存多，并且Bloom File和Block Index会变的很大，而引起启动时间变长。其中每个HFile的Bloom Filter可以增长到100MB，这在查询时会引起性能问题，因为每次查询时需要加载并查询Bloom Filter，100MB的Bloom Filer会引起很大的延迟；另一个，Block Index在一个HRegionServer可能会增长到总共6GB，HRegionServer在启动时需要先加载所有这些Block Index，因而增加了启动时间。为了解决这些问题，在0.92版本中引入HFileV2版本：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0307.png" alt=""><br></center>
+
+
+
+<p>在这个版本中，Block Index和Bloom Filter添加到了Data Block中间，而这种设计同时也减少了写的内存使用量；另外，为了提升启动速度，在这个版本中还引入了延迟读的功能，即在HFile真正被使用时才对其进行解析。</p>
+<p>FileV3版本基本和V2版本相比，并没有太大的改变，它在KeyValue(Cell)层面上添加了Tag数组的支持；并在FileInfo结构中添加了和Tag相关的两个字段。关于具体HFile格式演化介绍，可以参考这里。</p>
+<p>对HFileV2格式具体分析，它是一个多层的类B+树索引，采用这种设计，可以实现查找不需要读取整个文件：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0308.png" alt=""><br></center>
+
+
+<p>Data Block中的Cell都是升序排列，每个block都有它自己的Leaf-Index，每个Block的最后一个Key被放入Intermediate-Index中，Root-Index指向Intermediate-Index。在HFile的末尾还有Bloom Filter用于快速定位那么没有在某个Data Block中的Row；TimeRange信息用于给那些使用时间查询的参考。在HFile打开时，这些索引信息都被加载并保存在内存中，以增加以后的读取性能。</p>
+<p>这篇就先写到这里，未完待续。。。。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HBase/">HBase</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/09/28/深入HBase架构解析-2/" title="深入HBase架构解析(2)">
+  <strong>上一篇：</strong><br/>
+  <span>
+  深入HBase架构解析(2)</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/09/23/防止sql注入/"  title="防止sql注入">
+ <strong>下一篇：</strong><br/> 
+ <span>防止sql注入
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/09/26/深入HBase架构解析-1/" data-title="深入HBase架构解析(1)" data-url="http://pangjiuzala.github.io/2015/09/26/深入HBase架构解析-1/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HBase架构组成"><span class="toc-number">1.</span> <span class="toc-text">HBase架构组成</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HRegion"><span class="toc-number">2.</span> <span class="toc-text">HRegion</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HMaster"><span class="toc-number">3.</span> <span class="toc-text">HMaster</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Admin职能"><span class="toc-number">4.</span> <span class="toc-text">Admin职能</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ZooKeeper：协调者"><span class="toc-number">5.</span> <span class="toc-text">ZooKeeper：协调者</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HBase的第一次读写"><span class="toc-number">6.</span> <span class="toc-text">HBase的第一次读写</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#hbase:meta表"><span class="toc-number">7.</span> <span class="toc-text">hbase:meta表</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HRegionServer详解"><span class="toc-number">8.</span> <span class="toc-text">HRegionServer详解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HRegionServer中数据写流程图解"><span class="toc-number">9.</span> <span class="toc-text">HRegionServer中数据写流程图解</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#MemStore_Flush"><span class="toc-number">10.</span> <span class="toc-text">MemStore Flush</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#HFile格式"><span class="toc-number">11.</span> <span class="toc-text">HFile格式</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

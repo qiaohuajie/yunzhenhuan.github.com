@@ -1,0 +1,585 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>HBase基础知识(5):行锁 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="像put()、delete()、checkAndPut()这样的修改操作是独立执行的，这意味着在一个串行方式的执行中，对于每一行必须保证行级别的操作是原子性的。region服务器提供了一个行锁（row lock的特性，这个特性保证了只有一个客户端能获取一行数据相应的锁。同时对该行进行修改，在实践中，大部分客户端应用程序都没有提供显示的锁，而是使用这个机制来保障每个操作的独立性。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase基础知识(5):行锁">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/17/HBase基础知识-5-行锁/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="像put()、delete()、checkAndPut()这样的修改操作是独立执行的，这意味着在一个串行方式的执行中，对于每一行必须保证行级别的操作是原子性的。region服务器提供了一个行锁（row lock的特性，这个特性保证了只有一个客户端能获取一行数据相应的锁。同时对该行进行修改，在实践中，大部分客户端应用程序都没有提供显示的锁，而是使用这个机制来保障每个操作的独立性。">
+<meta property="og:updated_time" content="2015-09-06T07:38:05.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase基础知识(5):行锁">
+<meta name="twitter:description" content="像put()、delete()、checkAndPut()这样的修改操作是独立执行的，这意味着在一个串行方式的执行中，对于每一行必须保证行级别的操作是原子性的。region服务器提供了一个行锁（row lock的特性，这个特性保证了只有一个客户端能获取一行数据相应的锁。同时对该行进行修改，在实践中，大部分客户端应用程序都没有提供显示的锁，而是使用这个机制来保障每个操作的独立性。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/17/HBase基础知识-5-行锁/" title="HBase基础知识(5):行锁" itemprop="url">HBase基础知识(5):行锁</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-16T22:15:47.000Z" itemprop="datePublished"> 发表于 2015-08-17</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>像put()、delete()、checkAndPut()这样的修改操作是独立执行的，这意味着在一个串行方式的执行中，对于每一行必须保证行级别的操作是原子性的。region服务器提供了一个行锁（row lock的特性，这个特性保证了只有一个客户端能获取一行数据相应的锁。同时对该行进行修改，在实践中，大部分客户端应用程序都没有提供显示的锁，而是使用这个机制来保障每个操作的独立性。<br><a id="more"></a><br><strong>用户应该尽可能的避免使用行锁，就像在RDBMS中，两个客户端很可能在拥有对方要请求的锁时，又同时请求对方已拥有的锁，这样便形成了一个死锁。</strong><br>锁超时之前，两个被阻塞的客户端会占用一个服务器端的处理线程（handler），而这个线程是一种十分稀缺的资源。如果在一个频繁操作的行上发生了这种情况，那么很多其他的客户端会占用掉其所有的处理线程，阻塞所有其他客户端访问这台服务器，导致这个region服务器将不能为其负责region内的行提供服务。**<br>比如，当使用put()访问服务器时，Put实例可以通过以下构造函数生成:<br>Put(byte[] row)<br>这个构造函数就没有RowLock实例参数，所以服务器会在调用期间创建一个锁。实际上，通过客户端的API，得不到这个生存期短暂的服务端的锁的实例。<br>除了服务器端隐式加锁之外，客户端也可以显示地对单行数据的多次操作进行加锁，通过以下调用便可以做到:</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">RowLock <span class="function"><span class="title">lockRow</span><span class="params">(byte[] row)</span></span> throws IOException</span><br><span class="line">void <span class="function"><span class="title">unlockRow</span><span class="params">(RowLock r1)</span></span> throws IOException</span><br></pre></td></tr></table></figure>
+<p>第一个调用lockRow()需要一个行键作为参数，返回一个RowLock的实例，这个实例可以供后续的Put或者Delete的构造函数使用。一旦不再需要锁时，必须通过unLockRow()调用来释放它。<br>每一个排它锁，无论是由服务器提供，还是通过客户端API传入的，都能保护这一行不被其他锁锁定。换句话说，锁必须针对整个行，并且指定其行键，一旦它获得锁定权就能防止其他并发修改。<br>当一个锁被服务器或客户端显示获取之后，其他所有想要对这行数据加锁的客户端将会等待，直到当前锁被释放，或者锁的租期超时。后者是为了确保进程不会被占用锁太长时间或无限期占用。<br>默认的锁超时时间是一分钟，但可以在hbase-site.xml文件中添加以下配置项来修改这个默认值，时间以毫秒为单位:</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">name</span>&gt;</span>hbase.regionserver.lease.period<span class="tag">&lt;/<span class="title">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="title">value</span>&gt;</span>120000<span class="tag">&lt;/<span class="title">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>通过添加以上代码，超时时间被设置为原来的两倍——120秒也就是2分钟。小心不要将这个值设得太大，因为每一个想获取被锁住的行的客户端都会被阻塞并等待锁的恢复。</p>
+<p>显示使用行锁代码如下：</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.conf.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.HBaseConfiguration;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.HTable;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.Put;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.RowLock;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> HBaseRowLock &#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] ROW1 = Bytes.toBytes(<span class="string">"row1"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] ROW2 = Bytes.toBytes(<span class="string">"row2"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] COLFMA1 = Bytes.toBytes(<span class="string">"colfam1"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] COLFMA2 = Bytes.toBytes(<span class="string">"colfam2"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] QUAL1 = Bytes.toBytes(<span class="string">"qual1"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] QUAL2 = Bytes.toBytes(<span class="string">"qual2"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] COLFAM1;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] VAL1 = Bytes.toBytes(<span class="string">"val1"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] VAL2 = Bytes.toBytes(<span class="string">"val2"</span>);</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] VAL3 = Bytes.toBytes(<span class="string">"val3"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">class</span> UnlockedPut <span class="keyword">implements</span> Runnable &#123;</span><br><span class="line"></span><br><span class="line">		@Override</span><br><span class="line">		<span class="keyword">public</span> <span class="keyword">void</span> run() &#123;</span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				Configuration conf = HBaseConfiguration.create();</span><br><span class="line">				HTable table = <span class="keyword">new</span> HTable(conf, <span class="string">"testtable"</span>);</span><br><span class="line">				Put put = <span class="keyword">new</span> Put(ROW1);</span><br><span class="line">				put.add(COLFAM1, QUAL1, VAL3);</span><br><span class="line">				table.put(put);</span><br><span class="line">				<span class="keyword">long</span> time = System.currentTimeMillis();</span><br><span class="line">				System.out.<span class="keyword">println</span>(<span class="string">"Thread trying to put same rwo now"</span>);</span><br><span class="line">				table.put(put);</span><br><span class="line">				System.out.<span class="keyword">println</span>(<span class="string">"Wait time:"</span></span><br><span class="line">						+ (System.currentTimeMillis() - time) + <span class="string">"ms"</span>);</span><br><span class="line"></span><br><span class="line">			&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">				System.err.<span class="keyword">println</span>(<span class="string">"Thread error :"</span> + e);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				Configuration conf = HBaseConfiguration.create();</span><br><span class="line">				HTable table = <span class="keyword">new</span> HTable(conf, <span class="string">"testtable"</span>);</span><br><span class="line">				RowLock lock = table.lockRow(ROW1);</span><br><span class="line">				System.out.<span class="keyword">println</span>(<span class="string">"Lock ID:"</span> + lock.getLockId());</span><br><span class="line">				Put put1 = <span class="keyword">new</span> Put(ROW1, lock);</span><br><span class="line">				put1.add(COLFAM1, QUAL1, VAL1);</span><br><span class="line">				table.put(put1);</span><br><span class="line">				Put put2 = <span class="keyword">new</span> Put(ROW1, lock);</span><br><span class="line">				put2.add(COLFAM1, QUAL1, VAL2);</span><br><span class="line">				table.put(put2);</span><br><span class="line">			&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line"></span><br><span class="line">			&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">			System.out.<span class="keyword">println</span>(<span class="string">"Takin out lock..."</span>);</span><br><span class="line"></span><br><span class="line">			Thread thread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> UnlockedPut());</span><br><span class="line">			thread.start();</span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				System.out.<span class="keyword">println</span>(<span class="string">"Sleeping 5secs in main().."</span>);</span><br><span class="line">				Thread.sleep(<span class="number">5000</span>);</span><br><span class="line">			&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">				<span class="comment">// <span class="doctag">TODO:</span> handle exception</span></span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>控制台输出如下：</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="constant">Taking</span> out lock...</span><br><span class="line"><span class="constant">Lock</span> <span class="constant">ID</span><span class="symbol">:</span><span class="number">4751274798057238718</span></span><br><span class="line"><span class="constant">Sleeping</span> <span class="number">5</span>secs <span class="keyword">in</span> main()...</span><br><span class="line"><span class="constant">Thread</span> trying to put same row now...</span><br><span class="line"><span class="constant">Releasing</span> lock..</span><br><span class="line"><span class="constant">Wait</span> <span class="symbol">time:</span><span class="number">5007</span>ms</span><br><span class="line"><span class="constant">After</span> thread ended...</span><br><span class="line"><span class="constant">KV</span><span class="symbol">:row1/colfam1</span><span class="symbol">:qual1/</span><span class="number">1300775520118</span>/<span class="constant">Put</span>/vlen=<span class="number">4</span>,<span class="constant">Value</span><span class="symbol">:val2</span></span><br><span class="line"><span class="constant">KV</span><span class="symbol">:row1/colfam1</span><span class="symbol">:qual1/</span><span class="number">1300775520113</span>/<span class="constant">Put</span>/vlen=<span class="number">4</span>,<span class="constant">Value</span><span class="symbol">:val1</span></span><br><span class="line"><span class="constant">KV</span><span class="symbol">:row1/colfam1</span><span class="symbol">:qual1/</span><span class="number">1300775520116</span>/<span class="constant">Put</span>/vlen=<span class="number">4</span>,<span class="constant">Value</span><span class="symbol">:val3</span></span><br></pre></td></tr></table></figure>
+<p>主线程的锁一释放，阻塞线程的run()方法就继续执行并调用了第三个put。观察put操作在服务器端的执行情况，会觉得很有意思。KeyValue实例的时间戳显示了第三个put拥有的最小时间戳，虽然这个put表面上是最后执行的。这是因为线程中的put()调用是在两个主线程中的put()之前执行的，这之后主线程休眠了5秒。当put被发送到服务器时，如果它的时间戳没有被显式指定，服务器端会帮它设定时间戳，同时试图获得这一行的锁。但是示例代码中主线程已经获得了改行的锁，因此服务器端的处理一直等待了5秒多，锁被释放才得已继续。主线程中的两个put()调用的执行以及行的解锁只花费了7毫秒的时间。<br><strong>Get需要锁吗？</strong><br>修改行时锁定行是有意义的，那么获取数据时是否需要加锁呢？Get类有一个构造器允许用户指定一个显式的锁:<br>Get(byte[] row,RowLock rowLock)<br>这是遗留的方法，但服务器端根本用不着这种方法，因为在获取数据的过程中，服务器根本不需要任何锁，而是应用了一个多版本的并发控制机制来保证行级读操作。例如，get()调用永远不会返回写了一半的数据，比如当这些数据是另一个线程或者客户端写的。<br>这个就像是小规模的事务系统：只有当一个变动被应用到整个行之后，客户端才能读出这个改动。当改动在进行中时，所有的客户端读取操作得到的都将是所有列以前的状态。<br>当用户试图使用之前申请的显式锁，但锁的租约已经超时并恢复，用户将会从服务器得到一个UnknowRowLockException形式报告的错误。这个异常告诉用户服务器已经废弃了用户尝试使用的锁。用户应该在代码中丢弃这个锁，然后请求一个新的锁再试图恢复锁定状态。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HBase/">HBase</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/18/HBase基础知识-6-扫描操作介绍/" title="HBase基础知识(6):扫描操作介绍">
+  <strong>上一篇：</strong><br/>
+  <span>
+  HBase基础知识(6):扫描操作介绍</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/16/HBase基础知识-4-批量处理操作/"  title="HBase基础知识(4):批量处理操作">
+ <strong>下一篇：</strong><br/> 
+ <span>HBase基础知识(4):批量处理操作
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/17/HBase基础知识-5-行锁/" data-title="HBase基础知识(5):行锁" data-url="http://pangjiuzala.github.io/2015/08/17/HBase基础知识-5-行锁/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

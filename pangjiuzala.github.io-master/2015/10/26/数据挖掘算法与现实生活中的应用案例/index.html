@@ -1,0 +1,634 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>数据挖掘算法与现实生活中的应用案例 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="如何分辨出垃圾邮件”、“如何判断一笔交易是否属于欺诈”、“如何判断红酒的品质和档次”、“扫描王是如何做到文字识别的”、“如何判断佚名的著作是否出自某位名家之手”、“如何判断一个细胞是否属于肿瘤细胞”等等，这些问题似乎都很专业，都不太好回答。但是，如果了解一点点数据挖掘的知识，你，或许会有柳暗花明的感觉。
+本文，主要想简单介绍下数据挖掘中的算法，以及它包含的类型。然后，通过现实中触手可及的、活生生的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据挖掘算法与现实生活中的应用案例">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/10/26/数据挖掘算法与现实生活中的应用案例/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="如何分辨出垃圾邮件”、“如何判断一笔交易是否属于欺诈”、“如何判断红酒的品质和档次”、“扫描王是如何做到文字识别的”、“如何判断佚名的著作是否出自某位名家之手”、“如何判断一个细胞是否属于肿瘤细胞”等等，这些问题似乎都很专业，都不太好回答。但是，如果了解一点点数据挖掘的知识，你，或许会有柳暗花明的感觉。
+本文，主要想简单介绍下数据挖掘中的算法，以及它包含的类型。然后，通过现实中触手可及的、活生生的">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0373.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0374.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0375.png">
+<meta property="og:updated_time" content="2015-10-28T03:05:07.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据挖掘算法与现实生活中的应用案例">
+<meta name="twitter:description" content="如何分辨出垃圾邮件”、“如何判断一笔交易是否属于欺诈”、“如何判断红酒的品质和档次”、“扫描王是如何做到文字识别的”、“如何判断佚名的著作是否出自某位名家之手”、“如何判断一个细胞是否属于肿瘤细胞”等等，这些问题似乎都很专业，都不太好回答。但是，如果了解一点点数据挖掘的知识，你，或许会有柳暗花明的感觉。
+本文，主要想简单介绍下数据挖掘中的算法，以及它包含的类型。然后，通过现实中触手可及的、活生生的">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/10/26/数据挖掘算法与现实生活中的应用案例/" title="数据挖掘算法与现实生活中的应用案例" itemprop="url">数据挖掘算法与现实生活中的应用案例</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-10-26T11:32:43.000Z" itemprop="datePublished"> 发表于 2015-10-26</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#有监督学习"><span class="toc-number">1.</span> <span class="toc-text">有监督学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#分类算法"><span class="toc-number">1.1.</span> <span class="toc-text">分类算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预测算法"><span class="toc-number">1.2.</span> <span class="toc-text">预测算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#无监督学习"><span class="toc-number">2.</span> <span class="toc-text">无监督学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#聚类分析"><span class="toc-number">2.1.</span> <span class="toc-text">聚类分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关联分析"><span class="toc-number">2.2.</span> <span class="toc-text">关联分析</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基于数据挖掘的案例和应用"><span class="toc-number">3.</span> <span class="toc-text">基于数据挖掘的案例和应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#基于分类模型的案例"><span class="toc-number">3.1.</span> <span class="toc-text">基于分类模型的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#垃圾邮件的判别"><span class="toc-number">3.1.1.</span> <span class="toc-text">垃圾邮件的判别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#医学上的肿瘤判断"><span class="toc-number">3.1.2.</span> <span class="toc-text">医学上的肿瘤判断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于预测模型的案例"><span class="toc-number">3.2.</span> <span class="toc-text">基于预测模型的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#红酒品质的判断"><span class="toc-number">3.2.1.</span> <span class="toc-text">红酒品质的判断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#搜索引擎的搜索量和股价波动"><span class="toc-number">3.2.2.</span> <span class="toc-text">搜索引擎的搜索量和股价波动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于关联分析的案例：沃尔玛的啤酒尿布"><span class="toc-number">3.3.</span> <span class="toc-text">基于关联分析的案例：沃尔玛的啤酒尿布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于聚类分析的案例：零售客户细分"><span class="toc-number">3.4.</span> <span class="toc-text">基于聚类分析的案例：零售客户细分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于异常值分析的案例：支付中的交易欺诈侦测"><span class="toc-number">3.5.</span> <span class="toc-text">基于异常值分析的案例：支付中的交易欺诈侦测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于协同过滤的案例：电商猜你喜欢和推荐引擎"><span class="toc-number">3.6.</span> <span class="toc-text">基于协同过滤的案例：电商猜你喜欢和推荐引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于社会网络分析的案例：电信中的种子客户"><span class="toc-number">3.7.</span> <span class="toc-text">基于社会网络分析的案例：电信中的种子客户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于文本分析的案例"><span class="toc-number">3.8.</span> <span class="toc-text">基于文本分析的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#字符识别：扫描王APP"><span class="toc-number">3.8.1.</span> <span class="toc-text">字符识别：扫描王APP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#文学著作与统计：红楼梦归属"><span class="toc-number">3.8.2.</span> <span class="toc-text">文学著作与统计：红楼梦归属</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<p>如何分辨出垃圾邮件”、“如何判断一笔交易是否属于欺诈”、“如何判断红酒的品质和档次”、“扫描王是如何做到文字识别的”、“如何判断佚名的著作是否出自某位名家之手”、“如何判断一个细胞是否属于肿瘤细胞”等等，这些问题似乎都很专业，都不太好回答。但是，如果了解一点点数据挖掘的知识，你，或许会有柳暗花明的感觉。</p>
+<p>本文，主要想简单介绍下数据挖掘中的算法，以及它包含的类型。然后，通过现实中触手可及的、活生生的案例，去诠释它的真实存在。<br><a id="more"></a></p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0373.png" alt=""><br></center>
+
+
+<p>一般来说，数据挖掘的算法包含四种类型，即分类、预测、聚类、关联。前两种属于有监督学习，后两种属于无监督学习，属于描述性的模式识别和发现。</p>
+<h1 id="有监督学习">有监督学习</h1><p>有监督的学习，即存在目标变量，需要探索特征变量和目标变量之间的关系，在目标变量的监督下学习和优化算法。例如，信用评分模型就是典型的有监督学习，目标变量为“是否违约”。算法的目的在于研究特征变量（人口统计、资产属性等）和目标变量之间的关系。</p>
+<h2 id="分类算法">分类算法</h2><p>分类算法和预测算法的最大区别在于，前者的目标变量是分类离散型（例如，是否逾期、是否肿瘤细胞、是否垃圾邮件等），后者的目标变量是连续型。一般而言，具体的分类算法包括，逻辑回归、决策树、KNN、贝叶斯判别、SVM、随机森林、神经网络等。</p>
+<h2 id="预测算法">预测算法</h2><p>预测类算法，其目标变量一般是连续型变量。常见的算法，包括线性回归、回归树、神经网络、SVM等。</p>
+<h1 id="无监督学习">无监督学习</h1><p>无监督学习，即不存在目标变量，基于数据本身，去识别变量之间内在的模式和特征。例如关联分析，通过数据发现项目A和项目B之间的关联性。例如聚类分析，通过距离，将所有样本划分为几个稳定可区分的群体。这些都是在没有目标变量监督下的模式识别和分析。</p>
+<h2 id="聚类分析">聚类分析</h2><p>聚类的目的就是实现对样本的细分，使得同组内的样本特征较为相似，不同组的样本特征差异较大。常见的聚类算法包括kmeans、系谱聚类、密度聚类等。</p>
+<h2 id="关联分析">关联分析</h2><p>关联分析的目的在于，找出项目（item）之间内在的联系。常常是指购物篮分析，即消费者常常会同时购买哪些产品（例如游泳裤、防晒霜），从而有助于商家的捆绑销售。</p>
+<h1 id="基于数据挖掘的案例和应用">基于数据挖掘的案例和应用</h1><p>上文所提到的四种算法类型（分类、预测、聚类、关联），是比较传统和常见的。还有其他一些比较有趣的算法分类和应用场景，例如协同过滤、异常值分析、社会网络、文本分析等。下面，想针对不同的算法类型，具体的介绍下数据挖掘在日常生活中真实的存在。下面是能想到的、几个比较有趣的、和生活紧密关联的例子。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0374.png" alt=""><br></center>
+
+
+<h2 id="基于分类模型的案例">基于分类模型的案例</h2><p>这里面主要想介绍两个案例，一个是垃圾邮件的分类和判断，另外一个是在生物医药领域的应用，即肿瘤细胞的判断和分辨。</p>
+<h3 id="垃圾邮件的判别">垃圾邮件的判别</h3><p>邮箱系统如何分辨一封Email是否属于垃圾邮件？这应该属于文本挖掘的范畴，通常会采用朴素贝叶斯的方法进行判别。它的主要原理是，根据邮件正文中的单词，是否经常出现在垃圾邮件中，进行判断。例如，如果一份邮件的正文中包含“报销”、“发票”、“促销”等词汇时，该邮件被判定为垃圾邮件的概率将会比较大。</p>
+<p>一般来说，判断邮件是否属于垃圾邮件，应该包含以下几个步骤。</p>
+<p>第一，把邮件正文拆解成单词组合，假设某篇邮件包含100个单词。</p>
+<p>第二，根据贝叶斯条件概率，计算一封已经出现了这100个单词的邮件，属于垃圾邮件的概率和正常邮件的概率。如果结果表明，属于垃圾邮件的概率大于正常邮件的概率。那么该邮件就会被划为垃圾邮件。</p>
+<h3 id="医学上的肿瘤判断">医学上的肿瘤判断</h3><p>如何判断细胞是否属于肿瘤细胞呢？肿瘤细胞和普通细胞，有差别。但是，需要非常有经验的医生，通过病理切片才能判断。如果通过机器学习的方式，使得系统自动识别出肿瘤细胞。此时的效率，将会得到飞速的提升。并且，通过主观（医生）+客观（模型）的方式识别肿瘤细胞，结果交叉验证，结论可能更加靠谱。</p>
+<p>如何操作？通过分类模型识别。简言之，包含两个步骤。首先，通过一系列指标刻画细胞特征，例如细胞的半径、质地、周长、面积、光滑度、对称性、凹凸性等等，构成细胞特征的数据。其次，在细胞特征宽表的基础上，通过搭建分类模型进行肿瘤细胞的判断。</p>
+<h2 id="基于预测模型的案例">基于预测模型的案例</h2><p>这里面主要想介绍两个案例。即通过化学特性判断和预测红酒的品质。另外一个是，通过搜索引擎来预测和判断股价的波动和趋势。</p>
+<h3 id="红酒品质的判断">红酒品质的判断</h3><p>如何评鉴红酒？有经验的人会说，红酒最重要的是口感。而口感的好坏，受很多因素的影响，例如年份、产地、气候、酿造的工艺等等。但是，统计学家并没有时间去品尝各种各样的红酒，他们觉得通过一些化学属性特征就能够很好地判断红酒的品质了。并且，现在很多酿酒企业其实也都这么干了，通过监测红酒中化学成分的含量，从而控制红酒的品质和口感。</p>
+<p>那么，如何判断鉴红酒的品质呢？</p>
+<p>第一步，收集很多红酒样本，整理检测他们的化学特性，例如酸性、含糖量、氯化物含量、硫含量、酒精度、PH值、密度等等。</p>
+<p>第二步，通过分类回归树模型进行预测和判断红酒的品质和等级。</p>
+<h3 id="搜索引擎的搜索量和股价波动">搜索引擎的搜索量和股价波动</h3><p>一只南美洲热带雨林中的蝴蝶，偶尔扇动了几下翅膀，可以在两周以后，引起美国德克萨斯州的一场龙卷风。你在互联网上的搜索是否会影响公司股价的波动？</p>
+<p>很早之前，就已经有文献证明，互联网关键词的搜索量（例如流感）会比疾控中心提前1到2周预测出某地区流感的爆发。</p>
+<p>同样，现在也有些学者发现了这样一种现象，即公司在互联网中搜索量的变化，会显著影响公司股价的波动和趋势，即所谓的投资者注意力理论。该理论认为，公司在搜索引擎中的搜索量，代表了该股票被投资者关注的程度。因此，当一只股票的搜索频数增加时，说明投资者对该股票的关注度提升，从而使得该股票更容易被个人投资者购买，进一步地导致股票价格上升，带来正向的股票收益。这是已经得到无数论文验证了的。</p>
+<h2 id="基于关联分析的案例：沃尔玛的啤酒尿布">基于关联分析的案例：沃尔玛的啤酒尿布</h2><p>啤酒尿布是一个非常非常古老陈旧的故事。故事是这样的，沃尔玛发现一个非常有趣的现象，即把尿布与啤酒这两种风马牛不相及的商品摆在一起，能够大幅增加两者的销量。原因在于，美国的妇女通常在家照顾孩子，所以，她们常常会嘱咐丈夫在下班回家的路上为孩子买尿布，而丈夫在买尿布的同时又会顺手购买自己爱喝的啤酒。沃尔玛从数据中发现了这种关联性，因此，将这两种商品并置，从而大大提高了关联销售。</p>
+<p>啤酒尿布主要讲的是产品之间的关联性，如果大量的数据表明，消费者购买A商品的同时，也会顺带着购买B产品。那么A和B之间存在关联性。在超市中，常常会看到两个商品的捆绑销售，很有可能就是关联分析的结果。</p>
+<h2 id="基于聚类分析的案例：零售客户细分">基于聚类分析的案例：零售客户细分</h2><p>对客户的细分，还是比较常见的。细分的功能，在于能够有效的划分出客户群体，使得群体内部成员具有相似性，但是群体之间存在差异性。其目的在于识别不同的客户群体，然后针对不同的客户群体，精准地进行产品设计和推送，从而节约营销成本，提高营销效率。</p>
+<p>例如，针对商业银行中的零售客户进行细分，基于零售客户的特征变量（人口特征、资产特征、负债特征、结算特征），计算客户之间的距离。然后，按照距离的远近，把相似的客户聚集为一类，从而有效的细分客户。将全体客户划分为诸如，理财偏好者、基金偏好者、活期偏好者、国债偏好者、风险均衡者、渠道偏好者等。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0375.png" alt=""><br></center>
+
+
+<h2 id="基于异常值分析的案例：支付中的交易欺诈侦测">基于异常值分析的案例：支付中的交易欺诈侦测</h2><p>采用支付宝支付时，或者刷信用卡支付时，系统会实时判断这笔刷卡行为是否属于盗刷。通过判断刷卡的时间、地点、商户名称、金额、频率等要素进行判断。这里面基本的原理就是寻找异常值。如果您的刷卡被判定为异常，这笔交易可能会被终止。</p>
+<p>异常值的判断，应该是基于一个欺诈规则库的。可能包含两类规则，即事件类规则和模型类规则。第一，事件类规则，例如刷卡的时间是否异常（凌晨刷卡）、刷卡的地点是否异常（非经常所在地刷卡）、刷卡的商户是否异常（被列入黑名单的套现商户）、刷卡金额是否异常（是否偏离正常均值的三倍标准差）、刷卡频次是否异常（高频密集刷卡）。第二，模型类规则，则是通过算法判定交易是否属于欺诈。一般通过支付数据、卖家数据、结算数据，构建模型进行分类问题的判断。</p>
+<h2 id="基于协同过滤的案例：电商猜你喜欢和推荐引擎">基于协同过滤的案例：电商猜你喜欢和推荐引擎</h2><p>电商中的猜你喜欢，应该是大家最为熟悉的。在京东商城或者亚马逊购物，总会有“猜你喜欢”、“根据您的浏览历史记录精心为您推荐”、“购买此商品的顾客同时也购买了<strong>商品”、“浏览了该商品的顾客最终购买了</strong>商品”，这些都是推荐引擎运算的结果。</p>
+<p>这里面，确实很喜欢亚马逊的推荐，通过“购买该商品的人同时购买了**商品”，常常会发现一些质量比较高、较为受认可的书。<br>一般来说，电商的“猜你喜欢”（即推荐引擎）都是在协同过滤算法（Collaborative Filter）的基础上，搭建一套符合自身特点的规则库。即该算法会同时考虑其他顾客的选择和行为，在此基础上搭建产品相似性矩阵和用户相似性矩阵。基于此，找出最相似的顾客或最关联的产品，从而完成产品的推荐。</p>
+<h2 id="基于社会网络分析的案例：电信中的种子客户">基于社会网络分析的案例：电信中的种子客户</h2><p>种子客户和社会网络，最早出现在电信领域的研究。即，通过人们的通话记录，就可以勾勒出人们的关系网络。电信领域的网络，一般会分析客户的影响力和客户流失、产品扩散的关系。</p>
+<p>基于通话记录，可以构建客户影响力指标体系。采用的指标，大概包括如下，一度人脉、二度人脉、三度人脉、平均通话频次、平均通话量等。基于社会影响力，分析的结果表明，高影响力客户的流失会导致关联客户的流失。其次，在产品的扩散上，选择高影响力客户作为传播的起点，很容易推动新套餐的扩散和渗透。</p>
+<p>此外，社会网络在银行（担保网络）、保险（团伙欺诈）、互联网（社交互动）中也都有很多的应用和案例。</p>
+<h2 id="基于文本分析的案例">基于文本分析的案例</h2><p>这里面主要想介绍两个案例。一个是类似“扫描王”的APP，直接把纸质文档扫描成电子文档。相信很多人都用过，这里准备简单介绍下原理。另外一个是，江湖上总是传言红楼梦的前八十回和后四十回，好像并非都是出自曹雪芹之手，这里面准备从统计的角度聊聊。</p>
+<h3 id="字符识别：扫描王APP">字符识别：扫描王APP</h3><p>手机拍照时会自动识别人脸，还有一些APP，例如扫描王，可以扫描书本，然后把扫描的内容自动转化为word。这些属于图像识别和字符识别（Optical Character Recognition）。图像识别比较复杂，字符识别理解起来比较容易些。</p>
+<p>查找了一些资料，字符识别的大概原理如下，以字符S为例。</p>
+<p>第一，把字符图像缩小到标准像素尺寸，例如12*16。注意，图像是由像素构成，字符图像主要包括黑、白两种像素。</p>
+<p>第二，提取字符的特征向量。如何提取字符的特征，采用二维直方图投影。就是把字符（12*16的像素图）往水平方向和垂直方向上投影。水平方向有12个维度，垂直方向有16个维度。这样分别计算水平方向上各个像素行中黑色像素的累计数量、垂直方向各个像素列上的黑色像素的累计数量。从而得到水平方向12个维度的特征向量取值，垂直方向上16个维度的特征向量取值。这样就构成了包含28个维度的字符特征向量。</p>
+<p>第三，基于前面的字符特征向量，通过神经网络学习，从而识别字符和有效分类。</p>
+<h3 id="文学著作与统计：红楼梦归属">文学著作与统计：红楼梦归属</h3><p>这是非常著名的一个争论，悬而未决。对于红楼梦的作者，通常认为前80回合是曹雪芹所著，后四十回合为高鹗所写。其实主要问题，就是想确定，前80回合和后40回合是否在遣词造句方面存在显著差异。</p>
+<p>这事让一群统计学家比较兴奋了。有些学者通过统计名词、动词、形容词、副词、虚词出现的频次，以及不同词性之间的相关系做判断。有些学者通过虚词（例如之、其、或、亦、了、的、不、把、别、好），判断前后文风的差异。有些学者通过场景（花卉、树木、饮食、医药与诗词）频次的差异，来做统计判断。总而言之，主要通过一些指标量化，然后比较指标之间是否存在显著差异，藉此进行写作风格的判断。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/数据挖掘/">数据挖掘</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/11/01/Java线程池源码解析及高质量代码案例/" title="Java线程池源码解析及高质量代码案例">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Java线程池源码解析及高质量代码案例</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/10/18/数据挖掘导论总结之分类技术/"  title="数据挖掘导论总结之分类技术">
+ <strong>下一篇：</strong><br/> 
+ <span>数据挖掘导论总结之分类技术
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/10/26/数据挖掘算法与现实生活中的应用案例/" data-title="数据挖掘算法与现实生活中的应用案例" data-url="http://pangjiuzala.github.io/2015/10/26/数据挖掘算法与现实生活中的应用案例/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#有监督学习"><span class="toc-number">1.</span> <span class="toc-text">有监督学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#分类算法"><span class="toc-number">1.1.</span> <span class="toc-text">分类算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预测算法"><span class="toc-number">1.2.</span> <span class="toc-text">预测算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#无监督学习"><span class="toc-number">2.</span> <span class="toc-text">无监督学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#聚类分析"><span class="toc-number">2.1.</span> <span class="toc-text">聚类分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关联分析"><span class="toc-number">2.2.</span> <span class="toc-text">关联分析</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基于数据挖掘的案例和应用"><span class="toc-number">3.</span> <span class="toc-text">基于数据挖掘的案例和应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#基于分类模型的案例"><span class="toc-number">3.1.</span> <span class="toc-text">基于分类模型的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#垃圾邮件的判别"><span class="toc-number">3.1.1.</span> <span class="toc-text">垃圾邮件的判别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#医学上的肿瘤判断"><span class="toc-number">3.1.2.</span> <span class="toc-text">医学上的肿瘤判断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于预测模型的案例"><span class="toc-number">3.2.</span> <span class="toc-text">基于预测模型的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#红酒品质的判断"><span class="toc-number">3.2.1.</span> <span class="toc-text">红酒品质的判断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#搜索引擎的搜索量和股价波动"><span class="toc-number">3.2.2.</span> <span class="toc-text">搜索引擎的搜索量和股价波动</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于关联分析的案例：沃尔玛的啤酒尿布"><span class="toc-number">3.3.</span> <span class="toc-text">基于关联分析的案例：沃尔玛的啤酒尿布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于聚类分析的案例：零售客户细分"><span class="toc-number">3.4.</span> <span class="toc-text">基于聚类分析的案例：零售客户细分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于异常值分析的案例：支付中的交易欺诈侦测"><span class="toc-number">3.5.</span> <span class="toc-text">基于异常值分析的案例：支付中的交易欺诈侦测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于协同过滤的案例：电商猜你喜欢和推荐引擎"><span class="toc-number">3.6.</span> <span class="toc-text">基于协同过滤的案例：电商猜你喜欢和推荐引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于社会网络分析的案例：电信中的种子客户"><span class="toc-number">3.7.</span> <span class="toc-text">基于社会网络分析的案例：电信中的种子客户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于文本分析的案例"><span class="toc-number">3.8.</span> <span class="toc-text">基于文本分析的案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#字符识别：扫描王APP"><span class="toc-number">3.8.1.</span> <span class="toc-text">字符识别：扫描王APP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#文学著作与统计：红楼梦归属"><span class="toc-number">3.8.2.</span> <span class="toc-text">文学著作与统计：红楼梦归属</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

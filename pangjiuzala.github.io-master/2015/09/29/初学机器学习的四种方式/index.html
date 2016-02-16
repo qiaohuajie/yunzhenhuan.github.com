@@ -1,0 +1,582 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>初学机器学习的四种方式 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="学习机器学习有很多方法，大多数人选择从理论开始。如果你是个程序员，那么你已经掌握了把问题拆分成相应组成部分及设计小项目原型的能力，这些能力能帮助你学习新的技术、类库和方法。这些对任何一个职业程序员来说都是重要的能力，现在它们也能用在初学机器学习上。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初学机器学习的四种方式">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/09/29/初学机器学习的四种方式/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="学习机器学习有很多方法，大多数人选择从理论开始。如果你是个程序员，那么你已经掌握了把问题拆分成相应组成部分及设计小项目原型的能力，这些能力能帮助你学习新的技术、类库和方法。这些对任何一个职业程序员来说都是重要的能力，现在它们也能用在初学机器学习上。">
+<meta property="og:updated_time" content="2015-09-29T10:58:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="初学机器学习的四种方式">
+<meta name="twitter:description" content="学习机器学习有很多方法，大多数人选择从理论开始。如果你是个程序员，那么你已经掌握了把问题拆分成相应组成部分及设计小项目原型的能力，这些能力能帮助你学习新的技术、类库和方法。这些对任何一个职业程序员来说都是重要的能力，现在它们也能用在初学机器学习上。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/09/29/初学机器学习的四种方式/" title="初学机器学习的四种方式" itemprop="url">初学机器学习的四种方式</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-09-29T10:58:14.000Z" itemprop="datePublished"> 发表于 2015-09-29</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#学习一个机器学习工具"><span class="toc-number">1.</span> <span class="toc-text">学习一个机器学习工具</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#学习一个机器学习数据集"><span class="toc-number">2.</span> <span class="toc-text">学习一个机器学习数据集</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#学习一个机器学习算法"><span class="toc-number">3.</span> <span class="toc-text">学习一个机器学习算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实现一个机器学习算法"><span class="toc-number">4.</span> <span class="toc-text">实现一个机器学习算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<p>学习机器学习有很多方法，大多数人选择从理论开始。<br>如果你是个程序员，那么你已经掌握了把问题拆分成相应组成部分及设计小项目原型的能力，这些能力能帮助你学习新的技术、类库和方法。这些对任何一个职业程序员来说都是重要的能力，现在它们也能用在初学机器学习上。<br><a id="more"></a><br>要想有效地学习机器学习你必须学习相关理论，但是你可以利用你的兴趣及对知识的渴望，来激励你从实际例子学起，然后再步入对算法的数学理解。<br>通过本文你可以学习到程序员初学机器学习的四种方式。这是给技术人员设计的实用方法，并以实验为依据，你需要做调研并且完成实验才能建立自己的感性知识。<br>这四种方法分别是：</p>
+<ul>
+<li>学习一个机器学习工具</li>
+<li>学习一个机器学习数据集</li>
+<li>学习一个机器学习算法</li>
+<li>实现一个机器学习算法<br>你应该通读一下这些方法的策略，然后选择你觉得最适合自己的一个，并且有选择性地执行。<h1 id="学习一个机器学习工具">学习一个机器学习工具</h1>选一个你喜欢的工具或者类库，然后学着用好它。<br>我推荐你从一个自带数据预处理工具，机器学习算法并且能呈现结果的工作平台开始学习。学习这样一个工作平台能让你更熟悉机器学习从头到尾的整个过程，这比学习一个特定的数据处理技术或者一个机器学习算法更有价值。<br>或者，也许你感兴趣的是一个特定技术或者一类技术。你可以利用这个机会更深入地学习一个提供这些方法的类库或工具，掌握了提供这些技术的类库能帮助你掌握相应的技术。<br>一些你可以采取的策略有：<br>比较一些可选的工具。<br>总结你选定的那个工具的能力。<br>阅读并总结这个工具的文档。<br>完成学习这个工具的文字或视频教程，并且总结每个教程中你重点学到了什么。<br>制作关于这个工具的功能或者特性的教程。选一些你不太了解的功能，然后写下得到结果的过程，或者把如何使用这个功能的过程录个五分钟的截屏视频。<br>一些值得考虑的工作平台有：R, Weka, scikit-learn, waffles, 和 orange.<h1 id="学习一个机器学习数据集">学习一个机器学习数据集</h1>选一个数据集，然后深入地理解它，发掘究竟哪类算法最适合处理它。<br>我推荐你选择一个中等大小的，内存能放下的，可能被很多人研究过的数据集。现在有很多非常好的包含数据的类库，你可以浏览它们并且从中选择。你的目的是尝试理解这个数据集背后的问题，它的结构，和哪些种类的解决方法最适合这个问题。<br>用一个机器学习或者统计的工作平台来研究这个数据集。这样你能专心解答关于这个数据集你要研究的问题，而不是分心去学习某个特定的技术或者如何写代码来实现它。<br>一些可以帮助你学习实验性的机器学习数据集的策略有：<br>清晰地描述这个数据集所呈现的问题。<br>用描述性的统计数据来总结数据。<br>描述你从数据中观察到的结构，并且提出对数据间关系的假设。<br>简单地在这个数据集上测试一些常用的机器学习算法，然后发掘哪些类别的算法比其他的表现好<br>调整表现好的算法的参数，然后发掘什么算法及算法参数设置在这个问题上表现得好<br>你可以从这些包含高质量数据集的库中选择： UCI ML Repository,Kaggle 和 data.gov.<h1 id="学习一个机器学习算法">学习一个机器学习算法</h1>选择一个算法，深入理解它，发掘什么样的参数设置在不同数据集上都稳定。<br>我推荐你从一个中等复杂度的算法开始学起。选一个已经被人充分理解了的，有许多可选的开源实现，并且需要你探索的参数数目较少的算法。你的目的是建立有关这个算法在不同问题和不同参数设定下表现如何的直觉。<br>使用一个机器学习平台或者类库。这样能让你把这个算法当成一个“系统”，专心研究它的表现，而不是分心研究数学公式描述或者相关论文。<br>一些学习你选定的机器学习算法时可采取的策略有：<br>总结系统的参数，及它们对算法可能有什么影响<br>选一系列适合这个算法，可能导致不同表现的数据库<br>选择一些你认为能导致不同结果的算法的参数设置，然后列出你认为系统可能的表现<br>考虑在迭代过程或不同时间段内能被监察到的算法表现<br>用一个或多个数据集，算法设置和结果衡量方式来设计解决特定问题的小实验，并且汇报结果<br>你可以学简单点，也可以学复杂点。想多学一点的话，你可以探索所谓的启发式规则或经验法则来使用算法，并且以实验为依据来展示它们好不好用，及如果好用的话在什么条件下他们与成功的结果有关联。<br>一些你可以考虑学习的算法有：最小平方线性回归，逻辑回归，K最近邻分类算法，感知器算法。<h1 id="实现一个机器学习算法">实现一个机器学习算法</h1>选一个算法，然后选一个编程语言来实现它，或者把一个已有的实现移植到你选定的编程语言上。<br>你应选择一个中等复杂度的算法来实现。我推荐你仔细研究你想要实现的算法，或选择一个你喜欢的已有实现然后把它移植到你选定的编程语言。<br>从头开始实现一个算法，是学习那些关于把算法描述转换成一个可行的系统的过程中必须要做的无数的小决定的好方法。在不同算法上重复这个过程，很快你就能对读懂论文和书里面算法的数学描述有感觉了。<br>五个能帮助你从头开始实现机器学习算法的策略有：<br>从代码移植开始。把开源的算法实现从一种语言移植到另外一种语言能教会你算法是如何实现的，并且你能拥有并掌握它。这是开始学习的最快的途径，非常值得推荐。<br>从一个算法描述开始，然后采集一些其他的描述来帮助你排除歧义并且理解主要的那个参考材料。<br>多读该算法的不同实现。学习不同程序员是如何理解算法描述并且如何把它转换成代码的。<br>不要陷入过炫的方法太深。许多机器学习算法的内核用的都是高级优化算法。不要尝试重新实现这些方法，除非这就是你做这个项目的本意。你应该用一个提供优化算法的类库，或者用一个更容易实现的或者类库里就有的简单点的优化算法（如梯度下降算法）。<br>小型项目方法论<br>以上四个策略属于我称为“小型项目”的方法论。你用这个方法可以很快建立在技术领域（比如机器学习）方面的实用技能。大意就是你设计并且亲手完成解决特定问题的小项目。<br>小型项目在几个方面应该足够小，才能保证你能完成它们并且从中学习，然后好步入到下一个项目中去。下面是一些你应该考虑加在项目上的一些限制：<br>时间短：一个项目从头到最后能有可展现的结果不应超过5-15小时。这样利用一周中不上班的晚上和周末时间你就能完成一个小项目。<br>范围小：一个项目应该有意义，但同时应该是你感兴趣的问题的范围最小的版本。举个例子，与其解决广义的“写一个能告诉我微博是否会被转发的程序”，还不如去研究这个问题在一个特定的账号在一个特定的时间段内的表现。<br>所需资源少：一个项目应该能用你的可联网的台式或者笔记本电脑完成。你不应该需要奇葩的软件，网络架构，或者第三方数据或者服务。你应搜集需要的数据，读入内存，用开源工具来解决你那个小问题。<br>额外有关项目的小贴士<br>这些策略的原则是让你利用你的程序员技能开始行动。下面是三条帮助你调整思维模式，有助你开始行动的小贴士：<br>写下你学到的东西。我推荐你每个步骤都产生一个有形的劳动成果。它可以是本子里的笔记，微博，博客文章或者是开源项目。每个劳动成果都可以作为一个里程碑或锚。<br>除非项目的目的是写代码，否则不要写。这条不是那么显而易见，但却是最能帮助你加快理解机器学习的速度的建议。<br>目的是学到东西，而不是产生独一无二的资源。不要管是否有人读你关于一个算法的研究、教程或是笔记。这些都是你的观点，是你的劳动成果，他们证明你现在掌握到了知识。<h1 id="总结">总结</h1>下面是这些策略的一句话清晰总结，可以帮助你选择适合自己的那个。<br>学习一个机器学习工具：选择一个你喜欢的工具或类库，学习如何很好的使用它。。<br>学习一个机器学习数据集：选择一个数据集，深入地离家它，发掘哪类算法处理它最有效。<br>学习一个机器学习算法：选择一个算法，深入理解它，发掘什么样的参数设置在不同数据集上都稳定。<br>实现一个机器学习算法：选择一个算法，用你选定的语言实现它或者是把已有的实现移植到你选定的语言上。</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/机器学习/">机器学习</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/10/03/基于贝叶斯算法的文本分析算法/" title="基于贝叶斯算法的文本分析算法">
+  <strong>上一篇：</strong><br/>
+  <span>
+  基于贝叶斯算法的文本分析算法</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/09/28/深入HBase架构解析-2/"  title="深入HBase架构解析(2)">
+ <strong>下一篇：</strong><br/> 
+ <span>深入HBase架构解析(2)
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/09/29/初学机器学习的四种方式/" data-title="初学机器学习的四种方式" data-url="http://pangjiuzala.github.io/2015/09/29/初学机器学习的四种方式/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#学习一个机器学习工具"><span class="toc-number">1.</span> <span class="toc-text">学习一个机器学习工具</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#学习一个机器学习数据集"><span class="toc-number">2.</span> <span class="toc-text">学习一个机器学习数据集</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#学习一个机器学习算法"><span class="toc-number">3.</span> <span class="toc-text">学习一个机器学习算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实现一个机器学习算法"><span class="toc-number">4.</span> <span class="toc-text">实现一个机器学习算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

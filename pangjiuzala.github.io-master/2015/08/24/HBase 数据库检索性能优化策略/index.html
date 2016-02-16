@@ -1,0 +1,596 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>HBase 数据库检索性能优化策略 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="HBase 数据库是一个基于分布式的、面向列的、主要用于非结构化数据存储用途的开源数据库。其设计思路来源于 Google 的非开源数据库”BigTable”。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase 数据库检索性能优化策略">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/24/HBase 数据库检索性能优化策略/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="HBase 数据库是一个基于分布式的、面向列的、主要用于非结构化数据存储用途的开源数据库。其设计思路来源于 Google 的非开源数据库”BigTable”。">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0174.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0175.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0176.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0177.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0178.png">
+<meta property="og:updated_time" content="2015-09-06T07:45:54.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase 数据库检索性能优化策略">
+<meta name="twitter:description" content="HBase 数据库是一个基于分布式的、面向列的、主要用于非结构化数据存储用途的开源数据库。其设计思路来源于 Google 的非开源数据库”BigTable”。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/24/HBase 数据库检索性能优化策略/" title="HBase 数据库检索性能优化策略" itemprop="url">HBase 数据库检索性能优化策略</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-24T13:23:35.000Z" itemprop="datePublished"> 发表于 2015-08-24</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>HBase 数据库是一个基于分布式的、面向列的、主要用于非结构化数据存储用途的开源数据库。其设计思路来源于 Google 的非开源数据库”BigTable”。</p>
+<a id="more"></a>
+<p>HDFS 为 HBase 提供底层存储支持，MapReduce 为其提供计算能力，ZooKeeper 为其提供协调服务和 failover（失效转移的备份操作）机制。Pig 和 Hive 为 HBase 提供了高层语言支持，使其可以进行数据统计（可实现多表 join 等），Sqoop 则为其提供 RDBMS 数据导入功能。</p>
+<p>HBase 不能支持 where 条件、Order by 查询，只支持按照主键 Rowkey 和主键的 range 来查询，但是可以通过 HBase 提供的 API 进行条件过滤。</p>
+<p>HBase 的 Rowkey 是数据行的唯一标识，必须通过它进行数据行访问，目前有三种方式，单行键访问、行键范围访问、全表扫描访问。数据按行键的方式排序存储，依次按位比较，数值较大的排列在后，例如 int 方式的排序：1，10，100，11，12，2，20…，906，…。</p>
+<p>ColumnFamily 是“列族”，属于 schema 表，在建表时定义，每个列属于一个列族，列名用列族作为前缀“ColumnFamily：qualifier”，访问控制、磁盘和内存的使用统计都是在列族层面进行的。</p>
+<p>Cell 是通过行和列确定的一个存储单元，值以字节码存储，没有类型。<br>Timestamp 是区分不同版本 Cell 的索引，64 位整型。不同版本的数据按照时间戳倒序排列，最新的数据版本排在最前面。</p>
+<p>Hbase 在行方向上水平划分成 N 个 Region，每个表一开始只有一个 Region，数据量增多，Region 自动分裂为两个，不同 Region 分布在不同 Server 上，但同一个不会拆分到不同 Server。</p>
+<p>Region 按 ColumnFamily 划分成 Store，Store 为最小存储单元，用于保存一个列族的数据，每个 Store 包括内存中的 memstore 和持久化到 disk 上的 HFile。</p>
+<p>图 1 是 HBase 数据表的示例，数据分布在多台节点机器上面。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0174.png" alt=""><br></center><br>图 1. HBase 数据表示例<br><br>HBase 调用 API 示例<br><br>类似于操作关系型数据库的 JDBC 库，HBase client 包本身提供了大量可以供操作的 API，帮助用户快速操作 HBase 数据库。提供了诸如创建数据表、删除数据表、增加字段、存入数据、读取数据等等接口。清单 1 提供了一个作者封装的工具类，包括操作数据表、读取数据、存入数据、导出数据等方法。<br><br>清单 1.HBase API 操作工具类代码<br><br><figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.conf.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.HColumnDescriptor;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.HTableDescriptor;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.KeyValue;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.Get;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.HBaseAdmin;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.HTable;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.Put;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.Result;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.ResultScanner;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.client.Scan;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.util.Bytes;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">public</span> class HBaseUtil</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span> Configuration conf = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">private</span> HBaseAdmin admin = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">protected</span> HBaseUtil(Configuration conf) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">this</span>.conf = conf;</span><br><span class="line">        <span class="keyword">this</span>.admin = <span class="keyword">new</span> HBaseAdmin(conf);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">boolean</span> existsTable(<span class="keyword">String</span> table)</span><br><span class="line">    <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> admin.tableExists(table);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> createTable(<span class="keyword">String</span> table, <span class="built_in">byte</span>[][] splitKeys, <span class="keyword">String</span>... colfams)</span><br><span class="line">    <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTableDescriptor desc = <span class="keyword">new</span> HTableDescriptor(table);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">String</span> cf : colfams)</span><br><span class="line">        &#123;</span><br><span class="line">            HColumnDescriptor coldef = <span class="keyword">new</span> HColumnDescriptor(cf);</span><br><span class="line">            desc.addFamily(coldef);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (splitKeys != <span class="keyword">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            admin.createTable(desc, splitKeys);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            admin.createTable(desc);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> disableTable(<span class="keyword">String</span> table) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        admin.disableTable(table);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> dropTable(<span class="keyword">String</span> table) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (existsTable(table))</span><br><span class="line">        &#123;</span><br><span class="line">            disableTable(table);</span><br><span class="line">            admin.deleteTable(table);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> fillTable(<span class="keyword">String</span> table, <span class="built_in">int</span> startRow, <span class="built_in">int</span> endRow, <span class="built_in">int</span> numCols,</span><br><span class="line">                          <span class="built_in">int</span> pad, <span class="built_in">boolean</span> setTimestamp, <span class="built_in">boolean</span> <span class="built_in">random</span>,</span><br><span class="line">                          <span class="keyword">String</span>... colfams) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTable tbl = <span class="keyword">new</span> HTable(conf, table);</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">int</span> row = startRow; row &lt;= endRow; row++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">int</span> col = <span class="number">0</span>; col &lt; numCols; col++)</span><br><span class="line">            &#123;</span><br><span class="line">                Put put = <span class="keyword">new</span> Put(Bytes.toBytes(<span class="string">"row-"</span>));</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">String</span> cf : colfams)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">String</span> colName = <span class="string">"col-"</span>;</span><br><span class="line">                    <span class="keyword">String</span> val = <span class="string">"val-"</span>;</span><br><span class="line">                    <span class="keyword">if</span> (setTimestamp)</span><br><span class="line">                    &#123;</span><br><span class="line">                        put.<span class="built_in">add</span>(Bytes.toBytes(cf), Bytes.toBytes(colName),</span><br><span class="line">                                col, Bytes.toBytes(val));</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                    &#123;</span><br><span class="line">                        put.<span class="built_in">add</span>(Bytes.toBytes(cf), Bytes.toBytes(colName),</span><br><span class="line">                                Bytes.toBytes(val));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                tbl.put(put);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        tbl.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> put(<span class="keyword">String</span> table, <span class="keyword">String</span> row, <span class="keyword">String</span> fam, <span class="keyword">String</span> qual,</span><br><span class="line">                    <span class="keyword">String</span> val) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTable tbl = <span class="keyword">new</span> HTable(conf, table);</span><br><span class="line">        Put put = <span class="keyword">new</span> Put(Bytes.toBytes(row));</span><br><span class="line">        put.<span class="built_in">add</span>(Bytes.toBytes(fam), Bytes.toBytes(qual), Bytes.toBytes(val));</span><br><span class="line">        tbl.put(put);</span><br><span class="line">        tbl.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> put(<span class="keyword">String</span> table, <span class="keyword">String</span> row, <span class="keyword">String</span> fam, <span class="keyword">String</span> qual, <span class="keyword">long</span> ts,</span><br><span class="line">                    <span class="keyword">String</span> val) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTable tbl = <span class="keyword">new</span> HTable(conf, table);</span><br><span class="line">        Put put = <span class="keyword">new</span> Put(Bytes.toBytes(row));</span><br><span class="line">        put.<span class="built_in">add</span>(Bytes.toBytes(fam), Bytes.toBytes(qual), ts, Bytes.toBytes(val));</span><br><span class="line">        tbl.put(put);</span><br><span class="line">        tbl.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> put(<span class="keyword">String</span> table, <span class="keyword">String</span>[] rows, <span class="keyword">String</span>[] fams, <span class="keyword">String</span>[] quals,</span><br><span class="line">                    <span class="keyword">long</span>[] ts, <span class="keyword">String</span>[] vals) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTable tbl = <span class="keyword">new</span> HTable(conf, table);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">String</span> row : rows)</span><br><span class="line">        &#123;</span><br><span class="line">            Put put = <span class="keyword">new</span> Put(Bytes.toBytes(row));</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">String</span> fam : fams)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">int</span> v = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">String</span> qual : quals)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">String</span> val = vals[v &lt; vals.length ? v : vals.length];</span><br><span class="line">                    <span class="keyword">long</span> t = ts[v &lt; ts.length ? v : ts.length - <span class="number">1</span>];</span><br><span class="line">                    put.<span class="built_in">add</span>(Bytes.toBytes(fam), Bytes.toBytes(qual), t,</span><br><span class="line">                            Bytes.toBytes(val));</span><br><span class="line">                    v++;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            tbl.put(put);</span><br><span class="line">        &#125;</span><br><span class="line">        tbl.close();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> dump(<span class="keyword">String</span> table, <span class="keyword">String</span>[] rows, <span class="keyword">String</span>[] fams, <span class="keyword">String</span>[] quals)</span><br><span class="line">    <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTable tbl = <span class="keyword">new</span> HTable(conf, table);</span><br><span class="line">        List&lt;Get&gt; gets = <span class="keyword">new</span> ArrayList&lt;Get&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">String</span> row : rows)</span><br><span class="line">        &#123;</span><br><span class="line">            Get <span class="built_in">get</span> = <span class="keyword">new</span> Get(Bytes.toBytes(row));</span><br><span class="line">            <span class="built_in">get</span>.setMaxVersions();</span><br><span class="line">            <span class="keyword">if</span> (fams != <span class="keyword">null</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">String</span> fam : fams)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">String</span> qual : quals)</span><br><span class="line">                    &#123;</span><br><span class="line">                        <span class="built_in">get</span>.addColumn(Bytes.toBytes(fam), Bytes.toBytes(qual));</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            gets.<span class="built_in">add</span>(<span class="built_in">get</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Result[] results = tbl.<span class="built_in">get</span>(gets);</span><br><span class="line">        <span class="keyword">for</span> (Result result : results)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">for</span> (KeyValue kv : result.raw())</span><br><span class="line">            &#123;</span><br><span class="line">                System.out.<span class="built_in">println</span>(<span class="string">"KV: "</span> + kv +</span><br><span class="line">                                   <span class="string">", Value: "</span> + Bytes.toString(kv.getValue()));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> scan(<span class="built_in">int</span> caching, <span class="built_in">int</span> batch) <span class="keyword">throws</span> IOException</span><br><span class="line">    &#123;</span><br><span class="line">        HTable table = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">final</span> <span class="built_in">int</span>[] counters = &#123;<span class="number">0</span>, <span class="number">0</span>&#125;;</span><br><span class="line">        Scan scan = <span class="keyword">new</span> Scan();</span><br><span class="line">        scan.setCaching(caching); <span class="comment">// co ScanCacheBatchExample-1-Set Set caching and batch parameters.</span></span><br><span class="line">        scan.setBatch(batch);</span><br><span class="line">        ResultScanner scanner = table.getScanner(scan);</span><br><span class="line">        <span class="keyword">for</span> (Result result : scanner)</span><br><span class="line">        &#123;</span><br><span class="line">            counters[<span class="number">1</span>]++; <span class="comment">// co ScanCacheBatchExample-2-Count Count the number of Results available.</span></span><br><span class="line">        &#125;</span><br><span class="line">        scanner.close();</span><br><span class="line">        System.out.<span class="built_in">println</span>(<span class="string">"Caching: "</span> + caching + <span class="string">", Batch: "</span> + batch +</span><br><span class="line">                           <span class="string">", Results: "</span> + counters[<span class="number">1</span>] + <span class="string">", RPCs: "</span> + counters[<span class="number">0</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br>操作表的 API 都有 HBaseAdmin 提供，特别讲解一下 Scan 的操作部署。<br><br>HBase 的表数据分为多个层次,HRegion-&gt;HStore-&gt;[HFile,HFile,…,MemStore]。<br><br>在 HBase 中，一张表可以有多个 Column Family，在一次 Scan 的流程中，每个 Column Family(Store) 的数据读取由一个 StoreScanner 对象负责。每个 Store 的数据由一个内存中的 MemStore 和磁盘上的 HFile 文件组成，对应的 StoreScanner 对象使用一个 MemStoreScanner 和 N 个 StoreFileScanner 来进行实际的数据读取。<br><br>因此，读取一行的数据需要以下步骤：<br><br>按照顺序读取出每个 Store<br><br>对于每个 Store，合并 Store 下面的相关的 HFile 和内存中的 MemStore<br><br>这两步都是通过堆来完成。RegionScanner 的读取通过下面的多个 StoreScanner 组成的堆完成，使用 RegionScanner 的成员变量 KeyValueHeap storeHeap 表示。一个 StoreScanner 一个堆，堆中的元素就是底下包含的 HFile 和 MemStore 对应的 StoreFileScanner 和 MemStoreScanner。堆的优势是建堆效率高，可以动态分配内存大小，不必事先确定生存周期。<br><br>接着调用 seekScanners() 对这些 StoreFileScanner 和 MemStoreScanner 分别进行 seek。seek 是针对 KeyValue 的，seek 的语义是 seek 到指定 KeyValue，如果指定 KeyValue 不存在，则 seek 到指定 KeyValue 的下一个。<br><br>Scan类常用方法说明：<br><br>scan.addFamily()/scan.addColumn()：指定需要的 Family 或 Column，如果没有调用任何 addFamily 或 Column，会返回所有的 Columns；<br><br>scan.setMaxVersions()：指定最大的版本个数。如果不带任何参数调用 setMaxVersions，表示取所有的版本。如果不掉用 setMaxVersions，只会取到最新的版本.；<br><br>scan.setTimeRange()：指定最大的时间戳和最小的时间戳，只有在此范围内的 Cell 才能被获取；<br><br>scan.setTimeStamp()：指定时间戳；<br><br>scan.setFilter()：指定 Filter 来过滤掉不需要的信息；<br><br>scan.setStartRow()：指定开始的行。如果不调用，则从表头开始；<br><br>scan.setStopRow()：指定结束的行（不含此行）；<br><br>scan. setCaching()：每次从服务器端读取的行数（影响 RPC）；<br><br>scan.setBatch()：指定最多返回的 Cell 数目。用于防止一行中有过多的数据，导致 OutofMemory 错误，默认无限制。<br><br>HBase 数据表优化<br><br>HBase 是一个高可靠性、高性能、面向列、可伸缩的分布式数据库，但是当并发量过高或者已有数据量很大时，读写性能会下降。我们可以采用如下方式逐步提升 HBase 的检索速度。<br><br>预先分区<br><br>默认情况下，在创建 HBase 表的时候会自动创建一个 Region 分区，当导入数据的时候，所有的 HBase 客户端都向这一个 Region 写数据，直到这个 Region 足够大了才进行切分。一种可以加快批量写入速度的方法是通过预先创建一些空的 Regions，这样当数据写入 HBase 时，会按照 Region 分区情况，在集群内做数据的负载均衡。<br><br>Rowkey 优化<br><br>HBase 中 Rowkey 是按照字典序存储，因此，设计 Rowkey 时，要充分利用排序特点，将经常一起读取的数据存储到一块，将最近可能会被访问的数据放在一块。<br><br>此外，Rowkey 若是递增的生成，建议不要使用正序直接写入 Rowkey，而是采用 reverse 的方式反转 Rowkey，使得 Rowkey 大致均衡分布，这样设计有个好处是能将 RegionServer 的负载均衡，否则容易产生所有新数据都在一个 RegionServer 上堆积的现象，这一点还可以结合 table 的预切分一起设计。<br><br>减少ColumnFamily 数量<br><br>不要在一张表里定义太多的 ColumnFamily。目前 Hbase 并不能很好的处理超过 2~3 个 ColumnFamily 的表。因为某个 ColumnFamily 在 flush 的时候，它邻近的 ColumnFamily 也会因关联效应被触发 flush，最终导致系统产生更多的 I/O。<br><br>缓存策略 (setCaching)<br><br>创建表的时候，可以通过 HColumnDescriptor.setInMemory(true) 将表放到 RegionServer 的缓存中，保证在读取的时候被 cache 命中。<br><br>设置存储生命期<br><br>创建表的时候，可以通过 HColumnDescriptor.setTimeToLive(int timeToLive) 设置表中数据的存储生命期，过期数据将自动被删除。<br><br>硬盘配置<br><br>每台 RegionServer 管理 10~1000 个 Regions，每个 Region 在 1~2G，则每台 Server 最少要 10G，最大要 1000*2G=2TB，考虑 3 备份，则要 6TB。方案一是用 3 块 2TB 硬盘，二是用 12 块 500G 硬盘，带宽足够时，后者能提供更大的吞吐率，更细粒度的冗余备份，更快速的单盘故障恢复。<br><br>分配合适的内存给 RegionServer 服务<br><br>在不影响其他服务的情况下，越大越好。例如在 HBase 的 conf 目录下的 hbase-env.sh 的最后添加 <code>export HBASE_REGIONSERVER_OPTS=”-Xmx16000m $HBASE_REGIONSERVER_OPTS”</code><br><br>其中 16000m 为分配给 RegionServer 的内存大小。<br><br>写数据的备份数<br><br>备份数与读性能成正比，与写性能成反比，且备份数影响高可用性。有两种配置方式，一种是将 hdfs-site.xml 拷贝到 hbase 的 conf 目录下，然后在其中添加或修改配置项 dfs.replication 的值为要设置的备份数，这种修改对所有的 HBase 用户表都生效，另外一种方式，是改写 HBase 代码，让 HBase 支持针对列族设置备份数，在创建表时，设置列族备份数，默认为 3，此种备份数只对设置的列族生效。<br><br>WAL（预写日志）<br><br>可设置开关，表示 HBase 在写数据前用不用先写日志，默认是打开，关掉会提高性能，但是如果系统出现故障 (负责插入的 RegionServer 挂掉)，数据可能会丢失。配置 WAL 在调用 Java API 写入时，设置 Put 实例的 WAL，调用 Put.setWriteToWAL(boolean)。<br><br>批量写<br><br>HBase 的 Put 支持单条插入，也支持批量插入，一般来说批量写更快，节省来回的网络开销。在客户端调用 Java API 时，先将批量的 Put 放入一个 Put 列表，然后调用 HTable 的 Put(Put 列表) 函数来批量写。<br><br>客户端一次从服务器拉取的数量<br><br>通过配置一次拉去的较大的数据量可以减少客户端获取数据的时间，但是它会占用客户端内存。有三个地方可进行配置：<br><br>在 HBase 的 conf 配置文件中进行配置 hbase.client.scanner.caching；<br><br>通过调用 HTable.setScannerCaching(int scannerCaching) 进行配置；<br><br>通过调用 Scan.setCaching(int caching) 进行配置。三者的优先级越来越高。<br><br>RegionServer 的请求处理 IO 线程数<br><br>较少的 IO 线程适用于处理单次请求内存消耗较高的 Big Put 场景 (大容量单次 Put 或设置了较大 cache 的 Scan，均属于 Big Put) 或 ReigonServer 的内存比较紧张的场景。<br><br>较多的 IO 线程，适用于单次请求内存消耗低，TPS 要求 (每秒事务处理量 (TransactionPerSecond)) 非常高的场景。设置该值的时候，以监控内存为主要参考。<br><br>在 hbase-site.xml 配置文件中配置项为 hbase.regionserver.handler.count。<br><br>Region 大小设置<br><br>配置项为 hbase.hregion.max.filesize，所属配置文件为 hbase-site.xml.，默认大小 256M。<br><br>在当前 ReigonServer 上单个 Reigon 的最大存储空间，单个 Region 超过该值时，这个 Region 会被自动 split 成更小的 Region。小 Region 对 split 和 compaction 友好，因为拆分 Region 或 compact 小 Region 里的 StoreFile 速度很快，内存占用低。缺点是 split 和 compaction 会很频繁，特别是数量较多的小 Region 不停地 split, compaction，会导致集群响应时间波动很大，Region 数量太多不仅给管理上带来麻烦，甚至会引发一些 Hbase 的 bug。一般 512M 以下的都算小 Region。大 Region 则不太适合经常 split 和 compaction，因为做一次 compact 和 split 会产生较长时间的停顿，对应用的读写性能冲击非常大。<br><br>此外，大 Region 意味着较大的 StoreFile，compaction 时对内存也是一个挑战。如果你的应用场景中，某个时间点的访问量较低，那么在此时做 compact 和 split，既能顺利完成 split 和 compaction，又能保证绝大多数时间平稳的读写性能。compaction 是无法避免的，split 可以从自动调整为手动。只要通过将这个参数值调大到某个很难达到的值，比如 100G，就可以间接禁用自动 split(RegionServer 不会对未到达 100G 的 Region 做 split)。再配合 RegionSplitter 这个工具，在需要 split 时，手动 split。手动 split 在灵活性和稳定性上比起自动 split 要高很多，而且管理成本增加不多，比较推荐 online 实时系统使用。内存方面，小 Region 在设置 memstore 的大小值上比较灵活，大 Region 则过大过小都不行，过大会导致 flush 时 app 的 IO wait 增高，过小则因 StoreFile 过多影响读性能。<br><br>HBase 配置<br><br>建议 HBase 的服务器内存至少 32G，表 1 是通过实践检验得到的分配给各角色的内存建议值。<br><br>模块    服务种类    内存需求<br><br><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">HDFS	HDFS NameNode	<span class="number">16</span>GB</span><br><span class="line">HDFS DataNode	<span class="number">2</span>GB	</span><br><span class="line">HBase	HMaster	<span class="number">2</span>GB</span><br><span class="line">HRegionServer	<span class="number">16</span>GB	</span><br><span class="line">ZooKeeper	ZooKeeper	<span class="number">4</span>GB</span><br></pre></td></tr></table></figure><br><br>表 1. HBase 相关服务配置信息<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0175.png" alt=""><br></center><br>HBase 的单个 Region 大小建议设置大一些，推荐 2G，RegionServer 处理少量的大 Region 比大量的小 Region 更快。对于不重要的数据，在创建表时将其放在单独的列族内，并且设置其列族备份数为 2（默认是这样既保证了双备份，又可以节约空间，提高写性能，代价是高可用性比备份数为 3 的稍差，且读性能不如默认备份数的时候。<br><br>实际案例<br><br>项目要求可以删除存储在 HBase 数据表中的数据，数据在 HBase 中的 Rowkey 由任务 ID(数据由任务产生) 加上 16 位随机数组成，任务信息由单独一张表维护。图 2 所示是数据删除流程图。<br><br><br>图 2. 数据删除流程图<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0176.png" alt=""><br></center><br>最初的设计是在删除任务的同时按照任务 ID 删除该任务存储在 HBase 中的相应数据。但是 HBase 数据较多时会导致删除耗时较长，同时由于磁盘 I/O 较高，会导致数据读取、写入超时。<br><br>查看 HBase 日志发现删除数据时，HBase 在做 Major Compaction 操作。Major Compaction 操作的目的是合并文件，并清除删除、过期、多余版本的数据。Major Compaction 时 HBase 将合并 Region 中 StoreFile，该动作如果持续长时间会导致整个 Region 都不可读，最终导致所有基于这些 Region 的查询超时。<br><br>如果想要解决 Major Compaction 问题，需要查看它的源代码。通过查看 HBase 源码发现 RegionServer 在启动时候，有个 CompactionChecker 线程在定期检测是否需要做 Compact。源代码如图 3 所示。<br><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0177.png" alt=""><br></center><br>图 3. CompactionChecker 线程代码图<br><br>isMajorCompaction 中会根据 hbase.hregion.majorcompaction 参数来判断是否做 Major Compact。如果 hbase.hregion.majorcompaction 为 0，则返回 false。修改配置文件 hbase.hregion.majorcompaction 为 0，禁止 HBase 的定期 Major Compaction 机制，通过自定义的定时机制 (在凌晨 HBase 业务不繁忙时) 执行 Major 操作，这个定时可以是通过 Linux cron 定时启动脚本，也可以通过 Java 的 timer schedule，在实际项目中使用 Quartz 来启动，启动的时间配置在配置文件中给出，可以方便的修改 Major Compact 启动的时间。通过这种修改后，我们发现在删除数据后仍会有 Compact 操作。这样流程进入 needsCompaction = true 的分支。查看 needsCompaction 判断条件为 (storefiles.size() – filesCompacting.size()) &gt; minFilesToCompact 触发。同时当需紧缩的文件数等于 Store 的所有文件数，Minor Compact 自动升级为 Major Compact。但是 Compact 操作不能禁止，因为这样会导致数据一直存在，最终影响查询效率。<br><br>基于以上分析，我们必须重新考虑删除数据的流程。对用户来说，用户只要在检索时对于删除的任务不进行检索即可。那么只需要删除该条任务记录，对于该任务相关联的数据不需要立马进行删除。当系统空闲时候再去定时删除 HBase 数据表中的数据，并对 Region 做 Major Compact，清理已经删除的数据。通过对任务删除流程的修改，达到项目的需求，同时这种修改也不需要修改 HBase 的配置。<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0178.png" alt=""><br></center>
+
+<p>图 4. 数据删除流程对比图</p>
+<p>检索、查询、删除 HBase 数据表中的数据本身存在大量的关联性，需要查看 HBase 数据表的源代码才能确定导致检索性能瓶颈的根本原因及最终解决方案。</p>
+<p>结束语</p>
+<p>HBase 数据库的使用及检索优化方式均与传统关系型数据库存在较多不同，本文从数据表的基本定义方式出发，通过 HBase 自身提供的 API 访问方式入手，举例说明优化方式及注意事项，最后通过实例来验证优化方案可行性。检索性能本身是数据表设计、程序设计、逻辑设计等的结合产物，需要程序员深入理解后才能做出正确的优化方案。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HBase/">HBase</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/25/Mongodb 请求处理流程/" title="Mongodb 请求处理流程">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Mongodb 请求处理流程</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/23/社交网络中潜在好友推荐算法研究/"  title="社交网络中潜在好友推荐算法研究">
+ <strong>下一篇：</strong><br/> 
+ <span>社交网络中潜在好友推荐算法研究
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/24/HBase 数据库检索性能优化策略/" data-title="HBase 数据库检索性能优化策略" data-url="http://pangjiuzala.github.io/2015/08/24/HBase 数据库检索性能优化策略/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

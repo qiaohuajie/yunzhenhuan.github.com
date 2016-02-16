@@ -1,0 +1,638 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>HBase基础知识(9):HBase其他特性 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="客户端API是由HTable的实例提供的，用户可以用它来操作HBase表。除了之前提到的一些主要特性外，还有以下一些值得注意的方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase基础知识(9):HBase其他特性">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/21/HBase基础知识-9-HBase其他特性/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="客户端API是由HTable的实例提供的，用户可以用它来操作HBase表。除了之前提到的一些主要特性外，还有以下一些值得注意的方法。">
+<meta property="og:updated_time" content="2015-12-01T07:01:45.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase基础知识(9):HBase其他特性">
+<meta name="twitter:description" content="客户端API是由HTable的实例提供的，用户可以用它来操作HBase表。除了之前提到的一些主要特性外，还有以下一些值得注意的方法。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/21/HBase基础知识-9-HBase其他特性/" title="HBase基础知识(9):HBase其他特性" itemprop="url">HBase基础知识(9):HBase其他特性</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-20T23:27:52.000Z" itemprop="datePublished"> 发表于 2015-08-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HTable的实用方法"><span class="toc-number">1.</span> <span class="toc-text">HTable的实用方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Bytes类"><span class="toc-number">2.</span> <span class="toc-text">Bytes类</span></a></li></ol>
+		
+		</div>
+		
+		<p>客户端API是由HTable的实例提供的，用户可以用它来操作HBase表。除了之前提到的一些主要特性外，还有以下一些值得注意的方法。<br><a id="more"></a></p>
+<h1 id="HTable的实用方法">HTable的实用方法</h1><ul>
+<li><p><code>void close()</code><br>用户使用完一个HTable实例之后，需要调用一次Close()。这个方法会刷写所有客户端缓冲的写操作：close()方法会隐式调用flushCache()方法。</p>
+</li>
+<li><p><code>byte[] getTableName()</code><br>这是一个获取表名称的快捷方法。</p>
+</li>
+<li><p><code>Configuration getConfiguration()</code><br>这个方法允许用户访问HTable实例中使用的配置。因为得到的是Configuration实例的引用，所以用户修改的参数都会立即生效</p>
+</li>
+<li><p><code>HTableDescriptor getTableDescriptor()</code></p>
+</li>
+</ul>
+<p>每个表都使用一个HTableDescriptor实例来定义自己的表结构用户可以使用这个方法访问这个表的底层结构定义。</p>
+<ul>
+<li><code>static boolean isTableEnabled(table)</code></li>
+</ul>
+<p>HTable类有4个不同的静态辅助方法，它们都需要一个显式的配置和一个表名。如果没有提供显式的配置，方法会找到classpath下的配置文件，使用默认值创建一个隐式的配置。这个方法可以检查表在ZooKeeper中是否被标志为启用。</p>
+<ul>
+<li><p><code>byte[][]  getStartKeys()</code></p>
+</li>
+<li><p><code>byte[][]  getEndKeys()</code></p>
+</li>
+<li><p><code>Pair&lt;byte[][],byte[][]&gt;getStartEndKeys()</code></p>
+</li>
+</ul>
+<p><strong>这些方法让用户可以查看当前表的物理分布情况，不过这个分布很可能在添加一些数据之后发生变化。这些方法返回了表的所有region的起始行键或/和终止行键。它们以二维字节数组形式返回，用户可以使用Bytes.toStringBinary()方法打印这些键。</strong><br>-<code>void clearRegionCache()</code><br>-<code>HRegionLocation getRegionLocation()</code><br>-<code>Map&lt;HRegionInfo,HServerAddress&gt; getRegionsInfo()</code><br>这些方法可以帮助用户获取某一行数据的具体位置信息，或者说这行数据所在的region信息，以及所有的region的分布信息。用户可以在必要的时候清空缓存的region位置信息。这些方法可以让高级用户了解并使用这些信息，例如控制集群流量或者调整数据的位置。</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><span class="line">void <span class="function"><span class="title">prewarmRegionCache</span><span class="params">(Map&lt;HRegionInfo, HServerAddress&gt; regionMap)</span></span></span><br><span class="line">static void <span class="function"><span class="title">setRegionCachePrefetch</span><span class="params">(table, enable)</span></span></span><br><span class="line">static boolean <span class="function"><span class="title">getRegionCachePrefetch</span><span class="params">(table)</span></span></span><br></pre></td></tr></table></figure>
+<p>可以先预取region位置信息来避免耗时较多的操作（查找每行数据所属region地址知道本地region地址缓存相对稳定）。使用这些方法，用户可以先获取一个region信息来预热一下region缓存（例如用户可以使用getRegionsInfo()访问这个region的信息表，然后再处理它）,用户可以把整张表的预取功能打开。</p>
+<h1 id="Bytes类">Bytes类</h1><p>关于这个类和它的功能还有一些值得一提。<br>大部分方法都有3种形式，例如</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">long</span> toLong(<span class="keyword">byte</span>[] bytes)</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">long</span> toLong(<span class="keyword">byte</span>[] bytes,<span class="keyword">int</span> offset)</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">long</span> toLong(<span class="keyword">byte</span>[] bytes,<span class="keyword">int</span> offset,<span class="keyword">int</span> length)</span><br></pre></td></tr></table></figure>
+<p>用户可以输入一个字节数组，或者一个字节数组在加一个偏移值，或者一个字节数组、一个偏移值和一个长度值。具体使用哪种方法取决于最初这个字节数组是怎么生成的。如果这个字节数组之前是由toBytes()方法生成的，用户就可以安全地使用第一种形式的方法将其转化回来，只需送入这个字节数组而不需要其他额外信息整个数组都是转换过来的值。<br>然而，API和HBase内部都把数据存储为一个较大的数组，例如使用下面的方法:</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> putLong(<span class="keyword">byte</span>[] bytes,<span class="keyword">int</span> offset,<span class="keyword">long</span> val)</span><br></pre></td></tr></table></figure>
+<p>这个方法允许用户把一个long值写入一个字节数组的特定偏移位置。用户可以使用后面的两种toLong()方法存取这种较大的字节数组的数据。<br>Byte类支持以下原生Java类型到字节数组的互转:String、boolean、short、int、long、double和float。如下表</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方法</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">toStringBinary()</td>
+<td style="text-align:center">与toString()方法非常相似，这个方法可以安全地把不能打印的信息转换为人工可读的十六进制数。如果用户不清楚字节数组中的内容，就可以使用这个方法把内容打印出来，比如打印到控制台或日志文件中</td>
+</tr>
+<tr>
+<td style="text-align:center">compareTo()/equals()</td>
+<td style="text-align:center">这个方法让用户可以对两个byte[]进行比较。前者返回一个比较结果，后者返回一个布尔值，表示两个数组是否相等</td>
+</tr>
+<tr>
+<td style="text-align:center">add()/head()/tail()</td>
+<td style="text-align:center">用这些方法可以把两个字节数组连接在一起形成一个新的数组，或者可以取到字节数组头或尾的一部分</td>
+</tr>
+<tr>
+<td style="text-align:center">binarySearch()</td>
+<td style="text-align:center">在用户给定的字节数组中二分查找一个目标值，该方法可以在字节数组上对用户要查找的值和键进行操作</td>
+</tr>
+<tr>
+<td style="text-align:center">incrementBytes()</td>
+<td style="text-align:center">一个long类型数据转化成的字节数组与long的数据相加并返回字节数组，用户可以使用负数参数进行减法</td>
+</tr>
+</tbody>
+</table>
+<p>Bytes类与Java提供的ByteBuffer类的功能有所重叠。不同的是，前者所有的操作都不需要创建一个新的实例。这是考虑到某些情况下的性能优化，因为HBase内部使用了其中许多方法并多次调用，不创建实例也就避免了许多不必要的垃圾回收</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HBase/">HBase</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/22/Java字符串操作、基本运算方法等优化策略/" title="Java字符串操作、基本运算方法等优化策略">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Java字符串操作、基本运算方法等优化策略</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/20/HBase基础知识-8-扫描操作之缓存与批量处理/"  title="HBase基础知识(8):扫描操作之缓存与批量处理">
+ <strong>下一篇：</strong><br/> 
+ <span>HBase基础知识(8):扫描操作之缓存与批量处理
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/21/HBase基础知识-9-HBase其他特性/" data-title="HBase基础知识(9):HBase其他特性" data-url="http://pangjiuzala.github.io/2015/08/21/HBase基础知识-9-HBase其他特性/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#HTable的实用方法"><span class="toc-number">1.</span> <span class="toc-text">HTable的实用方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Bytes类"><span class="toc-number">2.</span> <span class="toc-text">Bytes类</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

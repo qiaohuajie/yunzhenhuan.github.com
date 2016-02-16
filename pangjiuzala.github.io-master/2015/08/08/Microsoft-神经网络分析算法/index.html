@@ -1,0 +1,618 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Microsoft 神经网络分析算法 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="本篇文章继续我们的微软挖掘系列算法总结，前几篇文章已经将相关的主要算法做了详细的介绍。在开始Microsoft 神经网络分析算法之前，本篇我们先将神经网络分析算法做一个简单介绍，此算法由于其本身的复杂性，所以我打算在开始之前先将算法原理做一个简单的总结，因为本身该算法就隶属于高等数学的研究范畴，我们对算法的推断和验证过程不做研究，只介绍该算法特点以及应用场景，且个人技术能力有限，不当之处还望勿喷。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Microsoft 神经网络分析算法">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/08/Microsoft-神经网络分析算法/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="本篇文章继续我们的微软挖掘系列算法总结，前几篇文章已经将相关的主要算法做了详细的介绍。在开始Microsoft 神经网络分析算法之前，本篇我们先将神经网络分析算法做一个简单介绍，此算法由于其本身的复杂性，所以我打算在开始之前先将算法原理做一个简单的总结，因为本身该算法就隶属于高等数学的研究范畴，我们对算法的推断和验证过程不做研究，只介绍该算法特点以及应用场景，且个人技术能力有限，不当之处还望勿喷。">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0137.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0138.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0139.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0140.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0141.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0142.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0143.png">
+<meta property="og:updated_time" content="2015-09-02T05:45:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Microsoft 神经网络分析算法">
+<meta name="twitter:description" content="本篇文章继续我们的微软挖掘系列算法总结，前几篇文章已经将相关的主要算法做了详细的介绍。在开始Microsoft 神经网络分析算法之前，本篇我们先将神经网络分析算法做一个简单介绍，此算法由于其本身的复杂性，所以我打算在开始之前先将算法原理做一个简单的总结，因为本身该算法就隶属于高等数学的研究范畴，我们对算法的推断和验证过程不做研究，只介绍该算法特点以及应用场景，且个人技术能力有限，不当之处还望勿喷。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/08/Microsoft-神经网络分析算法/" title="Microsoft 神经网络分析算法" itemprop="url">Microsoft 神经网络分析算法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-08T10:41:41.000Z" itemprop="datePublished"> 发表于 2015-08-08</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#算法起源"><span class="toc-number">1.</span> <span class="toc-text">算法起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#神经网络算法原理"><span class="toc-number">2.</span> <span class="toc-text">神经网络算法原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Microsoft神经网络分析算法特点"><span class="toc-number">3.</span> <span class="toc-text">Microsoft神经网络分析算法特点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#神经网络分析算法应用场景"><span class="toc-number">4.</span> <span class="toc-text">神经网络分析算法应用场景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#结语"><span class="toc-number">5.</span> <span class="toc-text">结语</span></a></li></ol>
+		
+		</div>
+		
+		<p>本篇文章继续我们的微软挖掘系列算法总结，前几篇文章已经将相关的主要算法做了详细的介绍。在开始Microsoft 神经网络分析算法之前，本篇我们先将神经网络分析算法做一个简单介绍，此算法由于其本身的复杂性，所以我打算在开始之前先将算法原理做一个简单的总结，因为本身该算法就隶属于高等数学的研究范畴，我们对算法的推断和验证过程不做研究，只介绍该算法特点以及应用场景，且个人技术能力有限，不当之处还望勿喷。<br><a id="more"></a></p>
+<h1 id="算法起源">算法起源</h1><p>在思维学中，人类的大脑的思维分为：逻辑思维、直观思维、和灵感思维三种基本方式。</p>
+<p>而神经网络就是利用其算法特点来模拟人脑思维的第二种方式，它是一个非线性动力学系统，其特点就是信息分布式存储和并行协同处理，虽然单个神经元的结构及其简单，功能有限，但是如果大量的神经元构成的网络系统所能实现的行为确实及其丰富多彩的。其实简单点讲就是利用该算法来模拟人类大脑来进行推理和验证的。</p>
+<p>我们先简要的分析下人类大脑的工作过程，我小心翼翼的在网上找到了一张勉强看起来舒服的大脑图片</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0137.png" alt=""><br></center>
+
+<p>嗯，看着有那么点意思了，起码看起来舒服点，那还是在19世纪末，有一位叫做：Waldege的大牛创建了神经元学活，他说人类复杂的神经系统是由数目繁多的神经元组成，说大脑皮层包括100亿个以上的神经元，每立方毫米源数万个，汗..我想的是典型的大数据。他们相互联系形成神经网络，通过感官器官和神经来接受来自身体外的各种信息（在神经网络算法中我们称:训练）传递中枢神经，然后经过对信息的分析和综合，再通过运动神经发出控制信息（比如我在博客园敲文字），依次来实现机体与外部环境的联系。</p>
+<p>神经元这玩意跟其它细胞一样，包括：细胞核、细胞质和细胞核，但是它还有比较特殊的，比如有许多突起，就跟上面的那个图片一样，分为：细胞体、轴突和树突三分部。细胞体内有细胞核，突起的作用是传递信息。树突的作用是作为引入输入信息的突起，而轴突是作为输出端的突起，但它只有一个。</p>
+<p>也就是说一个神经元它有N个输入（树突），然后经过信息加工（细胞核），然后只有一个输出（轴突）。而神经元之间四通过树突和另一个神经元的轴突相联系，同时进行着信息传递和加工。我去…好复杂….<br>我们来看看神经网络的原理算法公式</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0138.png" alt=""><br></center>
+
+<p>中间那个圆圆的就是细胞核了，X1、X2、X3….Xn就是树突了，而Yi就是轴突了….是不是有那么点意思了，嗯…我们的外界信息是通过神经元的树突进行输入，然后进过细胞核加工之后，经过Yi输出，然后输出到其它神经元…</p>
+<p>但是这种算法有着它自身的特点，就好像人类的大脑神经元一样，当每次收到外界信息的输入，不停的刺激的同时会根据信息的不同发生自身的调节，比如:通过不断的训练运动员学会了远动，不停的训练学会了骑自行车….等等吧这些人类的行为形成，其本质是通过不停的训练数百亿脑神经元形成的。而这些行为的沉淀之后就是正确结果导向。</p>
+<p>同样该算法也会通过X1、X2、X3….Xn这些元素不停的训练，进行自身的参数的调整来适应，同样训练次数的增加而形成一个正确的结果导向。这时候我们就可以利用它的自身适应过程产生正确的结果，而通过不断的训练使其具备学习功能，当然，该算法只是反映了人脑的若干基本特性，但并非生物系统的逼真描述，只是某种简单的模仿、简化和抽象。</p>
+<p>该算法不同数字计算机一样，会按照程序的一步一步地执行运算，而是能够自身适应环境、总结规律、完成某种运算、识别或控制过程，而这就是机器人的起源…人工智能的基础。</p>
+<h1 id="神经网络算法原理">神经网络算法原理</h1><p>由于神经网络算法的设计面太大，我们此处暂且只分析Microsoft神经网络算法的原理，在Microsoft神经网络算法中，我们可以简化成下面这个图片：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0139.png" alt=""><br></center><br>Microsoft神经网络使用的由最多三层神经元组成的“多层感知器”网络，分别为：输入层、可选隐含层和输出层。<br><br>输入层：输入神经元定义数据挖掘模型所有的输入属性值以及概率。<br>隐含层：隐藏神经元接受来自输入神经元的输入，并向输出神经元提供输出。隐藏层是向各种输入概率分配权重的位置。权重说明某一特定宿儒对于隐藏神经元的相关性或重要性。输入所分配的权重越大，则输入值也就越重要。而这个过程可以描述为学习的过程。权重可为负值，表示输入抑制而不是促进某一特定结果。<br><br>输出层：输出神经元代表数据挖掘模型的可预测属性值。<br>数据从输入经过中间隐含层到输出，整个过程是一个从前向后的传播数据和信息的过程，后面一层节点上的数据值从与它相连接的前面节点传来，之后把数据加权之后经过一定的函数运算得到新的值，继续传播到下一层节点。这个过程就是一个前向传播过程。<br><br>而当节点输出发生错误时，也就是和预期不同，神经网络就要自动“学习”，后一层节点对前一层节点一个“信任”程度（其实改变的就是连接件的权重），采取降低权重的方式来惩罚，如果节点输出粗粗哦，那就要查看这个错误的受那些输入节点的影响，降低导致出错的节点连接的权重，惩罚这些节点，同时提高那些做出正确建议节点的连接的权重。对那些受到惩罚的节点而说，也用同样的方法来惩罚它前面的节点，直到输入节点而止。这种称为：回馈。<br><br>而我们学习的过程就是重复上面的介绍的流程，通过前向传播得到输入值，用回馈法进行学习。当把训练集中的所有数据运行过一遍之后，则称为一个训练周期。训练后得到神经网络模型，包含了训练集中相应值和受预测值影响变化的规律。<br><br>在每个神经元中的隐含层中都有着复杂的函数，并且这些都非线性函数，并且类似生物学神经网络的基本传输特征，这些函数称之为：激活函数，即：输入值发生细微的变化有时候会产生较大的输出变化。<br>当然Microsot神经网络算法使用的函数是这样的：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0140.png" alt=""><br></center><br>其中a是输入值，而O是输出值。<br>处理反向传播，计算误差，更新权值时输出层所用的误差函数为交叉熵<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0141.png" alt=""><br></center><br>上述公式中Oi是输出神经元i的输出，而Ti是基于训练样例的该输出神经元实际值。<br>隐含神经元的误差是基于下一层的神经元的误差和相关权值来计算的。公式为：<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0142.png" alt=""><br></center>
+
+<p>其中Oi是输出神经元i的输出，该单元有j个到下一层的输出。Erri是神经元i的误差，Wij是这两个神经元之间的权值。<br>一旦计算出每个神经元的误差，则下一步是使用以下方法来调整网络中的权值。</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0143.png" alt=""><br></center><br>其中l为0-1范围内的数，称之为学习函数。</p>
+<p>其实以上函数应用的激活函数还是挺简单的。有兴趣的可以进行详细的研究和公式的推算，咱这里只是简要分析，列举算法特点。</p>
+<h1 id="Microsoft神经网络分析算法特点">Microsoft神经网络分析算法特点</h1><p>经过上面的原理分析，我们知道了神经网络算法分为了：输入层、隐含层、输出层三层方式连接，其中隐含层是可选的，也就是说在Microsoft神经网络算法中如果不经过隐含层，则输入将会直接从输入层中的节点传递到输出层中的节点。</p>
+<p>输入层特点：如果输入层如果为离散值，那么输入神经元通常代表输入属性的单个状态。如果输入数据包含Null值，则缺失的值也包括在内。具有两个以上状态的离散输入属性值会生成一个输入神经元，如果存在NUll值，会自动再重新的生成一个输入的神经元，用以处理Null值，一个连续的输入属性将生成两个输入神经元：一个用于缺失的状态、一个用以连续属性自身的值。输入神经元可向一个多多个神经元提供输入。</p>
+<p>隐含层特点:隐含神经元接受来自输入神经元的输入，并向输出神经元提供输出。存在激活函数供其使用改变阀值。</p>
+<p>输出层特点：输出神经如果对于离散输入属性，输出神经元通常代表可预测可预测属性的单个预测状态，其中包括缺失的Null值。</p>
+<p>如果挖掘模型包含一个或多个仅用于预测的属性，算法将创建一个代表所有这些属性的单一网络，如果挖掘模型包含一个或多个同时用于输入和预测的属性，则该算法提供程序将为其中每个属性构建一个网络。<br>对于具有离散值的输入属性和可预测属性，每个输入或输出神经元各自表示单个状态。对于具有连续值的输入属性和可预测属性，每个输入或输出神经元分别表示该属性值的范围和分布。</p>
+<p>算法提供程序通过接受之前保留的定性数据集也就是事例集合并将维持数据中的每个事例的实际已知值与网络的预测进行比较。即通过一个“批学习”的过程来迭代计算的整个网络，并且改变的输入权重。该算法处理了整个事例集合之后，将检查每个神经元的预测值和实际值。该算法将计算错误程度（如果错误），并且调整与神经输入关联的权重，并通过一个“回传”的过程从输出神经元返回到输出神经元。然后，该算法对整个事例集合重复该过程。经过以上的层层沉淀我们的算法就算从一个不懂的“婴儿”逐渐成长成“成人”，而这个结果就是我们那它来发掘和预测的工具。</p>
+<h1 id="神经网络分析算法应用场景">神经网络分析算法应用场景</h1><p>神经网络研究内容广泛，非本篇文章所能涵盖，而且它反映了多学科交叉技术领域的特点。研究工作集中以下领域：</p>
+<p>（1）生物原型研究。从生理学、心理学、脑科学、病理学等生物科学方面研究神经细胞、神经网络、神经系统的生物原型结构及其功能机理。</p>
+<p>（2）建立理论模型。根据生物原型的研究，建立神经元、神经网络的理论模型。其中包括概念模型、知识模型、物理化学模型、数学模型等。</p>
+<p>（3）网络模型与算法研究。在理论模型研究的基础上构作具体的神经网络模型，以实现计算机模拟或准备制作硬件，包括网络学习算法的研究。这方面的工作也称为技术模型研究。</p>
+<p>（4）人工神经网络应用系统。在网络模型与算法研究的基础上，利用人工神经网络组成实际的应用系统，例如，完成某种信号处理或模式识别的功能、构造专家系统、制成机器人等等。<br>我去….这那是我这个码农层面研究的事，上面说的种种如果有兴趣童鞋可以继续深入研究，随便一块玩好了都可以升官加禄,衣食无忧……</p>
+<p>回归正题，我们还是来看看我们的Microsoft 神经网络分析算法在数据挖掘领域的应用那些：<br>营销和促销分析，如评估直接邮件促销或一个电台广告活动的成功情况。<br>根据历史数据预测股票升降、汇率浮动或其他频繁变动的金融信息。<br>分析制造和工业流程。<br>文本挖掘。<br>分析多个输入和相对较少的输出之间的复杂关系的任何预测模型。</p>
+<p>其实它的应用场景是最广泛的，比如当我们拿到一堆数据的时候，针对一个目标无从下手毫无头绪的时候，Microsoft 神经网络分析算法就是该应用的最佳场景了，因为其利用“人脑”的特点去茫茫的数据海洋中去发掘有用的信息。比如：BOSS把公司的数据库扔给你了…让你分析下公司为啥不挣钱…或者说啥子原因导致的不盈利…这时候该算法就应该出场了。</p>
+<p>不过从最近的市场中发现，该算法的在”文本挖掘”中特别火，而且更在微软中得到充分利用，比如当前的：微软小冰，各种平台下的语音识别，并且就连苹果这样的孤傲的公司也在慢慢的臣服于该算法的魅力下。</p>
+<h1 id="结语">结语</h1><p>本篇文章到此结束了，满篇的只是简要的介绍了神经网络算法的一些基础和原理，当然因为该算法的高大上我暂且不做深入分析，只是记住其典型的应用场景即可，下一篇的文章我们将通过微软的VS工具使用该算法做一个详细的数据挖掘应用方法介绍。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/数据挖掘/">数据挖掘</a><a href="/tags/算法/">算法</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/09/宝贵数据集-用于数据挖掘、机器学习、文本分析等/" title="宝贵数据集-用于数据挖掘、机器学习、文本分析等">
+  <strong>上一篇：</strong><br/>
+  <span>
+  宝贵数据集-用于数据挖掘、机器学习、文本分析等</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/07/Java网络爬虫/"  title="Java网络爬虫">
+ <strong>下一篇：</strong><br/> 
+ <span>Java网络爬虫
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/08/Microsoft-神经网络分析算法/" data-title="Microsoft 神经网络分析算法" data-url="http://pangjiuzala.github.io/2015/08/08/Microsoft-神经网络分析算法/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#算法起源"><span class="toc-number">1.</span> <span class="toc-text">算法起源</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#神经网络算法原理"><span class="toc-number">2.</span> <span class="toc-text">神经网络算法原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Microsoft神经网络分析算法特点"><span class="toc-number">3.</span> <span class="toc-text">Microsoft神经网络分析算法特点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#神经网络分析算法应用场景"><span class="toc-number">4.</span> <span class="toc-text">神经网络分析算法应用场景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#结语"><span class="toc-number">5.</span> <span class="toc-text">结语</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

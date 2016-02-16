@@ -1,0 +1,723 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>社交网络中潜在好友推荐算法研究 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="算法概要计算用户间连通关系强度的算法可以分成两个部分:第一部分构建连通关系强度的计算模型即由链结关系网络图转换为对应的带有关系语境信息的链结关系网络图;第二部分进行用户间连通关系强度的计算。下面我们对该部分算法进行具体描述。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="社交网络中潜在好友推荐算法研究">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/23/社交网络中潜在好友推荐算法研究/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="算法概要计算用户间连通关系强度的算法可以分成两个部分:第一部分构建连通关系强度的计算模型即由链结关系网络图转换为对应的带有关系语境信息的链结关系网络图;第二部分进行用户间连通关系强度的计算。下面我们对该部分算法进行具体描述。">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0183.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0180.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0181.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0182.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0184.png">
+<meta property="og:updated_time" content="2015-08-23T02:43:07.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="社交网络中潜在好友推荐算法研究">
+<meta name="twitter:description" content="算法概要计算用户间连通关系强度的算法可以分成两个部分:第一部分构建连通关系强度的计算模型即由链结关系网络图转换为对应的带有关系语境信息的链结关系网络图;第二部分进行用户间连通关系强度的计算。下面我们对该部分算法进行具体描述。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/23/社交网络中潜在好友推荐算法研究/" title="社交网络中潜在好友推荐算法研究" itemprop="url">社交网络中潜在好友推荐算法研究</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-23T02:34:51.000Z" itemprop="datePublished"> 发表于 2015-08-23</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#算法概要"><span class="toc-number">1.</span> <span class="toc-text">算法概要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用户综合相似度"><span class="toc-number">2.</span> <span class="toc-text">用户综合相似度</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#算法总体思想"><span class="toc-number">3.</span> <span class="toc-text">算法总体思想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#算法描述与分析"><span class="toc-number">4.</span> <span class="toc-text">算法描述与分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#算法代码"><span class="toc-number">5.</span> <span class="toc-text">算法代码</span></a></li></ol>
+		
+		</div>
+		
+		<h1 id="算法概要">算法概要</h1><p>计算用户间连通关系强度的算法可以分成两个部分:第一部分构建连通关系强度的计算模型即由链结关系网络图转换为对应的带有关系语境信息的链结关系网络图;第二部分进行用户间连通关系强度的计算。下面我们对该部分算法进行具体描述。<br><a id="more"></a><br>第一部分算法的步骤描述为:</p>
+<ul>
+<li><p>由原始的数据构造出无向图G(V,E),这里的原始数据来源于社区发现算法形成的社区中的数据;</p>
+</li>
+<li><p>设带有关系语境信息的链结关系网络图为Gi(Vi,E’),令V’=V;</p>
+</li>
+<li><p>从任意的顶点出发,采用广度优先搜索(BFS)遍历原始图G;</p>
+</li>
+<li><p>如果通过BFS遍历得到的一条边e=(A,B),用r表示e的关系节点,如果r</p>
+</li>
+</ul>
+<p>不存在,则创建这个节点,并添加到VI,并标记这个点为关系节点;</p>
+<ul>
+<li>在G?中构造两个新的边:ei    =(A,r)和e2=(r,B)。</li>
+</ul>
+<p>算法的步骤描述为:</p>
+<ul>
+<li><p>设带有关系语境信息的链结关系网络图为G’,其对应的流图为G”;</p>
+</li>
+<li><p>从G’的源节点S出发,釆用广度优先搜索进行遍历;</p>
+</li>
+<li><p>设e=(A,B)为遍历得到的一条边。若A是关系节点,将A分割为两个节点A_i A_o,为保持它们的连通性,添加相应的边,同理,对B做相同的操作。将</p>
+</li>
+</ul>
+<p>所有这些节点和边添加到G”中;</p>
+<ul>
+<li>对得到的G”,调用方法findConnectivity    (G”,s,d)?得到s,d的连通关系强度。</li>
+</ul>
+<p>对于方法findConnectivity (G”,s,(l)的描述如下:</p>
+<ul>
+<li><p>初始化节点s,d的连通关系强度值k为0;</p>
+</li>
+<li><p>在循环中不断检查G”中s,d是否连通,每检查一次,如果连通,则关系强度</p>
+</li>
+</ul>
+<p>值加一。直到s,d不再连通时,退出循环。检查G”中s,d是否连通是通过调用</p>
+<p>方法 augmentingPath(G”,s,d)来实现的。</p>
+<ul>
+<li>返回k。本方法结束。</li>
+</ul>
+<p>对于方法augmentingPath (G”,s,d)的描述如下:</p>
+<ul>
+<li><p>初始化G”的节点集V,边集E,定义队列queue;</p>
+</li>
+<li><p>初始化V中的每个节点为未被访问的状态,其父节点为空;</p>
+</li>
+<li><p>设置S为己访问状态,将其加入队列queue;</p>
+</li>
+<li><p>循环判断队列queue是否为空。</p>
+</li>
+</ul>
+<p>如果queue非空,取出其队尾节点u;判断U和d是否是同一个节点,如果不是,循环遍历U的邻居节点集,分别取出U的每一邻居节点V,判断边UV的流值是否等于0,如果等于0且V未计算用户间连通关系强度的算法可以分成两个部分:</p>
+<p>第一部分构建连通关系强度的计算模型即由链结关系网络图转换为对应的带有关系语境信息的链结关系网络图;第二部分进行用户间连通关系强度的计算。下面我们对该部分算法进行具体描述。</p>
+<p>第一部分算法的步骤描述为:</p>
+<ul>
+<li><p>调用LFM算法划分社区,该算法对应的类为LFMAlgorithm,输入为文本格式的用户好友数据,输出为存放社区划分结果的文本文档resulttxt,该文档中的一行代表划分出的一个社区;</p>
+</li>
+<li><p>输入待推荐好友的用户U,存放社区划分结果的文档,构建查找用户所在社区的类FindCommunity的对象,调用方法findCommunityByName()’输出用户u所在社区的名字;</p>
+</li>
+</ul>
+<p>第二部分算法的步骤描述为:</p>
+<p>首先进行数据的初始化,构建待推荐好友的用户所在社区的邻接矩阵_c,将</p>
+<p>待推荐好友的用户所在的社区中的节点和节点间的关系语境信息存放到一张数据库表中。</p>
+<ul>
+<li>输入待推荐好友的用户U所在社区的邻接矩阵C,构建计算用户相似度的类</li>
+</ul>
+<p>CountUserSimilarity的对象,调用计算用户相似度的方法countUserSimilarO,</p>
+<p>分别计算出用户U与社区中其他用户的用户相似度S/mi的值,返回为存放U与其他用户的用户相似度的数组;</p>
+<ul>
+<li><p>输入待推荐好友用户U,构建计算用户间连通关系强度的类CountConnection的对象,调用计算用户间连通关系强度的方法countCoimectionO,计算出用户U与社区中其他用户的连通关系强度connectivity,数据来源为存放用户及用户间关系语境信息的数据库表,返回节点对象数组,在每个节点对象的connectivity属性里存放了该节点与用户U所对应的节点间的连通关系强度的值;</p>
+</li>
+<li><p>输入待推荐好友的用户U,存放U与其他用户的用户相似度的数组以及节点对象数组,构建计算用户间的综合相似度的类CountComShnilarity的对象,调用方法countComSimilarityO计算出u与其他用户的综合相似度,返回为存放U与其他用户的综合相似度的数组;</p>
+</li>
+<li><p>输入待推荐好友的用户U,推荐的好友个数K,及存放U与其他用户的综合相似度的数组,构建进行TopK推荐的类TopkRecommendation的对象,调用removeDirectFriends()方法去除 u 的直接好友,调用 topkRecommendationO方法进行TopK推荐,返回为U推荐的K个潜在好友的编号的数组;算法结束。</p>
+</li>
+</ul>
+<p>整个算法的流程如图</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0183.png" alt=""><br></center><br>被访问,则设置V为己访问状态,设置U为V的父节点,并把V加入队列,遍历U的邻居节点集完毕,该循环退出。如果U和d为同一节点时,循环判断U的父节点和S是否为同一节点,如果不是,在E中取出U的父节点和U所对应的边,设置此边的流值为1,把U的父节点赋给U,当U的父节点和S为同一节点时,此循环退出,同时令方法返回真值,本方法结束。</p>
+<ul>
+<li>当queue为空时,该方法返回假值,本方法结束。</li>
+</ul>
+<p>在上面对算法的两个部分分别进行了描述,其中第二部分算法中的方法augmentingPath (G”,s,d)为计算用户s,d的连通关系强度的具体实现部分。我们知道,图论中的最大流算法用于计算从源节点到目标节点之间的最大的边连通度。为了计算源节点和目标节点之间的连通关系强度,算法将关系节点分割成两个节点,利用最大流算法计算出来的边连通度也即是我们要计算的连通关系强度的值。</p>
+<h1 id="用户综合相似度">用户综合相似度</h1><p>在第二章中介绍了基于用户相似度的好友推荐算法,该算法根据用户之间的</p>
+<p>链接信息来计算用户间的相似程度即用户相似度?S/m’,即便它提出了两阶段的好友推荐模型,在模型的第二阶段考虑到了相似度的传播,但本质上它的好友推荐模型的两个阶段仍只是考虑用户间的链接信息或者说拓扑结构,没有考虑社交网络中用户间关系的内容以及关系的强度。在本章的第三节中介绍了用户间关系强度的一种定量计算方式即计算连通关系强度connectivity,并且给出了计算模型和算法描述,连通关系强度的计算充分考虑了用户间关系的内容,在一定程度上弥补了在推荐算法中仅考虑用户间的链结信息计算用户相似度进行推荐的不足。在这里,将根据用户间的链结信息计算的用户相似度Sim?和用户间的连通关系强度connectivity结合起来,提出用户综合相似度com-similarity的概念。设有两个用户a与C,则a?c的综合相似度com-siVrn’/an’oKa^c)的计算公式如公式<code>com-similarity{a,c)= y0Sim&#39;(a,c) + (\-fi)connectivity(a, c) (3-1)</code></p>
+<p>其中β为调整因子,且;β ∈  [0,l],可以通过实验来确定它的取值。<br>。</p>
+<p>下面举个简单的例子来说明在进行推荐时依据综合相似度和用户相似度的<br>一些区别。</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0180.png" alt="用户1,2,3,4的链结关系网络图"><br></center></p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0181.png" alt="对应的带有关系语境信息的链结关系网络图"><br></center><br>当为用户1推荐1个好友时,可以在用户3与4中进行选择,因为用户2已经是用户1的好友所以不再考虑用户2。首先分别计算出用户1和用户3、4的用户相似度Sim’(l,3)和Sim’(l,4)。从图3.4的好友链结关系网络图可以得出邻<br>接矩阵C,其表示为:</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0182.png" alt=""><br></center><br>从邻接矩阵C中可以得出:    1    j    ;    ;</p>
+<p>用户1的特征向量表示为:(1,1,0,0)         j        </p>
+<p>用户2的特征向量表示为:(1,1,1,1)         j                    </p>
+<p>用户3的特征向量表示为:(0,1,1,0)                </p>
+<p>用户4的特征向量表示为:(0,1,0,1)。</p>
+<p>由于用户1的邻居只有用户2,那么当计算Sim’(l,3)时,在两阶段好友推荐模型的第二阶段便只需要计算Sim(2,3),根据本文2.2.2小节介绍的用户相似度的计算公式(2-2),可以得出:</p>
+<p><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0184.png" alt=""><br></center><br>同理计算得出Sim’(l,4)=0.209。</p>
+<p>其次计算用户1和用户3、4的连通关系强度,从图3.5中可以得出,</p>
+<h1 id="算法总体思想">算法总体思想</h1><p>本文的好友推荐算法的总体思想为:第一步,釆用社区发现算法将好友社交<br>网络划分成不同的社区,每一个社区可以看成是一个社交圈,从中发现待推荐好友的用户所在的社区;第二步,在待推荐好友的用户所在的社区中计算出其与其他用户的综合相似度,将综合相似度最大的前K个用户作为潜在好友向其进行推荐。</p>
+<h1 id="算法描述与分析">算法描述与分析</h1><p>综合上述思想,将用于好友社交网络中的基于社区发现和用户综合相似度的</p>
+<p>好友推荐算法分成两个部分,描述如下:</p>
+<p>第一部分算法的步骤描述为:</p>
+<p>1、调用LFM算法划分社区,该算法对应的类为LFMAlgorithm,输入为文本格</p>
+<p>式的用户好友数据,输出为存放社区划分结果的文本文档resulttxt,该文档</p>
+<p>中的一行代表划分出的一个社区;</p>
+<p>2、输入待推荐好友的用户U,存放社区划分结果的文档,构建查找用户所在社区</p>
+<p>的类FindCommunity的对象,调用方法findCommunityByName()’输出用户u所在社区的名字;</p>
+<p>第二部分算法的步骤描述为:</p>
+<p>首先进行数据的初始化,构建待推荐好友的用户所在社区的邻接矩阵_c,将<br>待推荐好友的用户所在的社区中的节点和节点间的关系语境信息存放到一张数据库表中。</p>
+<ul>
+<li>输入待推荐好友的用户U所在社区的邻接矩阵C,构建计算用户相似度的类</li>
+</ul>
+<p>CountUserSimilarity的对象,调用计算用户相似度的方法countUserSimilarO,</p>
+<p>分别计算出用户U与社区中其他用户的用户相似度S/mi的值,返回为存放U</p>
+<p>与其他用户的用户相似度的数组;</p>
+<ul>
+<li>输入待推荐好友用户U,构建计算用户间连通关系强度的类CountConnection</li>
+</ul>
+<p>的对象,调用计算用户间连通关系强度的方法countCoimectionO,计算出用户U与社区中其他用户的连通关系强度connectivity,数据来源为存放用户及用户间关系语境信息的数据库表,返回节点对象数组,在每个节点对象的connectivity属性里存放了该节点与用户U所对应的节点间的连通关系强度的值;</p>
+<ul>
+<li><p>输入待推荐好友的用户U,存放U与其他用户的用户相似度的数组以及节点对象数组,构建计算用户间的综合相似度的类CountComShnilarity的对象,调用方法countComSimilarityO计算出u与其他用户的综合相似度,返回为存放U与其他用户的综合相似度的数组;</p>
+</li>
+<li><p>输入待推荐好友的用户U,推荐的好友个数K,及存放U与其他用户的综合相<br>似度的数组,构建进行TopK推荐的类TopkRecommendation的对象,调用<br>removeDirectFriends()方法去除 u 的直接好友,调用topkRecommendationO方法进行TopK推荐,返回为U推荐的K个潜在好友的编号的数组;算法结束。</p>
+</li>
+</ul>
+<p>本文算法的时间复杂度的主要来源有:重叠社区发现,寻找待推荐好友的用</p>
+<p>户所在的社区,计算待推荐好友的用户与社区中其他用户的用户相似度和连通关系强度,寻找综合相似度最大的前K个用户等五个部分。其中,重叠社区发现的</p>
+<p>LFM算法在最坏情况下即当社区规模和网络中总节点数n在同一数量级时的时间复杂度为0(n2);寻找待推荐好友的用户所在的社区的时间复杂度为0(n),n为节点总数目;计算待推荐好友的用户与社区中其他用户的用户相似度的时间复杂度为0(m2),其中m为社区中包含的节点数目;计算连通关系强度的时间复杂度为0(m<em>e)在这里m为社区中的节点数目,e为社区中的边数;寻找综合相似度最大的前K个用户的时间复杂度为0(K</em>m),所以本文算法总的时间复杂度为0(n2)。</p>
+<h1 id="算法代码">算法代码</h1><p>(1) LFMAlgorithm类中的关键代码即LFM算法的具体实现部分, 具体代码如下:</p>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line">	</span><br><span class="line"></span><br><span class="line"><span class="stata"><span class="keyword">while</span>(seedlist. size ()&gt;0)&#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">//以特定的某点为种子 始LFM算法</span></span><br><span class="line"></span><br><span class="line">StringBuffer dian=new StringBuffer();</span><br><span class="line"></span><br><span class="line">int pointNum=<span class="keyword">l</span>;</span><br><span class="line"></span><br><span class="line">dian.<span class="keyword">append</span>(seedlist?<span class="literal">get</span>(0〉》;</span><br><span class="line"></span><br><span class="line">map3.put&#123;seedlist?get (0),</span><br><span class="line"></span><br><span class="line">Integer.valueOf (map3.get (seedlist.get (0) ) .toStringO )+1) ;<span class="comment">//点的社区数</span></span><br><span class="line"></span><br><span class="line">量</span><br><span class="line"></span><br><span class="line">seedlist. remove (0);</span><br><span class="line"></span><br><span class="line"><span class="comment">//计算社区c邻居节点测度当有测度大于0时把测度最大的点加入到社区中</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//当全部的邻居节点的测度都小于0时,计算社区C内部每一个点节点测度,把小于0的点从</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//社区C中移除</span></span><br><span class="line"></span><br><span class="line">int e_in=0, e_out=0, e_in_side=0, e_out_all=0,m3=0; /7初始化各变量初值</span><br><span class="line"></span><br><span class="line">double ceDu_max=0, ceDu=0; /7社区测度的中间值ceDuTemp记录没加入点i时的测度</span><br><span class="line"></span><br><span class="line">String point_tem=<span class="string">""</span>; <span class="comment">//团测度ceDu_maz暂时最大时的点,后面没有比此测度再大的</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//话则把此点加入社区C</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line"></span><br><span class="line">in3=dian. <span class="keyword">toString</span> &#123;) . <span class="keyword">split</span> (<span class="string">", "</span>) ? length;</span><br><span class="line"></span><br><span class="line">string bb = <span class="string">""</span>+dian+<span class="string">", "</span>;<span class="comment">//记录社区中各点已算过节点测度的点,避免重复计</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//算同一个邻居节点的节点测度</span></span><br><span class="line"></span><br><span class="line">double xx=0,yy=0;</span><br><span class="line"></span><br><span class="line"><span class="comment">//计算初始社区的团测度当团内点数改变时才再重新计算一次</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(int k2^0;k2&lt;m3;k2++)&#123;</span><br><span class="line"></span><br><span class="line">e_out—all=^e_out_all+Integer ? valueOf (map ?</span><br><span class="line"></span><br><span class="line"><span class="literal">get</span>(dian.<span class="keyword">toString</span>(). <span class="keyword">split</span>(<span class="string">","</span>) [k2]).</span><br><span class="line"></span><br><span class="line"><span class="keyword">toString</span>(). <span class="keyword">split</span>(<span class="string">";"</span>)[2]);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(int iii=0;iii&lt;m3-1;iii++)&#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(int j=iii+<span class="keyword">l</span>;j&lt;m3;j++)&#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(map.<span class="literal">get</span>(dian,<span class="keyword">toString</span>()?<span class="keyword">split</span> ()[iii]).<span class="keyword">toString</span>(). <span class="keyword">split</span> () [1</span><br><span class="line"></span><br><span class="line">].contains (<span class="string">","</span>+dian.<span class="keyword">toString</span>&#123;)?<span class="keyword">split</span> ()[j]+<span class="string">","</span>))&#123;</span><br><span class="line"></span><br><span class="line">e_in_side++;<span class="comment">//两端点都在社区C内的边的数目和</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(map.<span class="literal">get</span>(dian.<span class="keyword">toString</span>(). <span class="keyword">split</span> (, ) [iii])?<span class="keyword">toString</span>&#123;). <span class="keyword">split</span> (<span class="string">";"</span>)[1</span><br><span class="line"></span><br><span class="line">].substring(map.<span class="literal">get</span>(dian.<span class="keyword">toString</span>(), <span class="keyword">split</span> ()[iii]).<span class="keyword">toString</span>()?<span class="keyword">split</span> (</span><br><span class="line"></span><br><span class="line"><span class="string">";"</span>)[1].indexOf(<span class="string">","</span>+dian.<span class="keyword">toString</span>().<span class="keyword">split</span>(<span class="string">","</span>) [j]+<span class="string">","</span>)+<span class="keyword">l</span>)□contains (,"</span><br><span class="line"></span><br><span class="line">+dian.<span class="keyword">toString</span>(). <span class="keyword">split</span></span><br><span class="line"></span><br><span class="line">e_in_side++;</span><br><span class="line"></span><br><span class="line">	;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">].substring(map.get (dian.<span class="keyword">toString</span>&#123;)?<span class="keyword">split</span>(<span class="string">","</span>) [iii]).<span class="keyword">toString</span>(). <span class="keyword">split</span> (</span><br><span class="line"></span><br><span class="line"><span class="string">";"</span>)[1]?indexOf(<span class="string">","</span>+dian.<span class="keyword">toString</span>().<span class="keyword">split</span>(<span class="string">","</span>) [j]+<span class="string">","</span>)+1).contains "</span><br><span class="line"></span><br><span class="line">+dian.toString0.<span class="keyword">split</span>[j]+<span class="string">","</span>))&#123;</span><br><span class="line"></span><br><span class="line">e_in—side++;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">m3=m3-<span class="keyword">l</span>;</span><br><span class="line"></span><br><span class="line">e_in=2*e_in_side; <span class="comment">//加入点aa时社区的团内度值</span></span><br><span class="line"></span><br><span class="line">e_out=<span class="keyword">e</span>—<span class="keyword">out</span>—all-e_in; <span class="comment">//加入点aa时社区的团外度值</span></span><br><span class="line"></span><br><span class="line">xx=Double. valueOf (e_in) / java. lang.Math.pow((Double. valueOf (e_in+e_o</span><br><span class="line"></span><br><span class="line">ut)),zz);</span><br><span class="line"></span><br><span class="line">ceDu=xx-yy;</span><br><span class="line"></span><br><span class="line">e_in=0 ; e_out=0 ; <span class="keyword">e</span>—<span class="keyword">in</span>—side=0 ; <span class="keyword">e</span>—out_all=0 ;</span><br><span class="line"></span><br><span class="line">dian.delete (dian.lastlndexOf (<span class="string">","</span>),</span><br><span class="line"></span><br><span class="line">dian.lengthO ) ;<span class="comment">//移除点aa,计算其它邻居节点的测度</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(ceDu&gt;ceDu_max)&#123;</span><br><span class="line"></span><br><span class="line">ce Du_max=ceDu;</span><br><span class="line"></span><br><span class="line">point_tem=aa;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (ceDu_max&gt;0) &#123;<span class="comment">//把团测度最大的点加入到社区C中</span></span><br><span class="line"></span><br><span class="line">dian.<span class="keyword">append</span> (<span class="string">","</span>+point_tem);</span><br><span class="line"></span><br><span class="line">bb=bb+<span class="string">","</span>+point_tem+<span class="string">","</span>;</span><br><span class="line"></span><br><span class="line">pointNuiti++;</span><br><span class="line"></span><br><span class="line">e_in=0;e_out=0;</span><br><span class="line"></span><br><span class="line">map3.put(point—tem.</span><br><span class="line"></span><br><span class="line">Integer ? valueOf (map3 ? get (point_tera) . <span class="keyword">toString</span> () ) +1) ; </span><br><span class="line"></span><br><span class="line"><span class="keyword">e</span>—in_side=0;e_out—all=0;ceDu_max=0;ceDu=0;</span><br><span class="line"></span><br><span class="line">seedlist. remove (point—tern);</span><br><span class="line"></span><br><span class="line">&#125;<span class="keyword">else</span>&#123;ceDu_max=-1;&#125;</span><br><span class="line"></span><br><span class="line">&#125;<span class="keyword">while</span> (ceDu_max&gt;=0);</span><br><span class="line"></span><br><span class="line">System.<span class="keyword">out</span>.println (<span class="string">"社区"</span>+nuinber+<span class="string">"里总点数:"</span>+pointNuni);</span><br><span class="line"></span><br><span class="line">System.<span class="keyword">out</span>.println(<span class="string">"社区 "</span>+ (nuinber++) +<span class="string">"里的全部点为:"</span>+dian);</span><br><span class="line"></span><br><span class="line">result.write(dian+<span class="string">"\r\n"</span>);</span><br><span class="line"></span><br><span class="line">result.flush 0;</span><br><span class="line"></span><br><span class="line">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>(2) FindCoimnunity类中的核心方法findCommunityByName,功能是通过用户的</p>
+<p>名字査找其所属社区的名字。具体代码如下:</p>
+<figure class="highlight stata"><table><tr><td class="code"><pre><span class="line">public void findCommunityByName(String name)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    String teiapString = null;</span><br><span class="line"></span><br><span class="line">    BufferedReader reader = mill;</span><br><span class="line"></span><br><span class="line">    ArrayList <span class="keyword">list</span> = new ArrayList&lt;Integer&gt; &lt; );</span><br><span class="line"></span><br><span class="line">    try</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        reader = new BufferedReader(new FileReader(new</span><br><span class="line"></span><br><span class="line">                                    <span class="keyword">File</span> (<span class="string">"result.txt"</span>)));</span><br><span class="line"></span><br><span class="line">        int <span class="keyword">line</span> = 1;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> ((tempString = reader.readLine())] = null)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            String[] splitString = tempString. <span class="keyword">split</span>(<span class="string">","</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(int i = 0; i &lt; splitString.length; i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> &#123;name.egualsIgnoreCase(splitString[i]))</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">list</span>. add(<span class="keyword">line</span>);</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">line</span>++;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            reader. <span class="keyword">close</span> &#123;);</span><br><span class="line"></span><br><span class="line">            System, <span class="keyword">out</span>.<span class="keyword">print</span> &#123;name + "所在的社区为:“);</span><br><span class="line"></span><br><span class="line">                               <span class="keyword">for</span> (int i = 0; i &lt; <span class="keyword">list</span>. size (); i++) &#123;</span><br><span class="line"></span><br><span class="line">                               System, <span class="keyword">out</span> .<span class="keyword">print</span> (<span class="string">"社区"</span>+<span class="keyword">list</span> ? get (i) +” “);</span><br><span class="line"></span><br><span class="line">                           &#125;</span><br><span class="line"></span><br><span class="line">                           &#125; catch &#123;FileNotFoundException <span class="keyword">e</span>) &#123;</span><br><span class="line"></span><br><span class="line">                               <span class="keyword">e</span>.printStackTrace&#123;);</span><br><span class="line"></span><br><span class="line">                               System, <span class="keyword">out</span>.println (”文件未找到! ”);</span><br><span class="line"></span><br><span class="line">                           &#125; catch (lOException <span class="keyword">e</span>) &#123;</span><br><span class="line"></span><br><span class="line">                               <span class="keyword">e</span>.printStackTrace();</span><br><span class="line"></span><br><span class="line">                               System, <span class="keyword">out</span> .println ("发生工2异常。“);</span><br><span class="line"></span><br><span class="line">            &#125; finally &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span>(reader != null)</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    try</span><br><span class="line">                    &#123;</span><br><span class="line"></span><br><span class="line">                        reader ? <span class="keyword">close</span> ();</span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line">                    catch (lOException <span class="keyword">e</span>)</span><br><span class="line">                    &#123;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">e</span>.printStackTrace &#123;);</span><br><span class="line"></span><br><span class="line">                        1</span><br><span class="line"></span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br></pre></td></tr></table></figure>
+<p>(1) LFMAlgorithm类中的关键代码即LFM算法的具体实现部分,具体代码如下:</p>
+<figure class="highlight stata"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span>(seedlist. size () &gt; 0)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//以特定的某点为种子 始LFM算法</span></span><br><span class="line"></span><br><span class="line">    StringBuffer dian = new StringBuffer();</span><br><span class="line"></span><br><span class="line">    int pointNum = <span class="keyword">l</span>;</span><br><span class="line"></span><br><span class="line">    dian.<span class="keyword">append</span>(seedlist ? <span class="literal">get</span>(0〉》;</span><br><span class="line"></span><br><span class="line">                               map3.put &#123;seedlist ? get (0),</span><br><span class="line"></span><br><span class="line">                                         Integer.valueOf (map3.get (seedlist.get (0) ) .toStringO ) + 1) ; <span class="comment">//点的社区数</span></span><br><span class="line"></span><br><span class="line">                               量</span><br><span class="line"></span><br><span class="line">                               seedlist. remove (0);</span><br><span class="line"></span><br><span class="line">                               <span class="comment">//计算社区c邻居节点测度当有测度大于0时把测度最大的点加入到社区中</span></span><br><span class="line"></span><br><span class="line">                               <span class="comment">//当全部的邻居节点的测度都小于0时,计算社区C内部每一个点节点测度,把小于0的点从</span></span><br><span class="line"></span><br><span class="line">                               <span class="comment">//社区C中移除</span></span><br><span class="line"></span><br><span class="line">                               int e_in = 0, e_out = 0, e_in_side = 0, e_out_all = 0, m3 = 0; / 7初始化各变量初值</span><br><span class="line"></span><br><span class="line">                               double ceDu_max = 0, ceDu = 0; / 7社区测度的中间值ceDuTemp记录没加入点i时的测度</span><br><span class="line"></span><br><span class="line">                               String point_tem = "“; <span class="comment">//团测度ceDu_maz暂时最大时的点,后面没有比此测度再大的</span></span><br><span class="line"></span><br><span class="line">                                       /7话则把此点加入社区C</span><br><span class="line"></span><br><span class="line">                                       <span class="keyword">do</span>&#123;</span><br><span class="line"></span><br><span class="line">                                       in3=dian. <span class="keyword">toString</span> &#123;) . <span class="keyword">split</span> (“, “) ? length;</span><br><span class="line"></span><br><span class="line">                                       string bb = <span class="string">" + dian + "</span>, “;<span class="comment">//记录社区中各点已算过节点测度的点,避免重复计</span></span><br><span class="line"></span><br><span class="line">                                       <span class="comment">//算同一个邻居节点的节点测度</span></span><br><span class="line"></span><br><span class="line">                                       double xx=0,yy=0;</span><br><span class="line"></span><br><span class="line">                                       <span class="comment">//计算初始社区的团测度当团内点数改变时才再重新计算一次</span></span><br><span class="line"></span><br><span class="line">                                       <span class="keyword">for</span>(int k2^0;k2&lt;m3;k2++)&#123;</span><br><span class="line"></span><br><span class="line">                                       e_out—all=^e_out_all+Integer ? valueOf (map ?</span><br><span class="line"></span><br><span class="line">                                       <span class="literal">get</span>(dian.<span class="keyword">toString</span>(). <span class="keyword">split</span>(<span class="string">", "</span>) [k2]).</span><br><span class="line"></span><br><span class="line">                               <span class="keyword">toString</span>(). <span class="keyword">split</span>("; ”)[2]);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(int iii = 0;</span><br><span class="line">iii &lt; m3 - 1;</span><br><span class="line">iii++)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(int j = iii + <span class="keyword">l</span>; j &lt; m3; j++)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(map.<span class="literal">get</span>(dian, <span class="keyword">toString</span>() ? <span class="keyword">split</span> ()[iii]).<span class="keyword">toString</span>(). <span class="keyword">split</span> () [1</span><br><span class="line"></span><br><span class="line">                                                                              ].contains (“, <span class="string">"+dian.toString&#123;)?split ()[j]+"</span>, "))&#123;</span><br><span class="line"></span><br><span class="line">                                                                                      e_in_side++;<span class="comment">//两端点都在社区C内的边的数目和</span></span><br><span class="line"></span><br><span class="line">                                                                                      <span class="keyword">if</span>(map.<span class="literal">get</span>(dian.<span class="keyword">toString</span>(). <span class="keyword">split</span> (, ) [iii])?<span class="keyword">toString</span>&#123;). <span class="keyword">split</span> (”;")[1</span><br><span class="line"></span><br><span class="line">                                                                                                                                                            ].substring(map.<span class="literal">get</span>(dian.<span class="keyword">toString</span>(), <span class="keyword">split</span> ()[iii]).<span class="keyword">toString</span>() ? <span class="keyword">split</span> (</span><br><span class="line"></span><br><span class="line">                                                                                                                                                                    “; “)[1].indexOf(<span class="string">","</span> + dian.<span class="keyword">toString</span>().<span class="keyword">split</span>(<span class="string">","</span>) [j] + <span class="string">","</span>) + <span class="keyword">l</span>)□contains (, "</span><br><span class="line"></span><br><span class="line">                                                                                                                                                                            +dian.<span class="keyword">toString</span>(). <span class="keyword">split</span></span><br><span class="line"></span><br><span class="line">                                                                                                                                                                            e_in_side++;</span><br></pre></td></tr></table></figure>
+<p>(3) CountUserSimilarity类中的核心方法,其中firstSimilar方法的功能是计算第一阶段的余弦相似度,secondSimilar方法的功能是计算第二阶段的传播相似度,countUserSimilar方法的功能是计算出用户相似度。具体代码如下:</p>
+<figure class="highlight nimrod"><table><tr><td class="code"><pre><span class="line">public double firstSimilar (<span class="type">int</span> m, <span class="type">int</span> n, <span class="type">int</span>[] [] C) &#123;</span><br><span class="line"></span><br><span class="line">double value = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">double valuel - <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">double value2 = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">double <span class="literal">result</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; C[<span class="number">0</span>].length; i++) &#123;</span><br><span class="line"></span><br><span class="line">value += C[m - <span class="number">1</span>] [i] * C[n - <span class="number">1</span>] [i];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; C[<span class="number">0</span>].length; i++) &#123;</span><br><span class="line"></span><br><span class="line">valuel += <span class="type">Math</span>.pow(C[m - l][i], <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">value2 += <span class="type">Math</span>.pow(C[n - l][i], <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">valuel = <span class="type">Math</span>.sqrt(valuel);</span><br><span class="line"></span><br><span class="line">value2 = <span class="type">Math</span>.sgrt(value2);</span><br><span class="line"></span><br><span class="line"><span class="literal">result</span> = value / &#123;valuel * value2);</span><br><span class="line"></span><br><span class="line"><span class="literal">result</span> = <span class="type">Round</span>.round(<span class="literal">result</span>, <span class="number">3</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="literal">result</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public double secondSimilar(<span class="type">int</span> m, <span class="type">int</span> n, <span class="type">int</span>[][] C) &#123;</span><br><span class="line"></span><br><span class="line">double tempi = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">double jieguo = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;C[<span class="number">0</span>].length ;i++)&#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(i!=m-<span class="number">1</span> <span class="type">Sc</span>&amp; C[m-<span class="number">1</span>] [i] =- <span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">tempi = firstSimilar (i+<span class="number">1</span>, n, C);</span><br><span class="line"></span><br><span class="line">sum = countNum(i+l, C);</span><br><span class="line"></span><br><span class="line">jieguo += tempi/sum;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> jieguo;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">public double[] countUserSimilar(<span class="type">int</span> m,<span class="type">int</span> total,<span class="type">int</span>[][] C) &#123;</span><br><span class="line"></span><br><span class="line">double ml = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">double m2 = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">double[] <span class="literal">result</span> = new double[total+<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(xnt i=l;i&lt;=total;i++)&#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (i!= m) &#123;</span><br><span class="line"></span><br><span class="line">ml = firstSimilar(m, i, C);</span><br><span class="line"></span><br><span class="line">m2 = secondsimilar(m, i, C);</span><br><span class="line"></span><br><span class="line"><span class="literal">result</span>[i]= <span class="type">Round</span>.round(userSimilar(ml,m2,<span class="number">0</span>.<span class="number">9</span>),<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line"><span class="literal">result</span>[m]=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="literal">result</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>(4)计算用户间的连通关系强度的各类中的核心方法,其中augmentingPath和findConnectivity方法是计算连通关系强度的具体实现部分,count和countConnection方法的功能是调用计算连通强度的方法,将编号为id,姓名为name的用户u与其他用户的连通关系强度计算出来,并设置到各个节点对象的connectivity属性当中,最后把除u以外的用户节点保存在节点数组nodeSet中并返回。具体代码如下:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> boolean <span class="title">augmentingPath</span><span class="params">(Graphic graphic, Node ns, Node nd)</span></span><br><span class="line"></span>&#123;</span><br><span class="line"></span><br><span class="line">    List&lt;Node&gt; nodes = graphic.getNodes();</span><br><span class="line"></span><br><span class="line">    List&lt;Edge&gt; edges = graphic.getEdges();</span><br><span class="line"></span><br><span class="line">    Queue&lt;Nocie&gt; <span class="built_in">queue</span> = <span class="keyword">new</span> LinkedList&lt;Node&gt; ();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nodes. size () ; i++)   <span class="comment">//节点的初始化状态</span></span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        Node node = nodes.get(i);</span><br><span class="line"></span><br><span class="line">        node .setColor(<span class="string">"WHITE"</span>);</span><br><span class="line"></span><br><span class="line">        node - setParent(null);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ns.setColor(<span class="string">"GRAY"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">queue</span>. add(ns);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!<span class="built_in">queue</span>.isEmpty())</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        Node u = <span class="built_in">queue</span>.poll ();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(u.getId() I = nd.getld())</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            List&lt;Node&gt; nodeU = u.getNeighbors();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nodeU.size(); i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                Node v = nodeU.get(i);</span><br><span class="line"></span><br><span class="line">                Edge edgeUV = findEdge(edges, u, v);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span>(<span class="string">"WHITE"</span>.equals(v.getColor &#123;)) &amp;&amp;</span><br><span class="line"></span><br><span class="line">                        edgeUV.getCurrentFlow() == <span class="number">0</span>)</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    v.setColor(<span class="string">"GRAY"</span>);</span><br><span class="line"></span><br><span class="line">                    v.setParent(u);</span><br><span class="line"></span><br><span class="line">                    <span class="built_in">queue</span>. add(v);</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">while</span>(u.getParent(). getId () != ns.getld())</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    Edge edge = flndEdge(edges, u.getParent(), u);</span><br><span class="line"></span><br><span class="line">                    edge.setCurrentFlow(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">                    u = u.getParent();</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            u.setColor(<span class="string">"BLACK"</span>);</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">findConnectivity</span><span class="params">(Graphic graphic, Node ns, Node nd)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> k = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(augmentingPath &#123;graph!c, ns, nd))</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            k++;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> k;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">count</span><span class="params">(Node nodeA)</span></span><br><span class="line">        </span>&#123;</span><br><span class="line"></span><br><span class="line">            List&lt;Node&gt; nodes = graphic.getNodes();</span><br><span class="line"></span><br><span class="line">            List&lt;Edge&gt; edges = graphic.getEdges();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(Node node : nodes)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span>(node.getType() != <span class="number">0</span> &amp;&amp; nodeA.getld() != node ? getld())</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    rs ? countConnectivity(nodeA, node);</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">for</span>(Edge edge : edges)</span><br><span class="line">                    &#123;</span><br><span class="line"></span><br><span class="line">                        edge.setCurrentFlow(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">        `</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Node[] countConnection(<span class="keyword">int</span> id, String name)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            List&lt;Node&gt; nodes = graphic.getNodes();</span><br><span class="line"></span><br><span class="line">            Node nodeA = <span class="keyword">new</span> Node(id, name);</span><br><span class="line"></span><br><span class="line">            nodeA = grrapiiic. getRepeatNode (nodeA. getld (), nodeA. getName () f</span><br><span class="line"></span><br><span class="line">                                              graphic);</span><br><span class="line"></span><br><span class="line">            CountConnection findValue = <span class="keyword">new</span> CountConnection();</span><br><span class="line"></span><br><span class="line">            findValue.count(nodeA);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 使用冒泡方法进行从小到大的排序</span></span><br><span class="line"></span><br><span class="line">            nodes . remove (nodeA);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span>[] arr = <span class="keyword">new</span> <span class="keyword">int</span>[nodes - size ()];</span><br><span class="line"></span><br><span class="line">            Node[] nodeSet = <span class="keyword">new</span> Node[nodes . size ()];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nodes. size (); i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                arr[i] = nodes ? get(i) ? getld();</span><br><span class="line"></span><br><span class="line">                nodeSet[i] = nodes. get (i);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; arr.length - <span class="number">1</span>; i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span> ; j &lt; arr.length - i - <span class="number">1</span>; j++)</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span>(arr[j] &gt; arr[j + <span class="number">1</span>] )</span><br><span class="line">                    &#123;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">int</span> temp = arr[j];</span><br><span class="line"></span><br><span class="line">                        arr[j] = arr[j + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">                        arr[j + <span class="number">1</span>] = temp;</span><br><span class="line"></span><br><span class="line">                        Node tn = nodeSet[j];</span><br><span class="line"></span><br><span class="line">                        nodeSet[j] = nodeSet[j + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">                        nodeSet[j + <span class="number">1</span>] = tn;</span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> nodeSet;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">int</span>[] topkRecommendation (±nt u, <span class="keyword">int</span> K, <span class="keyword">double</span> [ ] finallyResult)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> total = finallyResult.length;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span>[] order = <span class="keyword">new</span> <span class="keyword">int</span>[total + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; total + l; i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                order[i] = i;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; finallyResult. length - <span class="number">1</span>; i++)</span><br><span class="line">            &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span> ; j &lt; finallyResult.length - i - <span class="number">1</span>; j++)</span><br><span class="line">                &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span>(finallyResult[j] &lt; finallyResult[j + <span class="number">1</span>])</span><br><span class="line">                    &#123;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">double</span> temp = finallyResult[j];</span><br><span class="line"></span><br><span class="line">                        finallyResult[j] — finallyResult[j + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">                        finallyResult[j + <span class="number">1</span>] = temp;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">int</span> t = order[j];</span><br><span class="line"></span><br><span class="line">                        order[j] = order[j + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">                        order[j + <span class="number">1</span>] = t;</span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> order;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">class</span> Node   <span class="comment">//节点类中的属性</span></span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> id;</span><br><span class="line"></span><br><span class="line">            String name;</span><br><span class="line"></span><br><span class="line">            List&lt;Node&gt; neighbors;</span><br><span class="line"></span><br><span class="line">            Node parent;</span><br><span class="line"></span><br><span class="line">            String color;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> connectivity; <span class="comment">//连通关系强度属性</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span>. type;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>(5)    CountComSimilarity类中的核心方法countComSimilarity,功能是计算用户u</p>
+<p>与社区中其他用户的综合相似度。具体代码如下:</p>
+<figure class="highlight nimrod"><table><tr><td class="code"><pre><span class="line">public double [ ] countComSimilarity (<span class="type">int</span> u, <span class="type">int</span> total, double beder, double []</span><br><span class="line"></span><br><span class="line">                                      resultfNode[] nodeSet)</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">    double[] finallyResult = new double[total + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> j = l, i—<span class="number">0</span>; j &lt;= <span class="literal">result</span>.length - <span class="number">1</span>; j++)</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (j != u)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            finallyResult[j] -</span><br><span class="line"></span><br><span class="line">            <span class="type">Round</span>, rouiid (beder * <span class="literal">result</span> [ j ] + (<span class="number">1</span> - beder) *nodeSet [i] ? get <span class="type">Connectivity</span> () , <span class="number">4</span>);</span><br><span class="line"></span><br><span class="line">            i++;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> finallyResult;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>(6)    TopkRecommendation类中的核心方法,其中removeDirectFriends方法的功能</p>
+<p>是在存储综合相似度的数组finallyResult中,设置用户u的直接好友的综合相似度为0,即在推荐中排除掉其直接好友,topkRecommendation方法的功能是为用户1推荐K个潜在好友,返回这K个潜在好友的id编号的数组。具体代码如下:</p>
+<figure class="highlight markdown"><table><tr><td class="code"><pre><span class="line">public double[<span class="link_label"></span>] removeDirectFriends (int u, double [<span class="link_label"></span>] finallyResult, int [][]</span><br><span class="line"></span><br><span class="line"><span class="code">                                     Cf int total)</span></span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line"><span class="code">    for(int a = 1; a &lt;= total; a++)</span></span><br><span class="line"><span class="code">    &#123;</span></span><br><span class="line"></span><br><span class="line"><span class="code">        if(C[u - 1][a - l] == l)</span></span><br><span class="line"><span class="code">        &#123;</span></span><br><span class="line"></span><br><span class="line"><span class="code">            finallyResult[a] = 0;</span></span><br><span class="line"></span><br><span class="line"><span class="code">        &#125;</span></span><br><span class="line"></span><br><span class="line"><span class="code">    &#125;</span></span><br><span class="line"></span><br><span class="line"><span class="code">    return finallyResult;</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/算法/">算法</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/24/HBase 数据库检索性能优化策略/" title="HBase 数据库检索性能优化策略">
+  <strong>上一篇：</strong><br/>
+  <span>
+  HBase 数据库检索性能优化策略</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/22/Java字符串操作、基本运算方法等优化策略/"  title="Java字符串操作、基本运算方法等优化策略">
+ <strong>下一篇：</strong><br/> 
+ <span>Java字符串操作、基本运算方法等优化策略
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/23/社交网络中潜在好友推荐算法研究/" data-title="社交网络中潜在好友推荐算法研究" data-url="http://pangjiuzala.github.io/2015/08/23/社交网络中潜在好友推荐算法研究/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#算法概要"><span class="toc-number">1.</span> <span class="toc-text">算法概要</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用户综合相似度"><span class="toc-number">2.</span> <span class="toc-text">用户综合相似度</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#算法总体思想"><span class="toc-number">3.</span> <span class="toc-text">算法总体思想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#算法描述与分析"><span class="toc-number">4.</span> <span class="toc-text">算法描述与分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#算法代码"><span class="toc-number">5.</span> <span class="toc-text">算法代码</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

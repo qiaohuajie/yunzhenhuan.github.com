@@ -1,0 +1,736 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>TFS(Taobao File System)安装办法 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="TFS（Taobao File System）是一个高可扩展、高可用、高性能、面向互联网服务的分布式文件系统，主要针对海量的非结构化数据，它构筑在普通的Linux机器 集群上，可为外部提供高可靠和高并发的存储访问。TFS为淘宝提供海量小文件存储，通常文件大小不超过1M，满足了淘宝对小文件存储的需求，被广泛地应用 在淘宝各项应用中。它采用了HA架构和平滑扩容，保证了整个文件系统的可用性和扩展性。同时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TFS(Taobao File System)安装办法">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/12/09/TFS-Taobao-File-System-安装办法/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="TFS（Taobao File System）是一个高可扩展、高可用、高性能、面向互联网服务的分布式文件系统，主要针对海量的非结构化数据，它构筑在普通的Linux机器 集群上，可为外部提供高可靠和高并发的存储访问。TFS为淘宝提供海量小文件存储，通常文件大小不超过1M，满足了淘宝对小文件存储的需求，被广泛地应用 在淘宝各项应用中。它采用了HA架构和平滑扩容，保证了整个文件系统的可用性和扩展性。同时">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0593.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0594.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0595.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0596.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0597.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0598.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0599.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0600.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0601.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0602.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0603.png">
+<meta property="og:updated_time" content="2015-12-19T14:38:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TFS(Taobao File System)安装办法">
+<meta name="twitter:description" content="TFS（Taobao File System）是一个高可扩展、高可用、高性能、面向互联网服务的分布式文件系统，主要针对海量的非结构化数据，它构筑在普通的Linux机器 集群上，可为外部提供高可靠和高并发的存储访问。TFS为淘宝提供海量小文件存储，通常文件大小不超过1M，满足了淘宝对小文件存储的需求，被广泛地应用 在淘宝各项应用中。它采用了HA架构和平滑扩容，保证了整个文件系统的可用性和扩展性。同时">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/12/09/TFS-Taobao-File-System-安装办法/" title="TFS(Taobao File System)安装办法" itemprop="url">TFS(Taobao File System)安装办法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-12-09T03:48:19.000Z" itemprop="datePublished"> 发表于 2015-12-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#安装方法"><span class="toc-number">1.</span> <span class="toc-text">安装方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置dataserver、分区、_挂载数据盘"><span class="toc-number">2.</span> <span class="toc-text">配置dataserver、分区、 挂载数据盘</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置nameserver"><span class="toc-number">3.</span> <span class="toc-text">配置nameserver</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#JavaClient使用经验"><span class="toc-number">4.</span> <span class="toc-text">JavaClient使用经验</span></a></li></ol>
+		
+		</div>
+		
+		<p>TFS（Taobao File System）是一个高可扩展、高可用、高性能、面向互联网服务的分布式文件系统，主要针对海量的非结构化数据，它构筑在普通的Linux机器 集群上，可为外部提供高可靠和高并发的存储访问。TFS为淘宝提供海量小文件存储，通常文件大小不超过1M，满足了淘宝对小文件存储的需求，被广泛地应用 在淘宝各项应用中。它采用了HA架构和平滑扩容，保证了整个文件系统的可用性和扩展性。同时扁平化的数据组织结构，可将文件名映射到文件的物理地址，简化了文件的访问流程，一定程度上为TFS提供了良好的读写性能。</p>
+<a id="more"></a>
+<p>TFS文件系统的安装说明   </p>
+<h1 id="安装方法">安装方法</h1><p> 第1步 准备工作<br>检查服务器是否能正常DNS解析，目的是正常解析域名，可以进行yum更新。<br>如果你的服务器DNS解析正常，可跳过此步。<br>CentOS修改DNS方法：（修改后可即时生效，重启后同样有效）<br>修改对应网卡的DNS的配置文件</p>
+<figure class="highlight vala"><table><tr><td class="code"><pre><span class="line"><span class="preprocessor"># vi /etc/resolv.conf</span></span><br></pre></td></tr></table></figure>
+<p><strong>修改以下内容</strong><br>nameserver 8.8.8.8 #google域名服务器<br>nameserver 8.8.4.4 #google域名服务器</p>
+<p>验证automake是否安装rpm -qa |grep automake      结果：已安装<br>验证autoconfig是否安装 /usr/bin/autoconf -V     结果：已安装</p>
+<p>查看以安装的rpm包：rpm -qa|grep 包名<br>rpm -qa|grep libuuid<br>rpm -qa|grep zlib-devel<br>rpm -qa|grep mysql-devel</p>
+<p>如果你使用RedHat5.x和Centos 5.x会找不到libuuid-devel包，请看下面。<br>RedHat5.x和Centos 5.x 安装：  yum install uuidd<br>RedHat6.x和Centos 6.x 安装：  yum install libuuid-devel</p>
+<p>安装其它支持包： yum install libtool zlib-devel</p>
+<p><strong>安装ext4格式工具</strong><br>[root@locatfs local]# yum install  e4fsprogs e4fsprogs-devel   </p>
+<p>加载ext4模块，让系统支持ext4文件系统<br>[root@locatfs local]#  modprobe ext4</p>
+<p>说明：<br>1、TSF使用ext3文件系统，可以工作。<br>2、TSF的数据盘，只使用一个文件夹，可以工作，研究时不能分区格盘时可以这么做。</p>
+<p><strong>安装tb-common-utils</strong><br>tb-common-utils是淘宝开发使用的一个公共库<br>tbsys是对操作系统服务的封装，tbnet则提供了网络框架。 tbnet和tbsys被作为tb-common-utils被开源了，可以访问  <a href="http://code.taobao.org/trac/tb-common-utils/wiki" target="_blank" rel="external">http://code.taobao.org/trac/tb-common-utils/wiki</a></p>
+<p>TFS依赖于底层开发包tbnet。tb-common-utils里面含有tbsys和tbnet<br>首先编译安装tblib(tb-common-utils)，这里我安装在和tfs同一个路径。<br>(<a href="http://code.taobao.org/svn/tb-common-utils/trunk/" target="_blank" rel="external">http://code.taobao.org/svn/tb-common-utils/trunk/</a> tb-common-utils)</p>
+<p><strong>gtest库是单元测试框架，下面安装安装gtest</strong><br>自行上网下载gtest, (<a href="http://code.google.com/p/googletest/downloads/list)（这个需要翻墙，如果没有的话请使用[链接](http://pan.baidu.com/s/1c0IChVi" target="_blank" rel="external">http://code.google.com/p/googletest/downloads/list)（这个需要翻墙，如果没有的话请使用[链接](http://pan.baidu.com/s/1c0IChVi</a>)</p>
+<p>新建一个下载目录，并进入这个目录。<br>wget <a href="http://googletest.googlecode.com/files/gtest-1.6.0.zip" target="_blank" rel="external">http://googletest.googlecode.com/files/gtest-1.6.0.zip</a><br>[root@locatfs local]# unzip gtest-1.6.0.zip<br>[root@locatfs local]# cd gtest-1.6.0<br>[root@locatfs local]# ./configure<br>[root@locatfs local]# make<br>[root@locatfs local]# cd make/<br>[root@locatfs local]# make<br>[root@locatfs local]# ./sample1_unittest</p>
+<p><strong>安装tb-common-utils</strong><br>新建一个下载目录，并进入这个目录。下载源码：<br>[root@locatfs local]# svn checkout <a href="http://code.taobao.org/svn/tb-common-utils/trunk/" target="_blank" rel="external">http://code.taobao.org/svn/tb-common-utils/trunk/</a> tb-common-utils</p>
+<p>编译和安装tbnet, tbsys库<br>指定环境变量 TBLIB_ROOT为需要安装的目录。这个环境变量在后续tfs的编译安装中仍旧会被使用到. 比如要安装到当前用户的lib目录下, 则指定 export TBLIB_ROOT=”/home/xxxx/lib”<br>ps:建议将这行命令直接写入~/.bash_profile，然后执行“. ~/.bash_profile”<br>修改：<br>[root@locatfs local]# vi /etc/profile<br>添加：(计划安装在/usr/local/tb/lib目录)<br>export TBLIB_ROOT=/usr/local/tb/lib<br>生效：<br>[root@locatfs local]# source /etc/profile</p>
+<p>进入tb-common-utils文件夹, 执行build.sh进行安装.</p>
+<p>[root@locatfs local]# cd tb-common-utils/<br>[root@locatfs local]# chmod +x *.sh<br>[root@locatfs local]# ./build.sh<br>安装完成后,在TBLIB_ROOT表示的目录（/usr/local/tb/lib），应该可以看到include、lib 两个目录。</p>
+<p> 第8步 编译安装TFS<br>编译安装tfs   (安装到 /usr/local/tfs目录)<br>[root@locatfs local]# svn checkout <a href="http://code.taobao.org/svn/tfs/tags/release-2.2.10" target="_blank" rel="external">http://code.taobao.org/svn/tfs/tags/release-2.2.10</a> tfs-2.2.10  (这个编译成功了)<br>[root@locatfs local]# svn checkout <a href="http://code.taobao.org/svn/tfs/trunk/" target="_blank" rel="external">http://code.taobao.org/svn/tfs/trunk/</a> tfs (这个编译不成功)</p>
+<p>进入 tfs 目录<br>[root@locatfs local]# cd tfs/<br>[root@locatfs local]# chmod +x *.sh<br>[root@locatfs local]# ./build.sh  init<br>[root@locatfs local]# ./configure –prefix=/usr/local/tfs –without-tcmalloc<br>[root@locatfs local]# make<br>[root@locatfs local]# make install</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">#如果提示找不到<span class="regexp">/usr/</span>local<span class="regexp">/tfs/</span>scripts<span class="regexp">/cs_sync</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"># 把tfs下的cs_sync.sh复制成cs_sync 执行：cp -a .<span class="regexp">/scripts/</span>cs_sync.sh <span class="regexp">/root/</span>tfs_bin<span class="regexp">/scripts/</span>cs_sync</span><br></pre></td></tr></table></figure>
+<p>如果出错：checking for tc_cfree in -ltcmalloc… no<br>这是因为后面的tfs版本使用tcmalloc库了<br>可以在config时加–without-tcmalloc参数，重新编译，或者装tcmalloc库。我试过前者，是可以编译的。<br>TCMalloc（Thread-Caching Malloc）是google开发的开源工具<br>与标准的glibc库的malloc相比，TCMalloc在内存的分配上效率和速度要高，可以在很大程度上提高服务器在高并发情况下的性能，降低系统负载。<br>这个模块可以用来让MySQL在高并发下内存占用更加稳定。</p>
+<p>参考：<a href="http://blog.chinaunix.net/space.php?uid=10449864&amp;do=blog&amp;id=2956849" target="_blank" rel="external">http://blog.chinaunix.net/space.php?uid=10449864&amp;do=blog&amp;id=2956849</a></p>
+<p>make完后，如果有类似以下信息，表示编译不成功，如果没有报错，说明安装成功<br>我make成功了，make install也成功了。到这里本文结束了。</p>
+<figure class="highlight http"><table><tr><td class="code"><pre><span class="line"><span class="attribute">make[3]</span>: <span class="string">*** [read_block_prefix] Error 1</span></span><br><span class="line"><span class="attribute">make[3]</span>: <span class="string">Leaving directory `/tmp/tfs/src/tools/dataserver'</span></span><br><span class="line"><span class="attribute">make[2]</span>: <span class="string">*** [all-recursive] Error 1</span></span><br><span class="line"><span class="attribute">make[2]</span>: <span class="string">Leaving directory `/tmp/tfs/src/tools'</span></span><br><span class="line"><span class="attribute">make[1]</span>: <span class="string">*** [all-recursive] Error 1</span></span><br><span class="line"><span class="attribute">make[1]</span>: <span class="string">Leaving directory `/tmp/tfs/src'</span></span><br><span class="line"><span class="attribute">make</span>: <span class="string">*** [all-recursive] Error 1</span></span><br></pre></td></tr></table></figure>
+<hr>
+<p>官网<br><a href="http://code.taobao.org/p/tfs/wiki/index/" target="_blank" rel="external">http://code.taobao.org/p/tfs/wiki/index/</a></p>
+<p>淘宝TFS文件系统配置<br><a href="http://1008305.blog.51cto.com/998305/768258" target="_blank" rel="external">http://1008305.blog.51cto.com/998305/768258</a></p>
+<p>淘宝TFS分布式文件系统亲测<br><a href="http://gdcsy.blog.163.com/blog/static/12734360920125624859906/" target="_blank" rel="external">http://gdcsy.blog.163.com/blog/static/12734360920125624859906/</a></p>
+<p>TFS Nginx模块实现<br><a href="http://wenku.baidu.com/view/0d3007d4240c844769eaee58.html" target="_blank" rel="external">http://wenku.baidu.com/view/0d3007d4240c844769eaee58.html</a></p>
+<p>nginx-tfs-module<br><a href="http://code.google.com/p/nginx-tfs-module/" target="_blank" rel="external">http://code.google.com/p/nginx-tfs-module/</a></p>
+<p>TFS Restful 接口测试总结分享<br><a href="http://100continue.iteye.com/blog/1456390" target="_blank" rel="external">http://100continue.iteye.com/blog/1456390</a></p>
+<p>redhat 6.3下编译淘宝tfs<br><a href="http://my.oschina.net/beiyou/blog/76129" target="_blank" rel="external">http://my.oschina.net/beiyou/blog/76129</a></p>
+<p>淘宝核心系统团队博客<br><a href="http://rdc.taobao.com/blog/cs/?tag=tfs" target="_blank" rel="external">http://rdc.taobao.com/blog/cs/?tag=tfs</a></p>
+<p>淘宝网Nginx定制开发实践指南<br><a href="http://wenku.baidu.com/view/010a212ecfc789eb172dc80a.html" target="_blank" rel="external">http://wenku.baidu.com/view/010a212ecfc789eb172dc80a.html</a></p>
+<p>淘宝海量图片系统<br><a href="http://wenku.baidu.com/view/cc597ef8941ea76e58fa04a5.html" target="_blank" rel="external">http://wenku.baidu.com/view/cc597ef8941ea76e58fa04a5.html</a></p>
+<h1 id="配置dataserver、分区、_挂载数据盘">配置dataserver、分区、 挂载数据盘</h1><p>目前的情况，tfs安装在/usr/local/tfs/<br>在 /usr/local/tfs/conf/目录，共有三个文件需要配置：ns.conf、ads.conf和ds.conf<br>各个文件功能<br>ns.conf用于配置nameserver，<br>ds.conf用于配置dataserver，<br>ads.conf为可选配置文件，用于配置nameserver和dataserver地址信息，可用于快速启动ns和ds。<br>rc.conf为可选配置文件，用于配置rcserver相关信息，主要适用于集群多，应用多的用户，可实现应用资源和集群资源的管理。<br>meta.conf为可选配置文件，用于配置metaserver相关信息，主要用于自定义文件名功能。<br>rs.conf为可选配置文件，用于配置rootserver相关信息，主要用于自定义文件名功能。</p>
+<p><strong>ds.conf 中注意修改的项目</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span>-&gt;log_level=debug <span class="preprocessor">#日志文件的级别</span></span><br><span class="line"><span class="keyword">public</span>-&gt;port = <span class="number">9998</span>  <span class="preprocessor">#监听端口</span></span><br><span class="line"><span class="keyword">public</span>-&gt;work_dir=/usr/local/tfs <span class="preprocessor">#工作目录</span></span><br><span class="line"><span class="keyword">public</span>-&gt;dev_name= eth0 <span class="preprocessor">#网络设备</span></span><br><span class="line"><span class="keyword">public</span>-&gt;ip_addr = <span class="number">192.168</span><span class="number">.146</span><span class="number">.128</span> <span class="preprocessor">#本机IP地址(vip)</span></span><br><span class="line"></span><br><span class="line">dataserver-&gt;ip_addr = <span class="number">192.168</span><span class="number">.146</span><span class="number">.128</span> <span class="preprocessor">#NameServer配置HA时请设置为vip，没配置HA时请设置为主ns的ip</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">dataserver-&gt;ip_addr_list = <span class="number">192.168</span><span class="number">.146</span><span class="number">.128</span>|<span class="number">192.168</span><span class="number">.146</span><span class="number">.129</span> <span class="preprocessor">#!nameserver IP地址列表(master, salve的ip地址，只能以<span class="string">'|'</span>分隔)</span></span><br><span class="line">dataserver-&gt;port = <span class="number">8108</span> <span class="preprocessor">#!NameServer 监听的端口, <span class="number">1024</span> ~ <span class="number">55535</span></span></span><br><span class="line">dataserver-&gt;mount_name =  /data/tfs <span class="preprocessor">#mount路径</span></span><br><span class="line">dataserver-&gt;mount_maxsize = <span class="number">141000000</span>  <span class="preprocessor">#mount 时磁盘的大小, 单位(KB)，TFS将使用这么多的空间<span class="number">134</span>G</span></span><br><span class="line">dataserver-&gt;block_max_size = <span class="number">67108864</span> <span class="preprocessor">#block 最大size</span></span><br><span class="line">dataserver-&gt;mainblock_size = <span class="number">67108864</span> <span class="preprocessor">#每个数据存储块的大小</span></span><br><span class="line"></span><br><span class="line">dataserver-&gt;extblock_size = <span class="number">8388608</span>  <span class="preprocessor">#扩展块的大小, 单位(字节)</span></span><br></pre></td></tr></table></figure>
+<p><strong>ds.conf 内容 （其中有中文，要保存为UTF-8,不带标签）</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">public</span>]</span><br><span class="line"><span class="preprocessor">#日志文件的size,default <span class="number">1</span>GB</span></span><br><span class="line">log_size=<span class="number">1073741824</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#保留日志文件的个数,default <span class="number">64</span></span></span><br><span class="line">log_num = <span class="number">64</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#日志文件的级别, default info，线上使用建议设为info，调试设为debug</span></span><br><span class="line"><span class="preprocessor">#dubug级日志量会很大</span></span><br><span class="line">log_level=debug</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#main queue size default <span class="number">10240</span></span></span><br><span class="line"><span class="preprocessor">#工作队列size, default <span class="number">10240</span></span></span><br><span class="line">task_max_queue_size = <span class="number">10240</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#listen port</span></span><br><span class="line"><span class="preprocessor">#监听端口, <span class="number">1024</span> ~ <span class="number">65535</span></span></span><br><span class="line">port = <span class="number">9998</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#work directoy</span></span><br><span class="line"><span class="preprocessor">#工作目录</span></span><br><span class="line">work_dir=/usr/local/tfs</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#device name</span></span><br><span class="line"><span class="preprocessor">#网络设备</span></span><br><span class="line">dev_name= eth0</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#work thread count default <span class="number">4</span></span></span><br><span class="line"><span class="preprocessor">#工作线程池 default <span class="number">4</span></span></span><br><span class="line">thread_count = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#ip addr</span></span><br><span class="line"><span class="preprocessor">#本机IP地址(vip)</span></span><br><span class="line">ip_addr = <span class="number">192.168</span><span class="number">.119</span><span class="number">.217</span></span><br><span class="line"></span><br><span class="line">[dataserver]</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#NameServer ip addr(vip)</span></span><br><span class="line"><span class="preprocessor">#!NameServer vip地址</span></span><br><span class="line"><span class="preprocessor">#NameServer配置HA时请设置为vip，没配置HA时请设置为主ns的ip</span></span><br><span class="line">ip_addr = <span class="number">192.168</span><span class="number">.119</span><span class="number">.145</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#!nameserver IP地址列表(master, salve的ip地址，只能以<span class="string">'|'</span>分隔)</span></span><br><span class="line"><span class="preprocessor">#如果没有salve，第二个ip随便写一个</span></span><br><span class="line">ip_addr_list = <span class="number">192.168</span><span class="number">.119</span><span class="number">.145</span>|<span class="number">192.168</span><span class="number">.119</span><span class="number">.147</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#nameserver port</span></span><br><span class="line"><span class="preprocessor">#!NameServer 监听的端口, <span class="number">1024</span> ~ <span class="number">55535</span></span></span><br><span class="line">port = <span class="number">8108</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#备集群NameServer的vip地址, 没有搭建主副集群的可以不用配置此项</span></span><br><span class="line"><span class="preprocessor">#slave_nsip = <span class="number">192.168</span><span class="number">.0</span><span class="number">.2</span>:<span class="number">8108</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#无效配置，直接加到slave_nsip项即可</span></span><br><span class="line"><span class="preprocessor">#slave_nsport = <span class="number">8108</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#heart interval time(seconds)</span></span><br><span class="line"><span class="preprocessor">#dataserver 与 nameserver心跳间隔时间, 单位(秒), default: <span class="number">2</span></span></span><br><span class="line">heart_interval = <span class="number">2</span></span><br><span class="line"></span><br><span class="line">check_interval = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#datafile失效时间, 单位(秒), default: <span class="number">90</span></span></span><br><span class="line"><span class="preprocessor">#expire_datafile_time = <span class="number">90</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#拷贝一个Block超时时间, 单位(秒), default: <span class="number">180</span></span></span><br><span class="line"><span class="preprocessor">#expire_clonedblock_time = <span class="number">180</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#压缩一个Block超时时间, 单位(秒), default: <span class="number">600</span></span></span><br><span class="line"><span class="preprocessor">#expire_compactblock_time = <span class="number">600</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#复制Block线程池的大小, default: <span class="number">2</span></span></span><br><span class="line">replicate_threadcount = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#是否写同步日志, defalut: <span class="number">1</span></span></span><br><span class="line"><span class="preprocessor">#write_sync_flag = <span class="number">1</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#block 最大size</span></span><br><span class="line">block_max_size = <span class="number">7549747</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#定时dump统计信息的间隔时间, 单位(秒), default: <span class="number">60</span></span></span><br><span class="line">dump_visit_stat_interval = <span class="number">60</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#io操作的阀值, 超过此值时， 会警告</span></span><br><span class="line"><span class="preprocessor">#max_io_warning_time = <span class="number">0</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#备件类型, <span class="number">1</span>: tfs, <span class="number">2</span>: nfs</span></span><br><span class="line">backup_type = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#备件路径</span></span><br><span class="line">backup_path =  /data/tfs</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#最大datafile值, default: <span class="number">50</span></span></span><br><span class="line"><span class="preprocessor">#max_data_file_nums = <span class="number">50</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#crc <span class="keyword">error</span>的最大个数</span></span><br><span class="line"><span class="preprocessor">#max_crc_error_nums = <span class="number">4</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#eio <span class="keyword">error</span>的最大个数</span></span><br><span class="line"><span class="preprocessor">#max_eio_error_nums_ = <span class="number">6</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#超时block检测时间, 单位(秒)</span></span><br><span class="line"><span class="preprocessor">#expire_checkblock_time = <span class="number">86000</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#cpu使用率</span></span><br><span class="line"><span class="preprocessor">#max_cpu_usage = <span class="number">60</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#dump 统计信息的间隔时间, 单位(微秒)</span></span><br><span class="line"><span class="preprocessor">#dump_stat_info_interval = <span class="number">60000000</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#mount路径</span></span><br><span class="line">mount_name =  /data/tfs</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#mount 时磁盘的大小, 单位(KB)，不要大过文件系统实际剩余空间</span></span><br><span class="line"><span class="preprocessor">#最大的挂载空间，如果你的/data/tfs1有<span class="number">1</span>T，而设置了<span class="number">4</span>G ,那只有<span class="number">4</span>G的块可用空间，剩下的被浪费。</span></span><br><span class="line"><span class="preprocessor">#<span class="number">120</span>G  ，原来分<span class="number">134</span>G，存储区预分配时报错了</span></span><br><span class="line">mount_maxsize = <span class="number">125829120</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#文件系统类型: <span class="number">0</span>: no initialize, <span class="number">1</span>: ext4, <span class="number">2</span>: ext3 posix fallocate, <span class="number">3</span>: ext3 ftruncate</span></span><br><span class="line">base_filesystem_type = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#超级块存存储的保留位置，default: <span class="number">0</span></span></span><br><span class="line">superblock_reserve = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#平均文件的大小, 单位(字节)</span></span><br><span class="line">avg_file_size = <span class="number">40960</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#主块的大小, 单位(字节)</span></span><br><span class="line"><span class="preprocessor">#每个数据存储块的大小</span></span><br><span class="line">mainblock_size = <span class="number">7549747</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#扩展块的大小, 单位(字节)</span></span><br><span class="line"></span><br><span class="line">extblock_size = <span class="number">419430</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#主块与扩展的比例</span></span><br><span class="line"></span><br><span class="line">block_ratio = <span class="number">0.5</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#hash桶的比例</span></span><br><span class="line"></span><br><span class="line">hash_slot_ratio = <span class="number">0.5</span></span><br><span class="line"></span><br><span class="line">ds_thread_count = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#访问控制ip mask, 可选</span></span><br><span class="line"><span class="preprocessor">#access_control_ipmask = <span class="number">192.168</span><span class="number">.0</span><span class="number">.1</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#访问控制文件路径, 可选</span></span><br><span class="line"><span class="preprocessor">#access_control_file = /home/xxxxx/xxxxxx/tfs/control.file</span></span><br></pre></td></tr></table></figure>
+<p>挂数据盘，一台服务器，可以挂载多块数据盘。</p>
+<p><strong>查看硬盘</strong><br>fdisk -l  发现本台服务器上有5块146G的磁盘，第一块是系统盘。其它4块可以做数据盘<br>Disk /dev/sda: 146.6 GB<br>Disk /dev/sdb: 146.6 GB<br>Disk /dev/sdc: 146.6 GB<br>Disk /dev/sdd: 146.6 GB<br>Disk /dev/sde: 146.6 GB</p>
+<p><strong>umount</strong><br>分区,格式化之前，如果已挂载，要先反挂载<br>umount /dev/sdb1<br>umount /dev/sdc1<br>umount /dev/sdd1<br>umount /dev/sde1</p>
+<p><strong>分区</strong><br>对数据盘进行分区，一块盘分一个区就行。<br>执行“fdisk /dev/sdb”命令，对数据盘进行分区；<br>根据提示，依次输入“n”，“p”“1”，两次回车，“wq”，分区就开始了，很快就会完成。</p>
+<p>fdisk /dev/sdb<br>fdisk /dev/sdc<br>fdisk /dev/sdd<br>fdisk /dev/sde</p>
+<p><strong>格式化</strong></p>
+<p>mkfs.ext4 /dev/sdb1<br>mkfs.ext4 /dev/sdc1<br>mkfs.ext4 /dev/sdd1<br>mkfs.ext4 /dev/sde1</p>
+<p><strong>挂载</strong></p>
+<p>建好目录，第一块磁盘就挂载在第一个目录上。目录数据取决于你磁盘的数量。<br>mkdir /data/tfs1<br>mkdir /data/tfs2<br>mkdir /data/tfs3<br>mkdir /data/tfs4</p>
+<p>mount /dev/sdb1 /data/tfs1<br>mount /dev/sdc1 /data/tfs2<br>mount /dev/sdd1 /data/tfs3<br>mount /dev/sde1 /data/tfs4</p>
+<p><strong>加入启动时自动挂载</strong></p>
+<p>设置开机自动挂载</p>
+<p>[root@loctfs scripts]# vi /etc/fstab<br>加入以下信息</p>
+<p>/dev/sdb1                /data/tfs1              ext4    defaults        1 2<br>/dev/sdc1                /data/tfs2              ext4    defaults        1 2<br>/dev/sdd1                /data/tfs3              ext4    defaults        1 2<br>/dev/sde1                /data/tfs4              ext4    defaults        1 2</p>
+<p><strong>重启系统</strong><br>查看mount情况</p>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0593.png" alt=""><br> </center>
+
+
+<p><strong>存储区预分配</strong></p>
+<p>注意：挂载目录是/data/tfs1至/data/tfs(i)，其中i为磁盘号。<br>而ds.conf配置文件中的配置  mount_name =  /data/tfs  没有加（i）</p>
+<p> 执行scripts下的stfs format n (n为挂载点的序号，具体用法见stfs的Usage)。例如stfs format 2,4-6 则会对/data/tfs2,<br>/data/tfs4,/data/tfs5,/data/tfs6，进行预分配。运行完后会在生成/data/tfs2, /data/tfs4,/data/tfs5,/data/tfs6下预先创建主块，扩展块及相应的统计信息。<br>[root@locname conf]#  cd /usr/local/tfs/scripts<br>[root@locname scripts]# ./stfs format 1-4    //分配第1，2，3，4个存储区</p>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0594.png" alt=""><br> </center>
+
+<p> <strong>运行data server</strong></p>
+<p>有两种方法：<br>    1)通过adminserver来启动dataserver（推荐）: 执行scripts下的./tfs admin_ds<br>    2)直接启动dataserver，执行scripts下的./tfs start_ds 2,4-6， 则会启动dataserver2，dataserver4，dataserver5，dataserver6</p>
+<p>目前我们没有配置adminserver的ads.conf, 我们使用方法2来启动。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/tfs/scripts</span><br><span class="line"></span><br><span class="line">./tfs start_ds <span class="number">1</span>-<span class="number">4</span></span><br></pre></td></tr></table></figure>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0595.png" alt=""><br> </center>
+
+<p>我们一台服务器上启动了4个进程</p>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0596.png" alt=""><br> </center>
+
+<p>停止： ./tfs stop_ds 1-4</p>
+<h1 id="配置nameserver">配置nameserver</h1><p>ns.conf 中注意修改的项目</p>
+<p>public-&gt;log_level=debug #日志文件的级别<br>public-&gt;port = 8108  #nameserver监听端口<br>public-&gt;work_dir=/usr/local/tfs  #工作目录,也就是tfs的安装目录<br>public-&gt;dev_name= eth0  #网络设备，即通信网卡，一般用内网<br>public-&gt;ip_addr = 192.168.119.145 #本机IP地址(vip)，配置ha时为vip，没配置可以为主ns的ip</p>
+<p>nameserver-&gt;ip_addr_list = 192.168.119.145|192.168.119.147  #nameserver IP地址列表(master, salve的ip地址，只能以’|’分隔)<br>nameserver-&gt;block_max_size = 67108864  #Block size的最大值, 单位(字节),必须 &gt;= dataserver的mainblock_size，推荐设置一致。<br>nameserver-&gt;max_replication = 3  #Block 最大备份数, default: 2,单台dataserver时，需要配置为1<br>nameserver-&gt;min_replication = 3  #Block 最小备份数, default: 2,#单台dataserver时，需要配置为1<br>nameserver-&gt;cluster_id = 1  # 集群号</p>
+<p>ns.conf 内容 （其中有中文，要保存为UTF-8,不带标签）</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">public</span>]</span><br><span class="line"><span class="preprocessor">#log file size default <span class="number">1</span>GB</span></span><br><span class="line"><span class="preprocessor">#日志文件的size,默认 <span class="number">1</span>GB</span></span><br><span class="line">log_size=<span class="number">1073741824</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#保留日志文件的个数,默认 <span class="number">64</span></span></span><br><span class="line">log_num = <span class="number">64</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#log file level default debug</span></span><br><span class="line"><span class="preprocessor">#日志文件的级别, default info，线上使用建议设为info，调试设为debug</span></span><br><span class="line"><span class="preprocessor">#dubug级日志量会很大</span></span><br><span class="line">log_level=debug</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#main queue size default <span class="number">10240</span></span></span><br><span class="line"><span class="preprocessor">#工作队列size,  默认  <span class="number">10240</span></span></span><br><span class="line">task_max_queue_size = <span class="number">10240</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#listen port</span></span><br><span class="line"><span class="preprocessor">#nameserver监听端口</span></span><br><span class="line">port = <span class="number">8108</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#work directoy</span></span><br><span class="line"><span class="preprocessor">#工作目录,也就是tfs的安装目录</span></span><br><span class="line">work_dir=/usr/local/tfs</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#device name</span></span><br><span class="line"><span class="preprocessor">#网络设备，即通信网卡，一般用内网</span></span><br><span class="line">dev_name= eth0</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#work thread count default <span class="number">4</span></span></span><br><span class="line"><span class="preprocessor">#工作线程池 default  <span class="number">4</span></span></span><br><span class="line">thread_count = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#ip addr(vip)</span></span><br><span class="line"><span class="preprocessor">#本机IP地址(vip)，配置ha时为vip，没配置可以为主ns的ip</span></span><br><span class="line">ip_addr = <span class="number">192.168</span><span class="number">.119</span><span class="number">.145</span></span><br><span class="line"></span><br><span class="line">[nameserver]</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#系统保护时间，单位(秒), default: <span class="number">300</span></span></span><br><span class="line"><span class="preprocessor">#保护时间内不进行任何操作，包括添加block等</span></span><br><span class="line">safe_mode_time = <span class="number">300</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#nameserver IP地址列表(master, salve的ip地址，只能以<span class="string">'|'</span>分隔)</span></span><br><span class="line"><span class="preprocessor">#单台nameserver时，另一个ip配置为无效ip即可</span></span><br><span class="line">ip_addr_list = <span class="number">192.168</span><span class="number">.119</span><span class="number">.145</span>|<span class="number">192.168</span><span class="number">.119</span><span class="number">.147</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#Ip地址 mask</span></span><br><span class="line"><span class="preprocessor">#用于区分dataserver所在的子网，选择不同子网的dataserver备份数据</span></span><br><span class="line">group_mask = <span class="number">255.255</span><span class="number">.255</span><span class="number">.255</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#Block size的最大值, 单位(字节)</span></span><br><span class="line"><span class="preprocessor">#必须 &gt;= dataserver的mainblock_size，推荐设置一致。</span></span><br><span class="line">block_max_size = <span class="number">83886080</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#Block 最大备份数, default: <span class="number">2</span>,单台dataserver时，需要配置为<span class="number">1</span></span></span><br><span class="line">max_replication = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#Block 最小备份数, default: <span class="number">2</span>,#单台dataserver时，需要配置为<span class="number">1</span></span></span><br><span class="line">min_replication = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#DataServer 容量使用的百分比, default: <span class="number">98</span></span></span><br><span class="line">use_capacity_ratio = <span class="number">98</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#Block使用的百分比, default: <span class="number">95</span></span></span><br><span class="line">block_max_use_ratio = <span class="number">98</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#heart interval time(seconds)</span></span><br><span class="line"><span class="preprocessor">#Dataserver 与 nameserver 的心跳时间, 单位(秒), default: <span class="number">2</span></span></span><br><span class="line">heart_interval = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># object dead max time(seconds) default</span></span><br><span class="line"><span class="preprocessor"># object 死亡的最大时间, 单位(秒), default: <span class="number">86400</span></span></span><br><span class="line">object_dead_max_time = <span class="number">3600</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># cluster id defalut <span class="number">1</span></span></span><br><span class="line"><span class="preprocessor"># 集群号</span></span><br><span class="line">cluster_id = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># block lost, replicate ratio</span></span><br><span class="line"><span class="preprocessor"># Block当前备份数与最大备份数百分比，如果大于这个百分比，就开始复制</span></span><br><span class="line">replicate_ratio_ = <span class="number">50</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#每个DataServer 主可写块的大小, default: <span class="number">3</span></span></span><br><span class="line">max_write_filecount = <span class="number">16</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#dataserver 与 nameserver 的心跳线程池的大小, default: <span class="number">2</span></span></span><br><span class="line">heart_thread_count = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#dataserver 与 nameserver 的心跳工作队列的大小, default: <span class="number">10</span></span></span><br><span class="line">heart_max_queue_size = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#replicate block wait time</span></span><br><span class="line"><span class="preprocessor">#block 缺失备份时， 需要等待多长时间才进行复制， 单位(秒)， default: <span class="number">240</span></span></span><br><span class="line">repl_max_time = <span class="number">60</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#block进行压缩的比例, block 删除的文件的比例达到这个值时进行压缩</span></span><br><span class="line">compact_delete_ratio =  <span class="number">15</span> </span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#block进行压缩时, dataserver的最大负载，超出这个值dataserver，不进行压缩</span></span><br><span class="line">compact_max_load = <span class="number">200</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># object 死亡的最大时间, 单位(秒), default: <span class="number">86400</span></span></span><br><span class="line">object_dead_max_time = <span class="number">86400</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># object 清理的时间, 单位(秒), default: <span class="number">300</span></span></span><br><span class="line">object_clear_max_time = <span class="number">300</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#nameserver上出现租约等待时， 阻塞线程最大个数， 这个值最好是工作线程的一半</span></span><br><span class="line">max_wait_write_lease = <span class="number">15</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#租约删除的最长时间, 单位(小时), default: <span class="number">1</span></span></span><br><span class="line">lease_expired_time = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#最大租约超时时间</span></span><br><span class="line">max_lease_timeout = <span class="number">3000</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#清理租约的阀值， default: <span class="number">102400</span></span></span><br><span class="line">cleanup_lease_threshold = <span class="number">102400</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建计划的间隔时间, 单位(秒), default: <span class="number">30</span></span></span><br><span class="line">build_plan_interval = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#计划超时时间, 单位(秒), default: <span class="number">120</span></span></span><br><span class="line">run_plan_expire_interval = <span class="number">120</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建计划的百分比， 计划数量 = dataserver 数量 * build_plan_ratio</span></span><br><span class="line">build_plan_ratio = <span class="number">25</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#定时dump统计信息的间隔时间, 单位(微秒), default: <span class="number">60000000</span></span></span><br><span class="line">dump_stat_info_interval = <span class="number">60000000</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建计划等待时间， 主要用有很多紧急复制时，单位(秒), default: <span class="number">2</span></span></span><br><span class="line">build_plan_default_wait_time = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#负载均衡时block相关的个数(这个参数有点问题， 以后会改成百分比), default: <span class="number">5</span></span></span><br><span class="line">balance_max_diff_block_num = <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#每次新增Block的个数， default: <span class="number">3</span></span></span><br><span class="line">add_primary_block_count = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#存储block桶的个数, default: <span class="number">32</span></span></span><br><span class="line">block_chunk_num = <span class="number">32</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#每个任务处理的预期时间, 单位(微秒), default: <span class="number">200</span></span></span><br><span class="line">task_percent_sec_size = <span class="number">200</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#每个任务队列的最大size</span></span><br><span class="line">task_max_queue_size = <span class="number">10000</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#同步日志缓冲区slot的大小， 超出这个值会写入磁盘, default: <span class="number">1</span></span></span><br><span class="line">oplog_sync_max_slots_num = <span class="number">1024</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#同步日志线程池的大小, default: <span class="number">1</span></span></span><br><span class="line">oplog_sync_thread_num = <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p><strong>启动nameserver</strong></p>
+<p>执行scripts目录下的tfs</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="regexp">/usr/</span>local<span class="regexp">/tfs/</span>scripts<span class="regexp">/tfs start_ns</span></span><br></pre></td></tr></table></figure>
+<p> 查看监听端口：netstat -ltnp</p>
+<p><strong>停止nameserver</strong></p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line"><span class="regexp">/usr/</span>local<span class="regexp">/tfs/</span>scripts<span class="regexp">/tfs stop_ns</span></span><br></pre></td></tr></table></figure>
+<p><strong>验证</strong></p>
+<figure class="highlight autoit"><table><tr><td class="code"><pre><span class="line">[root<span class="constant">@localhost</span> scripts]<span class="preprocessor"># netstat -tnlppa |grep 147</span></span><br></pre></td></tr></table></figure>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0597.png" alt=""><br> </center>
+
+
+
+
+
+<p><strong>列出dataserver的block块</strong><br>首先保证服务已经全部启动！<br>确认防火墙没有阻止到连接！<br>查看dataserver连接情况：<br>在nameserver端执行ssm命令查看检查到的dataserver的一些基本情况。<br>/usr/local/tfs/bin/ssm -s 192.168.119.147:8108 (要使用主ns的IP与端口，请注意根据实际情况修改)<br>server -b    \随即列出dataserver的block块</p>
+ <center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0598.png" alt=""><br> </center>
+
+
+
+<p>server -w     \随机列出dataserver的可写块</p>
+<p>machine -a   \列出dataserver的使用报道。</p>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0599.png" alt=""><br> </center>
+
+
+
+<p>这里需要注意如果用server -b 、-w后面的BLOCK数字，如果是0，说明没有可写块。检测ns  ads ds的配置文件，包括备份个数、主块大小知否一致.<br>如果看到上面的信息，那基本没问题了。</p>
+<p><strong>用tfstool上传一张图片</strong></p>
+<p> 客户端首先向nameserver发起写请求，nameserver需要根据dataserver上的可写块，容量和负载加权平均来选择一个可写的 block。并且在该block所在的多个dataserver中选择一个作为写入的master，这个选择过程也需要根据dataserver的负载以 及当前作为master的次数来计算，使得每个dataserver作为master的机会均等。master一经选定，除非master宕机，不会更 换，一旦master宕机，需要在剩余的dataserver中选择新的master。返回一个dataserver列表。<br>客户端向master dataserver开始数据写入操作。master server将数据传输为其他的dataserver节点，只有当所有dataserver节点写入均成功时，master server才会向nameserver和客户端返回操作成功的信息。“</p>
+<p> 也就是说客户端发起一个请求，nameserver先根据dataserver的 容量和负载 来选择一个dataserver来做为所有dataserver的master(除非master宕机，不会更换，宕机则自动重新选择)然后根据ns.conf的配置的备份数全部写入，才向nameserver和客户端返回操作成功信息。</p>
+<p> /usr/local/tfs/bin/tfstool -s 192.168.119.147:8108   (这是备ns,不是主，还未配置HA呢，使用它的上传失败了)</p>
+<p>  /usr/local/tfs/bin/tfstool -s 192.168.119.145:8108   (这是主ns ，请注意根据实际情况修改)</p>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0600.png" alt=""><br> </center>
+
+<p>这里我使用put上传/opt/666.jpg这张图。TFS目前限制了文件大小为2M，适合于一些小于2M数 据的存放。终端默认上传命令put ，超过2M用putl,回车后会返回一大堆字符，注意看最后一行是fail还是success，如果是fail，请检测下配置文件、端口等。如果是 success则说明已经上传上去。</p>
+<p>上传666.jpg大小 是58407字节</p>
+ <center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0601.png" alt=""><br> </center>
+
+
+<p>可以看到 blockid=349,size=58407,ip=192.168.119.214:9998</p>
+<p>查349这个块的信息。</p>
+<p>在ns、ds中随便找一台机器，执行：</p>
+<p> /usr/local/tfs/bin/ds_client -d 192.168.119.214:9998</p>
+<center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0602.png" alt=""><br> </center>
+
+
+
+<p>可以看到块349中有一个文件，文件名是：T0oRJTByJT1RCvBVdK</p>
+<p><strong>读最文件</strong></p>
+<p> read_file_data 349 1 /opt/777/jpg</p>
+ <center><br> <img src="http://7xiur2.com1.z0.glb.clouddn.com/0603.png" alt=""><br> </center>
+
+
+<p>成功了，到 /opt/777/jpg，去看一看文件。</p>
+<h1 id="JavaClient使用经验">JavaClient使用经验</h1><p>TFS Java客户端的说明</p>
+<p>tfs-client-java版本选择：<br>tfs-client-java的版本有：<br>release-2.0.0/<br>tfs-with-large-2.1.1/<br>tfs-client-java-2.1.3/<br>release-2.2.2/<br>release-2.2.3/<br>release-2.2.4/<br>release-2.2.6/<br>最终我选用了tfs-client-java-2.1.3/ 版本，因为最高的2.2.x版本，工作时必需要与rcserver通信。<br>我目前不需要rcserver所有没有安装rcserver，所以使用2.1.3版本。</p>
+<p>检出</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">svn checkout http://code.taobao.org/svn/tfs-client-java/tags/<span class="operator"><span class="keyword">release</span>-<span class="number">2.2</span><span class="number">.6</span>/</span><br><span class="line">svn checkout <span class="keyword">http</span>://code.taobao.org/svn/tfs-<span class="keyword">client</span>-<span class="keyword">java</span>/tfs-<span class="keyword">client</span>-<span class="keyword">java</span>-<span class="number">2.1</span><span class="number">.3</span>/</span></span><br></pre></td></tr></table></figure>
+<p>依赖包说明<br>common-tair.jar<br>下载地址：<a href="http://code.taobao.org/p/tair-client-java/wiki/index/" target="_blank" rel="external">http://code.taobao.org/p/tair-client-java/wiki/index/</a><br>可以下载编译好的 tair-client-2.3.1.jar ，也可以下载源码自己编译。</p>
+<p>common-monitor.jar<br>tfs-client-java 2.1.3不需要common-monitor.jar包，但2.2.x以后需要common-monitor.jar。</p>
+<p>TMD，真的没找到这个common-monitor.jar包。分析tfs-client-java 2.2.x源码，只有一处记日志的地方需要使用它的，注释这段代码。</p>
+<p>tfs-client-java源码中还有一处:<br>String tfsFileName …..<br>if (tfsFileName != null &amp;&amp; !tfsFileName.isEmpty())<br>找不到isEmpty()方法，修改一下，就OK了.</p>
+<p>使用tfs-client-java 访问TFS集群</p>
+<p>TFS 2.2.10 , 1台NameServer，4台DataServer,每台4块SAS数据盘， 30并发以上写入文件时（10并发时也有少量报错），有较多的报错。压力越大，报错的次数越多。</p>
+<p>DataServer上的日志内容大体如下，我只记了error级别的日志。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">[2012-11-29 18:14:44] ERROR check_block_version (index_handle.cpp:360) [1113774400] remote version is larger, <span class="operator"><span class="keyword">set</span> <span class="keyword">block</span> <span class="keyword">version</span>. blockid: <span class="number">5367</span>, remote <span class="keyword">version</span>: <span class="number">674</span>, <span class="keyword">local</span> <span class="keyword">version</span>: <span class="number">673</span></span><br><span class="line">[<span class="number">2012</span>-<span class="number">11</span>-<span class="number">29</span> <span class="number">18</span>:<span class="number">14</span>:<span class="number">44</span>] <span class="keyword">ERROR</span> check_block_version (index_handle.cpp:<span class="number">360</span>) [<span class="number">1176713536</span>] remote <span class="keyword">version</span> <span class="keyword">is</span> larger, <span class="keyword">set</span> <span class="keyword">block</span> <span class="keyword">version</span>. blockid: <span class="number">3796</span>, remote <span class="keyword">version</span>: <span class="number">706</span>, <span class="keyword">local</span> <span class="keyword">version</span>: <span class="number">705</span></span><br><span class="line">[<span class="number">2012</span>-<span class="number">11</span>-<span class="number">29</span> <span class="number">18</span>:<span class="number">14</span>:<span class="number">44</span>] <span class="keyword">ERROR</span> check_block_version (index_handle.cpp:<span class="number">360</span>) [<span class="number">1176713536</span>] remote <span class="keyword">version</span> <span class="keyword">is</span> larger, <span class="keyword">set</span> <span class="keyword">block</span> <span class="keyword">version</span>. blockid: <span class="number">4651</span>, remote <span class="keyword">version</span>: <span class="number">675</span>, <span class="keyword">local</span> <span class="keyword">version</span>: <span class="number">674</span></span><br><span class="line">[<span class="number">2012</span>-<span class="number">11</span>-<span class="number">29</span> <span class="number">18</span>:<span class="number">14</span>:<span class="number">44</span>] <span class="keyword">ERROR</span> check_block_version (index_handle.cpp:<span class="number">360</span>) [<span class="number">1155733824</span>] remote <span class="keyword">version</span> <span class="keyword">is</span> larger, <span class="keyword">set</span> <span class="keyword">block</span> <span class="keyword">version</span>. blockid: <span class="number">5153</span>, remote <span class="keyword">version</span>: <span class="number">634</span>, <span class="keyword">local</span> <span class="keyword">version</span>: <span class="number">633</span></span></span><br></pre></td></tr></table></figure>
+<p>后来重新部署了TFS 2.0.4，不再报上面的错误了，情况有所好转。但报了其它错误数量不多。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Taobao-File-System/">Taobao File System</a><a href="/tags/大数据/">大数据</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/12/14/Hadoop环境共享/" title="Hadoop环境共享">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Hadoop环境共享</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/12/06/Hadoop的HA机制/"  title="Hadoop的HA机制">
+ <strong>下一篇：</strong><br/> 
+ <span>Hadoop的HA机制
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/12/09/TFS-Taobao-File-System-安装办法/" data-title="TFS(Taobao File System)安装办法" data-url="http://pangjiuzala.github.io/2015/12/09/TFS-Taobao-File-System-安装办法/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#安装方法"><span class="toc-number">1.</span> <span class="toc-text">安装方法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置dataserver、分区、_挂载数据盘"><span class="toc-number">2.</span> <span class="toc-text">配置dataserver、分区、 挂载数据盘</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置nameserver"><span class="toc-number">3.</span> <span class="toc-text">配置nameserver</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#JavaClient使用经验"><span class="toc-number">4.</span> <span class="toc-text">JavaClient使用经验</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

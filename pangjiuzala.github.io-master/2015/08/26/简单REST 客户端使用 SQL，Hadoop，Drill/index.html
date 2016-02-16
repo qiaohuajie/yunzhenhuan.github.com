@@ -1,0 +1,680 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>简单REST 客户端使用 SQL，Hadoop，Drill | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="根据福雷斯特研究公司（Forrester Research）的观点，SQL将成为Hadoop生态系统中最多产的应用方案之一。Apache Drill 是一个应用于大数据搜索的开源SQL查询引擎。REST服务和客户端已经成为互联网流行的技术。 Apache HBase则是一个广受欢迎的Hadoop NoSQL数据库。在本文中，我将结合 SQL、Hadoop、Drill、REST with JSON、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单REST 客户端使用 SQL，Hadoop，Drill">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/08/26/简单REST 客户端使用 SQL，Hadoop，Drill/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="根据福雷斯特研究公司（Forrester Research）的观点，SQL将成为Hadoop生态系统中最多产的应用方案之一。Apache Drill 是一个应用于大数据搜索的开源SQL查询引擎。REST服务和客户端已经成为互联网流行的技术。 Apache HBase则是一个广受欢迎的Hadoop NoSQL数据库。在本文中，我将结合 SQL、Hadoop、Drill、REST with JSON、">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0156.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0157.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0158.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0159.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0160.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0161.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0162.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0163.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0164.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0165.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0166.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0167.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0168.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0169.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0170.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0171.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0172.png">
+<meta property="og:image" content="http://7xiur2.com1.z0.glb.clouddn.com/0173.png">
+<meta property="og:updated_time" content="2015-09-06T07:45:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="简单REST 客户端使用 SQL，Hadoop，Drill">
+<meta name="twitter:description" content="根据福雷斯特研究公司（Forrester Research）的观点，SQL将成为Hadoop生态系统中最多产的应用方案之一。Apache Drill 是一个应用于大数据搜索的开源SQL查询引擎。REST服务和客户端已经成为互联网流行的技术。 Apache HBase则是一个广受欢迎的Hadoop NoSQL数据库。在本文中，我将结合 SQL、Hadoop、Drill、REST with JSON、">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/26/简单REST 客户端使用 SQL，Hadoop，Drill/" title="简单REST 客户端使用 SQL，Hadoop，Drill" itemprop="url">简单REST 客户端使用 SQL，Hadoop，Drill</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-26T12:50:55.000Z" itemprop="datePublished"> 发表于 2015-08-26</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Apache_Drill教程和MapR沙箱"><span class="toc-number">1.</span> <span class="toc-text">Apache Drill教程和MapR沙箱</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览用例数据"><span class="toc-number">2.</span> <span class="toc-text">浏览用例数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览日志数据"><span class="toc-number">3.</span> <span class="toc-text">浏览日志数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览Hive上订单表（Orders）数据"><span class="toc-number">4.</span> <span class="toc-text">浏览Hive上订单表（Orders）数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览HBase的产品表（Products）"><span class="toc-number">5.</span> <span class="toc-text">浏览HBase的产品表（Products）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Drill_REST接口"><span class="toc-number">6.</span> <span class="toc-text">Drill REST接口</span></a></li></ol>
+		
+		</div>
+		
+		<p>根据福雷斯特研究公司（Forrester Research）的观点，SQL将成为Hadoop生态系统中最多产的应用方案之一。Apache Drill 是一个应用于大数据搜索的开源SQL查询引擎。REST服务和客户端已经成为互联网流行的技术。 Apache HBase则是一个广受欢迎的Hadoop NoSQL数据库。在本文中，我将结合 SQL、Hadoop、Drill、REST with JSON、NoSQL 及 HBase 等技术，讨论并展示如何使用 Drill REST API来查询 HBase 和 Hive。同时我也会分享一个使用Drill REST API的简单jQuery客户端，利用JSON做数据交换，提供给用户一个基本的操作界面。<br><a id="more"></a></p>
+<h1 id="Apache_Drill教程和MapR沙箱">Apache Drill教程和MapR沙箱</h1><p>Apache Drill提供了直接查询文件中自描述和半结构化数据（类似与JSON和Parquet）以及HBase表的功能，并且查询HBase表时无需在类似Hive元存储的集中式存储中定义和维护表的模式。这个例子是建立在使用Drill的MapR沙箱和Drill教程中示例数据基础上的。含有Apache Drill的MapR沙箱是一个功能全面，单节点的集群，它可以让你在一个Hadoop环境中了解Apache Drill的概况。</p>
+<h1 id="浏览用例数据">浏览用例数据</h1><p>Drill教程中的案例是一个在线零售系统，用户可以通过Web的界面和手机应用来购买商品。主要的客户概要信息和产品目录在MapR-DB中管理，这是一个NoSQL的HBase数据库。来自网页端和手机应用端的点击流数据以JSON格式文件的形式存储在Hadoop中，订单数据则是存储在Hive中。通过Drill,我们可以动态查询这些不同数据源，而且甚至可以结合不同的数据源查询。下面的关系图展示了该教程中不同数据源之间的“关系”。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0156.png" alt=""><br></center>
+
+<h1 id="浏览日志数据">浏览日志数据</h1><p>利用Drill，你可以对文件和目录直接执行SQL操作，而无需做预先模式定义或者任何模型更改的模式管理动作。查询的同时也能得到相应的模式。下图是使用Drill Explorer来浏览JSON数据，无需定义和管理任何集中的模式。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0157.png" alt=""><br></center>
+
+
+<p>下面的例子是对一个JSON文件执行SQL语句，查询事务id、设备名称和以cr开头的关键字。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0158.png" alt=""><br></center>
+
+
+<h1 id="浏览Hive上订单表（Orders）数据">浏览Hive上订单表（Orders）数据</h1><p>下面的例子是使用Drill Explorer来浏览Hive的order表。Drill可以在不用Hive执行引擎的条件下使用Hive元存储。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0159.png" alt=""><br></center>
+
+<h1 id="浏览HBase的产品表（Products）">浏览HBase的产品表（Products）</h1><p>HBase是一个NoSQL数据库。MapR-DB是一个企业级的Hadoop NoSQL数据库，它实现了HBase的API，并将其开放以支持应用开发。MapR-DB的使用起来就和HBase一样，但底层实现更为高效，而且它与MapR文件系统是集成的。HBase是一个面向列族的数据库，且是“无模式”的，这意味着当你创建一个表的时候只需要定义列族。在你写数据的时候，列会被动态定义，并且数据都以字节数组的形式存储，而非输入时的类型。</p>
+<p>HBase的产品表（products）有两个列族（下图中的details和pricing）：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0160.png" alt=""><br></center>
+
+<p>如果查询HBase采用Hive或其他基于Hadoop的SQL（SQL-on-Hadoop）方式，你不得不包装一个模式定义以此明确如何转换二进制的值。不像其他基于Hadoop的SQL方式，Drill在Hive中不需要包装模式定义来操作HBase数据。你可以像如下使用Drill explorer来浏览HBase中产品（products）表。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0161.png" alt=""><br></center>
+
+<p>这是一个使用Drill命令行界面来查询HBase中产品（products）表的示例。</p>
+<figure class="highlight xquery"><table><tr><td class="code"><pre><span class="line"><span class="number">0</span>: jdbc:drill:&gt; select * from maprdb.products limit <span class="number">3</span>;</span><br><span class="line">+------------+------------+------------+</span><br><span class="line">|  row_key   |  details   |  pricing   |</span><br><span class="line">+------------+------------+------------+</span><br><span class="line">| [B@<span class="number">1</span>babffd6 | &#123;<span class="string">"category"</span>:<span class="string">"bGFwdG9w"</span>,<span class="string">"name"</span>:<span class="string">"IlNvbnkgbm90ZWJvb2si"</span>&#125; | &#123;<span class="string">"price"</span>:<span class="string">"OTU5"</span>&#125; |</span><br><span class="line">| [B@<span class="number">456</span>a24be | &#123;<span class="string">"category"</span>:<span class="string">"RW52ZWxvcGVz"</span>,<span class="string">"name"</span>:<span class="string">"IzEwLTQgMS84IHggOSAxLzIgUHJlbWl1bSBEaWFnb25hbCBTZWFtIEVudmVsb3Blcw=="</span>&#125; | &#123;<span class="string">"price"</span>:<span class="string">"MTY="</span>&#125; |</span><br><span class="line">| [B@<span class="number">3</span>b92598c | &#123;<span class="string">"category"</span>:<span class="string">"U3RvcmFnZSAmIE9yZ2FuaXphdGlvbg=="</span>,<span class="string">"name"</span>:<span class="string">"MjQgQ2FwYWNpdHkgTWF4aSBEYXRhIEJpbmRlciBSYWNrc1BlYXJs"</span>&#125; | &#123;<span class="string">"price"</span>:<span class="string">"MjEx"</span>&#125; |</span><br><span class="line">+------------+------------+------------+</span><br></pre></td></tr></table></figure>
+<p>鉴于HBase中任何数据都是以字节数组存储的，以及Drill不需要预先的模式定义来指明数据类型，查询所返回列值的原始字节数组与其存储状态时一致。通过Drill,你可以使用convert_from函数将数据转换到相应的数据类型。另外，列可以像这样指定别名：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0162.png" alt=""><br></center>
+
+<p>为了避免反复写入冗长且复杂的HBase查询语句，通用的工作流程是先创建一个包含有用信息的视图，然后再查询该视图。在ODBC工具，JDBC客户端或本例中的REST客户端中，视图可以使数据以更可用的”表格”形式来便于使用。REST客户端所用的视图是如上所示经过转换与Hive表连接的HBase数据。这是一个基于HBase数据创建视图的查询：</p>
+<p>首先切换到可写的工作区：</p>
+<figure class="highlight asciidoc"><table><tr><td class="code"><pre><span class="line"><span class="header">0: jdbc:drill:&gt; use dfs.mydata;</span><br><span class="line">+------------+------------+</span></span><br><span class="line"><span class="header">|     ok     |  summary   |</span><br><span class="line">+------------+------------+</span></span><br><span class="line"><span class="header">| true       | Default schema changed to 'dfs.mydata' |</span><br><span class="line">+------------+------------+</span></span><br><span class="line">1 row selected (0.078 seconds)</span><br></pre></td></tr></table></figure>
+<p>创建一个HBase中产品表（Products）的视图:</p>
+<figure class="highlight asciidoc"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="header">0: jdbc:drill:&gt; create or replace view prodview as SELECT CAST(row_key AS INTEGER) AS prod_id, CAST(t.details.category AS VARCHAR(40)) AS category, CAST(t.details.name AS VARCHAR(129)) AS name FROM maprdb.products t;</span><br><span class="line">+------------+------------+</span></span><br><span class="line"><span class="header">|     ok     |  summary   |</span><br><span class="line">+------------+------------+</span></span><br><span class="line"><span class="header">| true       | View 'prodview' replaced successfully in 'dfs.mydata' schema |</span><br><span class="line">+------------+------------+</span></span><br></pre></td></tr></table></figure>
+<p>与传统数据库所不同，视图通常都是由DBA/开发人员来操作，Drill中基于文件系统的视图是非常轻量的。一个Drill视图事实上是在一个简单的JSON 文件中定义的虚拟数据集。来看看创建的JSON文件：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="preprocessor"># cat /mapr/demo.mapr.com/data/views/prodview.view.drill</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"name"</span> : <span class="string">"prodview"</span>,</span><br><span class="line">  <span class="string">"sql"</span> : <span class="string">"SELECT CAST(`row_key` AS INTEGER) AS `prod_id`, CAST(`t`.`details`['category'] AS VARCHAR(40)) AS `category`, CAST(`t`.`details`['name'] AS VARCHAR(129)) AS `name`nFROM `maprdb`.`products` AS `t`"</span>,</span><br><span class="line">  <span class="string">"fields"</span> : [ &#123;</span><br><span class="line">    <span class="string">"name"</span> : <span class="string">"prod_id"</span>,</span><br><span class="line">    <span class="string">"type"</span> : <span class="string">"INTEGER"</span></span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    <span class="string">"name"</span> : <span class="string">"category"</span>,</span><br><span class="line">    <span class="string">"type"</span> : <span class="string">"VARCHAR"</span>,</span><br><span class="line">    <span class="string">"precision"</span> : <span class="number">40</span></span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    <span class="string">"name"</span> : <span class="string">"name"</span>,</span><br><span class="line">    <span class="string">"type"</span> : <span class="string">"VARCHAR"</span>,</span><br><span class="line">    <span class="string">"precision"</span> : <span class="number">129</span></span><br><span class="line">  &#125; ],</span><br><span class="line">  <span class="string">"workspaceSchemaPath"</span> : [ <span class="string">"dfs"</span>, <span class="string">"mydata"</span> ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以像下面一样使用Drill explorer来浏览产品视图表（prodview）：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0163.png" alt=""><br></center>
+
+
+
+<p>在查询中关联Hive的订单表（Orders）和产品视图表（Prodview）</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0164.png" alt=""><br></center>
+
+<p>通过Drill,我们可以在查询中动态地关联Hive、文件和HBase表。举个例子，该查询是从json日志文件中获取device和prod_id，从Hive的订单表中获取order，其中json日志文件的prod_id等于order表中的prod_id。【译者注：原文作者笔误，将查询条件的prod_id写成了cust_id。】</p>
+<p>创建一个视图orderprodview，连接HBase的产品表视图（prodview）</p>
+<p>【译者注：此处原文作者有误，写的是产品表product】和Hive的订单表（Order）：</p>
+<figure class="highlight asciidoc"><table><tr><td class="code"><pre><span class="line"><span class="header">0: jdbc:drill:&gt; create or replace view orderprodview as select o.order_id, o.`month`, o.cust_id, o.state, o.prod_id, o.order_total, p.category, p.name from hive.orders o, dfs.mydata.prodview p where o.prod_id=p.prod_id limit 100;</span><br><span class="line">+------------+------------+</span></span><br><span class="line"><span class="header">|     ok     |  summary   |</span><br><span class="line">+------------+------------+</span></span><br><span class="line"><span class="header">| true       | View 'orderprodview' replaced successfully in 'dfs.mydata' schema |</span><br><span class="line">+------------+------------+</span></span><br></pre></td></tr></table></figure>
+<p>这是查询视图orderprodview的例子：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0165.png" alt=""><br></center>
+
+
+<p>Drill视图的用途如下：</p>
+<p>简化复杂查询<br>从多种数据源中聚合数据<br>与表一样<br>配有像Tableau一样的BI（Business Intelligence）工具<br>数据管理灵活<br>接下来，让我们看看在REST中如何使用这个视图</p>
+<h1 id="Drill_REST接口">Drill REST接口</h1><p>Drill提供了一个简单的REST接口，你可以从Drill wiki上了解到更多<a href="https://cwiki.apache.org/confluence/display/DRILL/Apache+Drill+Wiki。这是提交一个查询并收到结果的REST" target="_blank" rel="external">https://cwiki.apache.org/confluence/display/DRILL/Apache+Drill+Wiki。这是提交一个查询并收到结果的REST</a> API。你可以通过HTTP POST请求到Drill URL，即<drill_node_ip_address>:8047/query.json，body携带一个JSON格式的Request,如下图所示。你所收到的response响应将是一个JSON对象列表。</drill_node_ip_address></p>
+<figure class="highlight stata"><table><tr><td class="code"><pre><span class="line"><span class="keyword">POST</span> &lt;drill_node_ip_address&gt;:8047/<span class="keyword">query</span>.json</span><br><span class="line">Request body:</span><br><span class="line">&#123;</span><br><span class="line"> <span class="string">"queryType"</span> : <span class="string">"SQL"</span>,</span><br><span class="line"> <span class="string">"query"</span> : "select * from  dfs.mydata.orderprodview limit 5”</span><br><span class="line">&#125;</span><br><span class="line">Response body (<span class="keyword">list</span> of JSON objects):</span><br><span class="line">[</span><br><span class="line"> &#123;</span><br><span class="line">   <span class="string">"order_total"</span> : 13,</span><br><span class="line">   <span class="string">"category"</span> : <span class="string">"Binders and Binder Accessories"</span>,</span><br><span class="line">   <span class="string">"prod_id"</span> : 909,</span><br><span class="line">   <span class="string">"name"</span> : <span class="string">"Wilson Jones Ledger-SizePiano-Hinge Binder2Blue"</span>,</span><br><span class="line">   <span class="string">"state"</span> : <span class="string">"ca"</span>, &#125;, …</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>使用CURL或者浏览器插件来测试REST接口非常方便。下面这个例子就是从Linux命令行用CURL来发送对orderprodview的查询：</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># curl </span><br><span class="line">  <span class="comment">--header "Content-type: application/json"</span></span><br><span class="line">  <span class="comment">--request POST</span></span><br><span class="line">  <span class="comment">--data '&#123;</span></span><br><span class="line">    "queryType" : "SQL",</span><br><span class="line">    "query" : "<span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span>  dfs.mydata.orderprodview <span class="keyword">limit</span> <span class="number">1</span><span class="string">"</span><br><span class="line"> &#125;'</span><br><span class="line"> </span><br><span class="line">http://192.168.110.133:8047/query.json</span><br><span class="line"> </span><br><span class="line">[ &#123;</span><br><span class="line">  "</span>order_total<span class="string">" : 13,</span><br><span class="line">  "</span><span class="keyword">category</span><span class="string">" : "</span>Binders <span class="keyword">and</span> Binder Accessories<span class="string">",</span><br><span class="line">  "</span>prod_id<span class="string">" : 909,</span><br><span class="line">  "</span><span class="keyword">name</span><span class="string">" : "</span>Wilson Jones Ledger-SizePiano-Hinge Binder2Blue<span class="string">",</span><br><span class="line">  "</span>state<span class="string">" : "</span>ca<span class="string">",</span><br><span class="line">  "</span><span class="keyword">month</span><span class="string">" : "</span>June<span class="string">",</span><br><span class="line">  "</span>order_id<span class="string">" : 67212,</span><br><span class="line">  "</span>cust_id<span class="string">" : 10001</span><br><span class="line">&#125;]</span></span></span><br></pre></td></tr></table></figure>
+<p>这是使用Google Chrome的一个REST Client扩展来查询orderprodview：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0166.png" alt=""><br></center><br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0167.png" alt=""><br></center>
+
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0168.png" alt=""><br></center><br>使用Drill REST接口查询订单产品视图的JQuery客户端<br><br>现在我们来看看为刚刚的REST查询而做的一个简单JQuery客户端。这是客户端的一个截图。它发起查询给Drill并且在一个表格中展示出了结果。<br><center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0169.png" alt=""><br></center>
+
+
+<p>使用Google Chrome开发者工具，你可以看到HTTP请求如下所示：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0170.png" alt=""><br></center>
+
+
+<p>而返回的response如下：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0171.png" alt=""><br></center>
+
+
+<p>一个jQuery客户端</p>
+<p>这是参与服务调用的jQuery代码。jQuery客户端使用jquery.ajax来执行HTTP POST到Drill查询URL，将查询数据以JSON的格式传递过去。</p>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> rootURL = <span class="string">"http://host:8047/query.json"</span>;</span><br><span class="line"><span class="keyword">var</span> query = <span class="string">"select * from dfs.mydata.orderprodview"</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">doQuery</span>(<span class="params">query</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'doQuery'</span>);</span><br><span class="line">    $.ajax(&#123;</span><br><span class="line">        type: <span class="string">'POST'</span>,</span><br><span class="line">        contentType: <span class="string">'application/json'</span>,</span><br><span class="line">        url: rootURL,</span><br><span class="line">        dataType: <span class="string">"json"</span>,</span><br><span class="line">        data: queryToJSON(query),</span><br><span class="line">        success: <span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">' success: '</span> + data);</span><br><span class="line">            renderList(data);</span><br><span class="line">        &#125;,</span><br><span class="line">        error: <span class="function"><span class="keyword">function</span>(<span class="params">jqXHR, textStatus, errorThrown</span>) </span>&#123;</span><br><span class="line">            alert(<span class="string">'error: '</span> + textStatus);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">queryToJSON</span>(<span class="params">query</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">JSON</span>.stringify(&#123;</span><br><span class="line">        <span class="string">"queryType"</span>: <span class="string">"SQL"</span>,</span><br><span class="line">        <span class="string">"query"</span>: query</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果请求成功，renderList会被调用，该方法如下所示。返回的response数据是一个JSON对象数据，renderList会把订单对象添加到index.html页面的html表格中。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line">function renderList(data) &#123;</span><br><span class="line">    var list = data == null ? [] : (data instanceof Array ? data : [data])</span><br><span class="line">   $.each(list, function(order) &#123;</span><br><span class="line">        $('#orderList').append('<span class="tag">&lt;<span class="title">tr</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>' + order.order_id + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>'</span><br><span class="line">+ order.cust_id + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>'</span><br><span class="line">            + order.state + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>' + order.month + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>'</span><br><span class="line">+ order.order_total + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>'</span><br><span class="line">            + order.prod_id + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>' + order.category + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;<span class="title">td</span>&gt;</span>'</span><br><span class="line">+ order.name + '<span class="tag">&lt;/<span class="title">td</span>&gt;</span><span class="tag">&lt;/<span class="title">tr</span>&gt;</span>');</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">Index.html</span><br><span class="line">        <span class="tag">&lt;<span class="title">table</span> <span class="attribute">id</span>=<span class="value">"list"</span> <span class="attribute">class</span>=<span class="value">'tablesorter-blue'</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="title">thead</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="title">tr</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Order Id<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Customer Id<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>State<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Month<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Order Total<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Product Id<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Product Category<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="title">th</span>&gt;</span><span class="tag">&lt; <span class="attribute">b</span>&gt;</span>Product Name<span class="tag">&lt;/<span class="title">b</span>&gt;</span><span class="tag">&lt;/<span class="title">th</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="title">tr</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;/<span class="title">thead</span>&gt;</span></span><br><span class="line">           <span class="tag">&lt;<span class="title">tbody</span> <span class="attribute">id</span>=<span class="value">"orderList"</span> &gt;</span><span class="tag">&lt;/<span class="title">tbody</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="title">table</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>jQuery客户端还提供了搜索产品类目（Product Category）的功能，如下图。</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0172.png" alt=""><br></center>
+
+
+<p>搜索功能的代码只是在查询中添加了where category like ‘searchKey’：</p>
+<figure class="highlight actionscript"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">search</span><span class="params">(searchKey)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (searchKey != <span class="string">''</span>)</span><br><span class="line">        query = query + <span class="string">' where category like '</span><span class="string">' + searchKey + '</span>%<span class="string">''</span>;</span><br><span class="line">    doQuery(query);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Chrome开发者工具窗口看到的JSON请求数据是这样的：</p>
+<center><br><img src="http://7xiur2.com1.z0.glb.clouddn.com/0173.png" alt=""><br></center>
+
+<p>以上的例子包含了一个简单的REST客户端，它采用Drill REST API来动态查询HBase和Hive。</p>
+<p>想要了解更多如何使用Drill的示例，下载MapR沙箱，然后尝试一下Drill沙箱教程。更多信息可到Apache Drill官方网站获取。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/数据库/">数据库</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/27/Java性能优化-1-用静态工厂方法代替构造函数/" title="Java性能优化(1):用静态工厂方法代替构造函数">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Java性能优化(1):用静态工厂方法代替构造函数</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/25/Mongodb 请求处理流程/"  title="Mongodb 请求处理流程">
+ <strong>下一篇：</strong><br/> 
+ <span>Mongodb 请求处理流程
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/08/26/简单REST 客户端使用 SQL，Hadoop，Drill/" data-title="简单REST 客户端使用 SQL，Hadoop，Drill" data-url="http://pangjiuzala.github.io/2015/08/26/简单REST 客户端使用 SQL，Hadoop，Drill/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Apache_Drill教程和MapR沙箱"><span class="toc-number">1.</span> <span class="toc-text">Apache Drill教程和MapR沙箱</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览用例数据"><span class="toc-number">2.</span> <span class="toc-text">浏览用例数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览日志数据"><span class="toc-number">3.</span> <span class="toc-text">浏览日志数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览Hive上订单表（Orders）数据"><span class="toc-number">4.</span> <span class="toc-text">浏览Hive上订单表（Orders）数据</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#浏览HBase的产品表（Products）"><span class="toc-number">5.</span> <span class="toc-text">浏览HBase的产品表（Products）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Drill_REST接口"><span class="toc-number">6.</span> <span class="toc-text">Drill REST接口</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

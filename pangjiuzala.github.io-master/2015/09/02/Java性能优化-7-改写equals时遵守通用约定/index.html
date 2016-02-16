@@ -1,0 +1,663 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Java性能优化(7):改写equals时遵守通用约定 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="尽管Object是一个具体类，但是设计它主要是为了扩展。它的所有非final方法都有明确的通用约定。因为它们都是为了遵守这些通用约定;如果不能做到这一点，则其他一些依赖于这些约定的类就无法与这些类结合在一起正常工作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java性能优化(7):改写equals时遵守通用约定">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/09/02/Java性能优化-7-改写equals时遵守通用约定/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="尽管Object是一个具体类，但是设计它主要是为了扩展。它的所有非final方法都有明确的通用约定。因为它们都是为了遵守这些通用约定;如果不能做到这一点，则其他一些依赖于这些约定的类就无法与这些类结合在一起正常工作。">
+<meta property="og:updated_time" content="2015-09-02T05:43:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java性能优化(7):改写equals时遵守通用约定">
+<meta name="twitter:description" content="尽管Object是一个具体类，但是设计它主要是为了扩展。它的所有非final方法都有明确的通用约定。因为它们都是为了遵守这些通用约定;如果不能做到这一点，则其他一些依赖于这些约定的类就无法与这些类结合在一起正常工作。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/09/02/Java性能优化-7-改写equals时遵守通用约定/" title="Java性能优化(7):改写equals时遵守通用约定" itemprop="url">Java性能优化(7):改写equals时遵守通用约定</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-09-02T03:04:18.000Z" itemprop="datePublished"> 发表于 2015-09-02</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>尽管Object是一个具体类，但是设计它主要是为了扩展。它的所有非final方法都有明确的通用约定。因为它们都是为了遵守这些通用约定;如果不能做到这一点，则其他一些依赖于这些约定的类就无法与这些类结合在一起正常工作。<br><a id="more"></a><br>改写equals方法看起来非常简单，但是有许多改写的方式会导致错误，并且后果非常严重。要避免问题最容易的办法是不改写equals方法，在这种情况下，每个实例只与它自己相等。如果下面的任何一个条件满足的话，这正是所期望的结果:</p>
+<ul>
+<li><strong>一个类的每个实例本质上都是唯一的。</strong>  对于代表了活动实体而不是值(value)的类，确实是这样的，比如<br>Tthread。Object提供的equals实现对于这些类是正确的。</li>
+</ul>
+<ul>
+<li><strong>不关心一个类是否提供了“逻辑相等”的测试功能。</strong>例如，java.util.Random改写了equals,它检查了两个Random实例是否产生相同的随机数序列，但是设计者并不认为客户会需要或者期望这样的功能。在这样的情况下，从Object继承到的equals实现已经足够了。</li>
+</ul>
+<ul>
+<li><strong>超类已经改写了equals，从超类继承过来的行为对于子类也是合适的。</strong>例如，大多数的Set实现都从AbstractSet继承了equals实现，List实现从AbstractList继承了equals实现，Map实现从AbstractMap继承了equals实现</li>
+</ul>
+<ul>
+<li><strong>一个类是私有的，或者是包级私有的，并且可以确定它的equals方法也永远不会被调用。</strong>尽管如此，在这样的情形下，应该要改写equals方法，以免万一有一天它会被调用到。改写如下：</li>
+</ul>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么，什么时候应该改写Object.equals呢？当一个类有自己特有的“逻辑相等”概念，而且超类也没有改写equals以实现期望的行为，这时我们需要改写equals方法。这通常适合于“值类”的情形，比如Integer或者Date。程序员在利用equals方法类比较两个指向值对象的引用的时候，希望知道它们逻辑上是否相等，而不是它们是否指向同一个对象。为满足俺们的要求，改写equals方法是必须哒，而且这样做也使得这个类的实例可以被用map的key，或者set的元素，并使map或list集合表现出预期的行为。</p>
+<p>有一种值类可以要求不改写equals方法，即<strong>typesafe enum</strong>，因为类型安全枚举类型保证每一个值至多只存在一个对象，所以对于这样的类而言，Object的equals方法等同于逻辑意义上的equals方法。<br>在改写equals方法的时候，你必须要遵守它的通用约定。下面是约定的内容，来自java.lang.Object的规范:<br>equals方法实现了等价关系:</p>
+<ul>
+<li><p>自反性 对于任意的引用值x，x.equals(x)一定为true。</p>
+</li>
+<li><p>对称性。对于任意的引用值x和y，当且仅当y.equals(x)返回true时，x.equals(y)也一定返回true。</p>
+</li>
+<li><p>传递性。对于任意的引用值x、y和z,如果x.equals(y)返回true，并且y.equals(z)也返回true，那么x.equals(y)也一定返回true。</p>
+</li>
+<li><p>一致性。对于任意的引用值x和y，如果用于equals比较的对象信息没有被修改的话，那么，多次调用x.equals(z)也一定返回true。</p>
+</li>
+<li><p>对于任意的非空引用值x，x.equals(null)一定返回false。</p>
+</li>
+</ul>
+<p>如果你违反了这些约定，你的程序将会表现不正常，甚至崩溃，而且很难找到失败的根源。没有哪个类是孤立的，一个类的实例通常会被频繁地传递给另一个类的实例，有许多类包括collection类在内，都依赖于传递给它们的对象是否遵守了equals约定。</p>
+<p>遵守这些规定并不复杂，下面按顺序逐一查看：</p>
+<ul>
+<li><p>自反性——第一个要求仅仅说明一个对象必须等于其自身。很难想象无意识的违反这一条，情形会咋办。如果你呵呵了，然后你把该类的实例加入到一个collection钟，则该集合的contains方法将果断地告诉你，该集合不包含刚刚你加入的实例。</p>
+</li>
+<li><p>对称性——第二个要求是说，任何两个对象对于“它们是否相等”这个问题必须要保持一致。与第一个要求不同，若无意中国违反了这一条，其情形不难想象。例如下面的类</p>
+</li>
+</ul>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> class CaseInsensitiveString &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">String</span> s;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> CaseInsensitiveString(<span class="keyword">String</span> s) &#123;</span><br><span class="line">		<span class="keyword">if</span> (s == <span class="keyword">null</span>)</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">		<span class="keyword">this</span>.s = s;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="built_in">boolean</span> equals(<span class="keyword">Object</span> o) &#123;</span><br><span class="line">		<span class="keyword">if</span> (o <span class="keyword">instanceof</span> CaseInsensitiveString)</span><br><span class="line">			<span class="keyword">return</span> s.equalsIgnoreCase(((CaseInsensitiveString) o).s);</span><br><span class="line">		<span class="keyword">if</span> (o <span class="keyword">instanceof</span> <span class="keyword">String</span>)</span><br><span class="line">			<span class="keyword">return</span> s.equals((<span class="keyword">String</span>) o);</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个类中，equals方法的意图非常好，它企图与普通的字符串对象可以互操作。假设我们有一个大小写不敏感的字符串对象和一个普通的字符串:</p>
+<figure class="highlight dart"><table><tr><td class="code"><pre><span class="line">CaseInsensitiveString cis=<span class="keyword">new</span> CaseInsensitiveString(<span class="string">"Polish"</span>);</span><br><span class="line">	<span class="built_in">String</span> s= <span class="string">"polish"</span>;</span><br></pre></td></tr></table></figure>
+<p>正如所期望的，cis.equals(s)返回true。问题在于，CaseInsensitiveString类中的equals方法知道普通的字符串(String)对象，但是String类中的equals方法却并不知道大小写不敏感的字符串。因此，s.equals(cis)返回false。很显然违反了对称性。假设你把大小写不敏感的字符串对象放到一个集合中:</p>
+<figure class="highlight lasso"><table><tr><td class="code"><pre><span class="line"><span class="built_in">List</span> <span class="built_in">list</span> = <span class="literal">new</span> ArrayList();</span><br><span class="line"><span class="built_in">list</span><span class="built_in">.</span>add(cis)</span><br></pre></td></tr></table></figure>
+<p>这时候，list.contains(s)会返回什么结果(⊙o⊙)?在sun的当前实现中，它碰巧返回false，但是只是这个特定实现得出的结果而已，在其他的实现中，它有可能返回true，或者抛出一个运行时异常。一旦你违反了equals约定，当其他的对象面对你的对象时候，你无法知道这些对象的行为会怎么样。<br>为了解决这个问题，只需要把企图与String互操作的这段代码从equals方法中去掉就可以了。这样做之后，你可以重构代码，使它变成一条返回语句：</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> o <span class="keyword">instanceof</span> CaseInsensitiveString</span><br><span class="line">				&amp;&amp; (((CaseInsensitiveString) o).s.equalsIgnoreCase(s));</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>传递性——equals约定第三个要求是，如果一个对象等于第二个对象，并且第二个对象又等于第三个对象，则第一个对象一定等于第三个对象。同样的，无意识地违反这一条规则的情形也不难想象。考虑这样的情形：一个程序员创建了一子类，它为超类增加了一个新的特征。换句话说，子类增加的信息会影响到equals的比较结果。我们首先以一个简单的非可变的二维点类作为开始:</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> x;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> y;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.x = x;</span><br><span class="line">		<span class="keyword">this</span>.y = y;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Point))</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">		Point p = (Point) o;</span><br><span class="line">		<span class="keyword">return</span> p.x == x &amp;&amp; p.y == y;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>假设你想要扩展这个类，为一个点增加颜色信息：</p>
+<figure class="highlight scala"><table><tr><td class="code"><pre><span class="line">public <span class="class"><span class="keyword">class</span> <span class="title">ColorPoint</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Point</span> &#123;</span></span><br><span class="line">	<span class="keyword">private</span> <span class="type">Color</span> color;</span><br><span class="line"></span><br><span class="line">	public <span class="type">ColorPoint</span>(int x, int y, <span class="type">Color</span> color) &#123;</span><br><span class="line">		<span class="keyword">super</span>(x, y);</span><br><span class="line">		<span class="keyword">this</span>.color = color;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>equals方法会怎么样呢？如果你完全不提供equals方法，而是直接从Point继承过来，那么在equals做比较的时候颜色信息被忽略掉了。虽然这样做不会违反equals约定，但是很明显这是不可接受的。假设你编写了一个equals方法，只有当实参是另一有色点，并且具有相同的位置和颜色的时候，它才会返回true:</p>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">boolean</span> equals(<span class="keyword">Object</span> o) &#123;</span><br><span class="line">		<span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> ColorPoint))</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">		ColorPoint cp = (ColorPoint) o;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">super</span>.equals(o) &amp;&amp; cp.<span class="built_in">color</span> == <span class="built_in">color</span>;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>这个方法的问题在于，你在比较一个普通点和一个有色点，以及反过来的情形的时候，可能会得到不同的结果。前一种比较忽略了颜色信息，而后一种比较总是返回false，因为实参的类型不正确。为了直观地说明问题所在，我们创建一个普通点和一个有色点:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">Point p = <span class="keyword">new</span> Point(<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">ColorPoint cp=<span class="keyword">new</span> ColorPoint(<span class="number">1</span>,<span class="number">2</span>,Color.RED);</span><br></pre></td></tr></table></figure>
+<p>然后，p.equals(cp)返回true，而cp.equals(p)返回false。你可以做这样的尝试来修正这个问题：让ColorPoint.equals在进行“混合比较”的时候忽略颜色信息:</p>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">boolean</span> equals(<span class="keyword">Object</span> o)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span>(!(o <span class="keyword">instanceof</span> Point))</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">		<span class="keyword">if</span>(!(o <span class="keyword">instanceof</span> ColorPoint))</span><br><span class="line">		<span class="keyword">return</span> o.equals(<span class="keyword">this</span>);</span><br><span class="line">		</span><br><span class="line">		ColorPoint cp=(ColorPoint)o;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">super</span>.equals(o)&amp;&amp;cp.<span class="built_in">color</span>==<span class="built_in">color</span>;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>这两种方法确实提供了对称性，但是却牺牲了传递性:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">ColorPoint p1=<span class="keyword">new</span> ColorPoint(<span class="number">1</span>,<span class="number">2</span>,Color.RED);</span><br><span class="line">	Point p2=<span class="keyword">new</span> Point(<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line">	ColorPoint p3=<span class="keyword">new</span> ColorPoint(<span class="number">1</span>,<span class="number">2</span>,Color.BLUE);</span><br></pre></td></tr></table></figure>
+<p>此时，p1.equals(p2)和p2.equals(p3)都返回true，但是p1.equals(p3)返回false，很显然违反了传递性前两个比较不考虑颜色信息（”色盲“），而第二个比较考虑了颜色信息。</p>
+<p>How to deal with?事实上，这是面向对象语言中关于等价关系的一个基本问题。要想在扩展一个可实例化类的同时，既要增加新的特征，同时还要保留equals约定，没有一个简单的办法发可以做到这一点。<strong>复合优先于继承</strong>，这个问题还是没有很好的解决办法，我们不再让ColorPoint扩展Point，而是在ColorPoint中加入一个私有的Point域，以及一个公有的试图方法。此方法返回一个与该有色点在同一位置上的普通Point对象:</p>
+<figure class="highlight processing"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> class ColorPoint extends Point &#123;</span><br><span class="line">	<span class="keyword">private</span> Color <span class="built_in">color</span>;</span><br><span class="line">	<span class="keyword">private</span> Point <span class="built_in">point</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> ColorPoint(<span class="built_in">int</span> x, <span class="built_in">int</span> y, Color <span class="built_in">color</span>) &#123;</span><br><span class="line">		<span class="built_in">point</span> = <span class="keyword">new</span> Point(x, y);</span><br><span class="line">		<span class="keyword">this</span>.<span class="built_in">color</span> = <span class="built_in">color</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> Point asPoint() &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">point</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="built_in">boolean</span> equals(<span class="keyword">Object</span> o) &#123;</span><br><span class="line">		<span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> ColorPoint))</span><br><span class="line"></span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">		ColorPoint cp = (ColorPoint) o;</span><br><span class="line">		<span class="keyword">return</span> cp.<span class="built_in">point</span>.equals(<span class="built_in">point</span>) &amp;&amp; cp.<span class="built_in">color</span>.equals(<span class="built_in">color</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Java平台库中，有一些是可实例化类的子类，并且加入了新的特征。例如，java.sql.Timestamp对java.util.Date进行子类化，并且增加量nanoseconds域，Timestamp的equals实现违反了对称性，如果Timestamp和Date对象被用于同一个集合中，或者以其他方式被混合在一起，则会出现不正确的行为。Timestamp类有一个否认声明，告诫程序员不要回混合使用Date和Timestamp对象。Timestamp是一个反常的类，不值得仿效。</p>
+<p>注意，你可以在一个抽象类的子类中增加新的特征，而不会违反equals约定。这一点对于“用类层次来代替联合”而得到的一种类层次结构非常重要。</p>
+<ul>
+<li>一致性——equals约定的第四个要求是，如果两个对象相等的话，那么它们必须始终保持相等，除非有一个对象被修改了。由于可变对象在不同的时候可以与不同的对象相等，而非可变对象不会这样，所以，这一条作为提醒实际上算不上equals方法的要求。当你在写一个类的时候，应该仔细考虑它是否为非可变的。如果认为它们应该是非可变的，那么你就必须要保证equals方法满足这样的限制条件：相等的对象永远相等，不相等的对象永远不相等。</li>
+<li>非空性——指所有的对象必须不等于null。尽管很难想象什么情况下o.equals(null)会返回true,但是抛出NullPointerException异常的情形并不难想象。通用约定不允许抛出NullPointerException异常。许多类的equals方法通过一个显式的null测试来防止这种情况:</li>
+</ul>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span></span>&#123;</span><br><span class="line">     <span class="keyword">if</span>(o==<span class="keyword">null</span>)</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">       …</span><br></pre></td></tr></table></figure>
+<p>这项测试不是必需的，为了测试当前对象的相等情况，equals方法必须首先把实参转换为一种适当的类型，以便可以调用它们的访问方法或者访问它的域。在做转换之前，equals方法必须使用instanceof操作符，检查它的实参是否为正确的类型:</p>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!(o <span class="keyword">instanceof</span> Mytype))</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        …</span><br></pre></td></tr></table></figure>
+<p>如果漏掉了这一步类型检查，并且传递给equals方法的实参又是错误的类型，那么equals方法将会抛出一个ClassCastException异常，这违反了equals的约定。但是，如果instanceof的第一个操作数为null的话，那么，不管第二个操作数是哪种类型，按instanceof操作符的规定，它应该返回false。因此，如果把null传给equals方法的话，则类型检查的结果为false，所以，你并不需要做单独的null检查。把所有这些结合在一起，下面是为实现高质量equals方法的一个“处方”:</p>
+<p><strong>1.使用==操作符检查“实参是否为指向对象的一个引用”。</strong>如果是的话，则返回true。这只不过是一种性能优化，如果比较操作有可能非常耗时的话，这样做是值得的。</p>
+<p><strong>2.使用instanceof操作符检查”实参是否为正确的类型“。</strong>如果不是的话，则返回false。通常，这里”正确的类型“是指equals方法所在的那个类。有些情况下，是指该类所实现的某个接口。如果一个类实现的一个接口改进了equals约定，允许在实现了该接口的类之间进行比较，那么使用这个接口作为正确的类型，集合接口Set、List、Map和Map.Entry具有这样的特点。</p>
+<p><strong>3.把实参转换到正确的类型。</strong>因为前面已经有了instanceof测试，所以这个转化可以确保成功。</p>
+<p><strong>4.对于该类中的每一个关键域，检查实参中的域与当前对象中对应的域值是否匹配。</strong>如果所有的测试都成功，则返回true;否则返回false。如果第2步中的类型是一个接口，那么你必须通过接口的方法，访问实参中的关键域;如果该类型是一个类，那么你也许能够直接访问实参中的关键域，这要取决与它们的可访问性。对于既不是float也不是double类型的原语类型域，可以使用==操作符进行比较；对于对象引用域，可以递归地调用equals方法；对于float域，先使用Float.floatToIntBits转换成int类型的值，然后使用==操作符比较int类型的值；对于double域，先使用Double.doubleToLongBits转换成long类型的值，然后使用==操作符比较long类型的值。对于数组域，把以上这些指导原则应用到每个元素上。有些对象引用域包含null是合法的，所以为了避免可能导致NullPointerExcepiton异常，使用下面的习惯用法来比较这样的域:<code>(filed==null?o.field==null:field.equals(o.field)</code><br>如果field和o.field通常是相同的对象引用，那么下面的做法会更快一些:<code>(field==o.field||(field!=null&amp;&amp;.filed.equals(o.field)))</code><br>对于有些类，比如前面提到的CaseInsensitiveString类，针对每个域的比较操作比简单的相等测试要复杂的多。如果是这样的情形，应该是在该类的规范上明确地加以说明。如果确实是这样话，你可能会期望在每一种对象内部保存一个”范式”,这样equals方法可以根据这些范式进行低开销的精确比较，而不是高开销的非精确比较。这项技术对于非可变类是最为合适的，因为如果对象发生变化的话，其范式也必须相应地更新。</p>
+<p>域的比较顺序可能会影响到equals方法的性能。为了获得最佳的性能，最先进行比较的域应该是最有可能不一致的域，或者是比较开销最低的域，理想情况是两个条件同时满足的域。如果一个冗余域代表了这整个对象的一个概括描述，那么，当最终比较结果为false时，通过比较这些冗余域，可以省下比较实际数据所需要的开销。</p>
+<p><strong>5.当你编写完成equals方法之后，确保其是否是对称的、传递的、一致的？</strong></p>
+<ul>
+<li><p><strong>当你改写equals时候，总是要改写hashcode</strong></p>
+</li>
+<li><p><strong>不要企图让equals方法过于聪明。</strong>如果只是简单的测试域中的值是否相等，则不难做到遵守equals约定。把任何一种别名形式考虑在等价的范围内，往往不会是一个好主意。例如，作为File类，它不应该试图把指向同一个文件的符号链接当作相等的对象来看待。</p>
+</li>
+<li><p><strong>不要使equals方法依赖于不可靠的资源。</strong>例如，java.net.URL的equals方法依赖于被比较的URL中主机的IP地址。把一个主机名转换为一个IP地址，这项工作需要访问网络，而且不保证每次都会产生同样的结果。这样会导致URL的equals方法违法equals约定，在实践中可能会引发问题。</p>
+</li>
+<li><p><strong>不要将equals声明的Object对象替换为其他的类型。</strong>如下面这个，会逼疯程序员……</p>
+</li>
+</ul>
+<figure class="highlight aspectj"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(MyClass o)</span></span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>问题在于这个方法并没有改写Object.equals,因为Object.equals的实参应该是Object类型，相反，它重载了Object.equals在原有equals方法的基础上，再提供一个“强类型化”的equals方法，只要这两个方法返回同样的结果，那么这是可以接受的。在某些特定情况下，它也许会带来一些性能上的提高，但是与增加的复杂性相比，这种做法是不值得的。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a><a href="/tags/性能优化/">性能优化</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/09/03/Java性能优化-8-改写equals时总是要改写hashCode/" title="Java性能优化(8):改写equals时总是要改写hashCode">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Java性能优化(8):改写equals时总是要改写hashCode</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/09/01/Java性能优化-6-避免使用终结函数/"  title="Java性能优化(6):避免使用终结函数">
+ <strong>下一篇：</strong><br/> 
+ <span>Java性能优化(6):避免使用终结函数
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/09/02/Java性能优化-7-改写equals时遵守通用约定/" data-title="Java性能优化(7):改写equals时遵守通用约定" data-url="http://pangjiuzala.github.io/2015/09/02/Java性能优化-7-改写equals时遵守通用约定/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

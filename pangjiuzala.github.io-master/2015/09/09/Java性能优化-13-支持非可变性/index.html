@@ -1,0 +1,604 @@
+
+ <!DOCTYPE HTML>
+<html >
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Java性能优化(13):支持非可变性 | XingLiu&#39;s  Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="XingLiu">
+    
+
+    
+    <meta name="description" content="一个非可变类是一个简单的类，它的实例不能被修改。每个实例中包含的所有信息都必须在该实例被创建的时候就提出来，并且在对象的整个生存期内固定不变。Java平台库包含许多非可变类，其中有String、原语类型的包装—BigInteger和BigDecimal。非可变类的存在有许多理由：非可变类比可变类更加易于设计、实现和使用。它们不容易出错，更加安全。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java性能优化(13):支持非可变性">
+<meta property="og:url" content="http://pangjiuzala.github.io/2015/09/09/Java性能优化-13-支持非可变性/index.html">
+<meta property="og:site_name" content="XingLiu's  Blog">
+<meta property="og:description" content="一个非可变类是一个简单的类，它的实例不能被修改。每个实例中包含的所有信息都必须在该实例被创建的时候就提出来，并且在对象的整个生存期内固定不变。Java平台库包含许多非可变类，其中有String、原语类型的包装—BigInteger和BigDecimal。非可变类的存在有许多理由：非可变类比可变类更加易于设计、实现和使用。它们不容易出错，更加安全。">
+<meta property="og:updated_time" content="2015-09-09T09:11:21.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java性能优化(13):支持非可变性">
+<meta name="twitter:description" content="一个非可变类是一个简单的类，它的实例不能被修改。每个实例中包含的所有信息都必须在该实例被创建的时候就提出来，并且在对象的整个生存期内固定不变。Java平台库包含许多非可变类，其中有String、原语类型的包装—BigInteger和BigDecimal。非可变类的存在有许多理由：非可变类比可变类更加易于设计、实现和使用。它们不容易出错，更加安全。">
+
+    
+    <link rel="alternative" href="https://github.com/search?q=pangjiuzala&type=Users" title="XingLiu&#39;s  Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="XingLiu&#39;s  Blog" title="XingLiu&#39;s  Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="XingLiu&#39;s  Blog">XingLiu&#39;s  Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">文章列表</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" autocomplete="off" name="q" maxlength="20" placeholder="搜索" />
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/09/09/Java性能优化-13-支持非可变性/" title="Java性能优化(13):支持非可变性" itemprop="url">Java性能优化(13):支持非可变性</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="XingLiu" target="_blank" itemprop="author">XingLiu</a>
+		
+  <p class="article-time">
+    <time datetime="2015-09-09T09:11:01.000Z" itemprop="datePublished"> 发表于 2015-09-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>一个非可变类是一个简单的类，它的实例不能被修改。每个实例中包含的所有信息都必须在该实例被创建的时候就提出来，并且在对象的整个生存期内固定不变。Java平台库包含许多非可变类，其中有String、原语类型的包装—BigInteger和BigDecimal。非可变类的存在有许多理由：非可变类比可变类更加易于设计、实现和使用。它们不容易出错，更加安全。<br><a id="more"></a><br>为了使一个类成为非可变类，要遵循下面五条规则：<br><strong>1.不要提供任何会修改对象的方法。</strong></p>
+<p><strong>2.保证没有任何可被子类改写的方法。</strong>这可以防止粗心或者恶意的子类破坏该类的不可变行为。为了禁止改写方法，一般做法是使这个类成为final的，但是后面我们还会讨论到其他的做法。</p>
+<p><strong>3.使所有的域都是final的。</strong>通过系统的强制方式，可以清楚地表明你的意图。而且，如果一个指向新创建的实例的引用在缺乏同步机制的情况下，被从一个线程传递到另一个线程，那么有可能还必须要保证正确的行为，这取决于正在重新设计中的内存模型的情况。</p>
+<p>4.<strong>使所有的域都成为私有的</strong>。这样可以防止客户直接修改域中的信息。虽然非可变类可以具有公有的final域，只要这些域包含原语类型的值或者指向非可变对象的引用，从技术上讲这样是允许的，但是，这样做不值得提倡，因为这使得在以后的版本中不可能再改变内部表示。</p>
+<p><strong>5.保证对于任何可变组件的互斥访问</strong>。如果你的类具有指向可变对象的域，则必须确保该类的客户无法获得指向这些对象的引用。并且，永远不要用客户提供的对象引用来初始化这样的域，也不要在任何一个访问方法中返回该对象引用。在构造函数、访问方法和readObject方法中请使用保护性拷贝技术。</p>
+<p>前面条目中的许多例子都是非可变的，针对每一个属性它都有一个访问方法，但是没有对应的改变函数。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.zjucs.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Complex</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">float</span> re;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">float</span> im;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Complex</span><span class="params">(<span class="keyword">float</span> re, <span class="keyword">float</span> im)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.re = re;</span><br><span class="line">		<span class="keyword">this</span>.im = im;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">float</span> <span class="title">realPart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> re;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">float</span> <span class="title">imaginaryPart</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> im;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Complex <span class="title">add</span><span class="params">(Complex c)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> Complex(re + c.re, im + c.im);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Complex <span class="title">subtract</span><span class="params">(Complex c)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> Complex(re - c.re, im - c.im);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Complex <span class="title">mutiply</span><span class="params">(Complex c)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> Complex(re * c.re - im * c.im, re * c.im + im * c.re);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> Complex <span class="title">divide</span><span class="params">(Complex c)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">float</span> tmp = c.re * c.re + c.im * c.im;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> Complex((re * c.re + im * c.im) / tmp, (im * c.re - re</span><br><span class="line">				* c.im)</span><br><span class="line">				/ tmp);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (o == <span class="keyword">this</span>)</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">		<span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Complex))</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">		Complex c = (Complex) o;</span><br><span class="line">		<span class="keyword">return</span> (Float.floatToIntBits(re) == Float.floatToIntBits(c.re))</span><br><span class="line">				&amp;&amp; (Float.floatToIntBits(im) == Float.floatToIntBits(c.im));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">int</span> result = <span class="number">17</span> + Float.floatToIntBits(re);</span><br><span class="line">		result = <span class="number">37</span> * result + Float.floatToIntBits(im);</span><br><span class="line">		<span class="keyword">return</span> result;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">"("</span> + re + <span class="string">"+"</span> + im + <span class="string">"j)"</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个类表示一个复。大多数重要的非可变类都使用了这种模式。它被称为函数的做法，因为这些方法返回了一个函数的结果，这些函数对操作数进行运算但并不修改它。与之相对应的更常见的是过程做法，在这种方式下，方法内部有一个过程作用在它们的操作数上使得它的状态发生了变化。</p>
+<p><strong>非可变对象比较简单。</strong>一个非可变对象可以只有一个状态，即最初被创建时刻的状态。如果你能够被确保所有的构造函数都建立了这个类的约束关系，那么可以保证这些约束关系在整个生命周期内永远不再发生变化，无需你和使用这类的程序员再做额外的工作来维护这些约束关系。相反，可变对象可以有任意复杂的状态空间。如果文档中没有对mutator方法所执行的状态转换提供精确地描述，那么，要可靠地使用一个可变类是非常困难的，甚至是不可能的。</p>
+<p><strong>非可变对象本质上是线程安全地，它们不要求同步。</strong>当多个线程并发访问这样的对象时，它们不会被破坏。这无疑是获得线程安全最容易的办法。实际上，没有一个线程会注意到其他线程对于一个非可变对象所施加的影响。所以，<strong>非可变对象可以被自由地共享</strong>。非可变类应该充分利用这种优势，鼓励客户尽可能地重用已有的实例。要做到这一点，一个很简便的办法是，对于频繁被用到的值，为它们提供公有的静态final变量。例如，Complex类有可能会提供下面的常量:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> final Complex ZERO = <span class="keyword">new</span> Complex(<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> final Complex ONE = <span class="keyword">new</span> </span><br><span class="line">Complex(<span class="number">1</span>,<span class="number">0</span>);</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> final Complex I = <span class="keyword">new</span> Complex(<span class="number">0</span>,<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>这种方法可以进一步被扩展。一个非可变类可以提供一些静态工厂，它们把频繁用到的实例缓存起来，从而请求一个预先存在的实例的时候，可以不再创建新的实例。BigInteger和Boolean类都有这样的静态工厂。使用这样的静态工厂也使得客户之间可以共享已有的实例，而不用创建新的实例，从而降低内存占用和垃圾回收的代价。</p>
+<p>“非可变对象可以被自由地共享”导致的一个结果是，你永远也不需要进行保护性拷贝。实际上，你根本不需要做任何拷贝，因为这些拷贝始终等于原始的对象。因此，这些拷贝始终等于原始的对象。因此，你不需要，也不应该为非可变类提供clone方法或者拷贝构造函数。这一点在Java平台早期出现的时候并不好理解，所以String类仍然提供给了一个拷贝构造函数，但是它应该很少被使用。</p>
+<p>你不仅可以共享非可变对象，甚至也可以共享它们的内部信息。例如，BigInteger类内部使用了符号数值表示法，其中符号部分用一个int类型值来表示，而数值部分用一个int数组来表示。negate方法产生一个新的BigInteger，其中数值是一样的，而符号是相反的。它并不需要拷贝数组，新建的BigInteger也指向原来实例中的同一内部数组。</p>
+<p><strong>非可变对象为其他对象——无论是可变的还是非可变的——提供了大量的构件</strong>。如果一个复杂对象内部的组件对象不会改变的话，那么要维护它的不可变性约束是很容易的。这条原则的一种特殊情形是，非可变对象构成了大量的映射键和集合的不变约束，但是你不用担心它们的值会发生变化。</p>
+<p>非可变类真正的唯一缺点是，对于每一个不同的值都要求有一个单独的对象。创建这样的对象可能代价很高，特别是对于大型对象的情形。例如，假设你有一个上百万位的BigInteger，希望对它地位求反：</p>
+<figure class="highlight dns"><table><tr><td class="code"><pre><span class="line">BigInteger moby = ...<span class="comment">;</span></span><br><span class="line">moby = moby.flipBit(0)<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<p>flipBit方法创建一个新的BigInteger实例，也有上百万位长，它与原来的对象只有一位不同。这个操作所消耗时间和空间与BigInteger的尺寸成正比，我们拿它与java.util.BitSet进行比较，与BigInteger类似，BigSet代表一个任意长度的位序列，但是，与BigInteger不同的是，BigSet是可变的，BigSet类提供一个方法允许你在常数时间内改变此“百万位”实例中单个位的状态。</p>
+<p>如果你执行一个多步骤的操作，并且每个步骤都会产生一个新的对象，除了最后的结果之外的其他对象最终都会被丢弃，那么此时性能问题就会显露出来，处理这种问题有两种办法。第一种办法，先测一下哪些多步骤操作会经常被用到，然后把它们作为基本单元来提供，如果一个多步骤操作已经成为一个基本单元了，那么非可变类就可以不必在每个步骤上创建一个独立对象了。非可变类可以在内部做的非常灵活。</p>
+<p>除了”使一个类成为final”的这种方法之外，还可以有其他两种办法做到这一点。一种办法是，让这个类的每一个方法都成为final的，而不是让整个类成为final单独。这种方法的唯一好处在于，它使得程序员可以扩展这个类，在原来基础上增加新的方法。这种做法其效果与“在一个独立的、不可被实例化的工具类中增加新的静态方法。”相同，所以并不提倡。</p>
+<p>“使一个非可变类为final”的第二种替代做法是，使其所有的构造函数成为私有的，或者包级私有的，并且增加公有的静态工厂，来代替公有的构造函数。为了具体说明，下面以Complex为例，</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Complex</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">float</span> re;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">float</span> im;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Complex</span><span class="params">(<span class="keyword">float</span> re, <span class="keyword">float</span> im)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.re = re;</span><br><span class="line">		<span class="keyword">this</span>.im = im;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Complex <span class="title">valueOf</span><span class="params">(<span class="keyword">float</span> re,<span class="keyword">float</span> im)</span></span><br><span class="line">	</span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> Complex(re,im);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然这种方法并不常用，但是它往往是三种可选择的做法中最好的一种。它最灵活，因为它允许使用多个包级私有的实现类。对于包外面的客户而言,非可变类实际上是final的，因为要扩展这样一个来自其他包的类是不可能的，它缺少一个公有的或者受保护的构造函数。除了允许多个实现类的灵活性之外，这种做法也使得很有可能在后续的发行版本中改进这个类的性能，具体做法是增强静态工厂的对象缓存能力。</p>
+<p>静态工厂相比构造函数具有许多其他的优势，加入，假设你希望Complex类提供一种“基于极坐标创建复数对象”的方式。如果使用构造函数来实现这样的功能，可能会使这个类很零乱。因为这样的构造函数与已有的构造函数Complex(float,float)具有同样的原型特征。但是通过静态工厂，这样很容易做到：只需用第二个静态工厂，并且工厂名字清楚地表明它的功能即可：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Complex <span class="title">valueOfPolar</span><span class="params">(<span class="keyword">float</span> r,<span class="keyword">float</span> theta)</span></span>&#123;</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> Complex((<span class="keyword">float</span>)(r*Math.<span class="built_in">cos</span>(theta)),(<span class="keyword">float</span>)(r*Math.<span class="built_in">sin</span>(theta)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当BigInteger和BigDecimal最初被编写出来的时候，“为什么非可变类必须要有final的等同效果”还没有被普遍理解，所以它们的所有方法都很有可能会被改写。不幸的是，为了保持向上兼容，这个问题一直无法得以改正。如果你当前正在编写一个类，它的安全性依赖于BigInteger或者BigDecimal实参的非可变性，那么，你必须检查，以确定这个实参是不是一个“真正的“BigInteger或者BigDecimal，而不是一个不可信子类的实例。如果是后者的话，你必须在”假设它可能是可变的“前提下对它进行保护性拷贝:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">foo</span><span class="params">(BigInteger b)</span></span>&#123;</span><br><span class="line"><span class="keyword">if</span>(b.getClass()!=BigInteger.<span class="keyword">class</span>)</span><br><span class="line">b=<span class="keyword">new</span> BigInteger(b.toByteArray());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>总而言之，坚决不要为每个get方法编写一个相应的set方法。除非有很好的理由要让一个类成为非可变类，否则就应该是非可变的。非可变类有许多与优点，唯一的缺点是在特定的情况下存在潜在的性能问题。</p>
+<p>对于有些类而言，非可变类是不切实际的，这样的类包括”过程类”，例如Thread和TimeTask。如果一个类不能被做成非可变类，那么你仍然应该尽可能地限制它的可变性。降低一个对象中存在的状态的数目，可以更容易地分析该对象的行为，同时降低出错的可能性。因此，构造函数不应该把”只构造了一部分实例”传递给其他的方法。你不应该在构造函数之外再提供一个”重新初始化”犯法。与所增加的复杂性相比，”重新初始化“方法通常并没有带来太多的优势性能。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a><a href="/tags/性能优化/">性能优化</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	<div class="share-jiathis">
+	  
+<div class="jiathis_style_24x24">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_renren"></a>
+	<a class="jiathis_button_qzone"></a>
+	<a class="jiathis_button_googleplus"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+    var jiathis_config={
+    data_track_clickback:true,
+    sm:"copy,renren,cqq",
+    pic:"",
+    summary:"",
+    
+  </script> 
+<script type="text/javascript" src="//v3.jiathis.com/code/jia.js?uid=
+" charset="utf-8"></script>      
+
+	 </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/09/10/MSSQL复习笔记-上/" title="MSSQL复习笔记(上)">
+  <strong>上一篇：</strong><br/>
+  <span>
+  MSSQL复习笔记(上)</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/09/08/Java性能优化-12-最小化类和成员可访问能力/"  title="Java性能优化(12):最小化类和成员可访问能力">
+ <strong>下一篇：</strong><br/> 
+ <span>Java性能优化(12):最小化类和成员可访问能力
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2015/09/09/Java性能优化-13-支持非可变性/" data-title="Java性能优化(13):支持非可变性" data-url="http://pangjiuzala.github.io/2015/09/09/Java性能优化-13-支持非可变性/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="119" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=119&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=2129798793&verifier=c0951e84&dpc=1"></iframe>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>31</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/大数据/" title="大数据">大数据<sup>26</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/性能优化/" title="性能优化">性能优化<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据挖掘/" title="数据挖掘">数据挖掘<sup>13</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HBase/" title="HBase">HBase<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Hadoop/" title="Hadoop">Hadoop<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>10</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spark/" title="Spark">Spark<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/机器学习/" title="机器学习">机器学习<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/数据库/" title="数据库">数据库<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/网络爬虫/" title="网络爬虫">网络爬虫<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/移动互联网/" title="移动互联网">移动互联网<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/物联网/" title="物联网">物联网<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Android/" title="Android">Android<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云平台/" title="云平台">云平台<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Taobao-File-System/" title="Taobao File System">Taobao File System<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/智慧医疗/" title="智慧医疗">智慧医疗<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/设计模式/" title="设计模式">设计模式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/爬虫/" title="爬虫">爬虫<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/云计算/" title="云计算">云计算<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">September 2015</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a><span class="archive-list-count">31</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a><span class="archive-list-count">25</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://blog.csdn.net/pangjiuzala" target="_blank" title="My Blog in  CSDN">CSDN</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://saliormoon.github.io/" target="_blank" title="王宇峰的博客">王宇峰的博客</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://www.changhuiyuan.com/" target="_blank" title="常惠源的博客">常惠源的博客</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  <div class="rsspart">
+	<a href="https://github.com/search?q=pangjiuzala&amp;type=Users" target="_blank" title="关注刘兴的github">关注</a>
+</div>
+
+  
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello,I&#39;m from ZjuCs! <br/>
+			The more you diligent, the more you lucky!</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Copyright@ 2015 Liuxing All rights reserved.
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"pangjiuzala"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'null', 'null');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ffeafc504b70a541dd3845d467335f367' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_null'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3Dnull' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<script>
+var option = {
+  engineKey: '4ac092ad8d749fdc6293'
+};
+(function(w,d,t,u,n,s,e){
+  s = d.createElement(t);
+  s.src = u;
+  s.async = 1;
+  w[n] = function(r){
+    w[n].opts = r;
+  };
+  e = d.getElementsByTagName(t)[0];
+  e.parentNode.insertBefore(s, e);
+})(window,document,'script','//tinysou-cdn.b0.upaiyun.com/ts.js','_ts');
+_ts(option);
+</script>
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
